@@ -220,4 +220,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noResultsFound => 'No results found';
+
+  @override
+  String get totalInvoices => 'Total Invoices';
+
+  @override
+  String get paidInvoices => 'Paid Invoices';
+
+  @override
+  String get unpaidInvoices => 'Unpaid Invoices';
+
+  @override
+  String get totalRevenue => 'Total Revenue';
+
+  @override
+  String get pendingAmount => 'Pending Amount';
+
+  @override
+  String get quickActions => 'Quick Actions';
 }

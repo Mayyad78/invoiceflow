@@ -221,4 +221,22 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get noResultsFound => 'Aucun résultat trouvé';
+
+  @override
+  String get totalInvoices => 'Total des factures';
+
+  @override
+  String get paidInvoices => 'Factures payées';
+
+  @override
+  String get unpaidInvoices => 'Factures impayées';
+
+  @override
+  String get totalRevenue => 'Revenu total';
+
+  @override
+  String get pendingAmount => 'Montant en attente';
+
+  @override
+  String get quickActions => 'Actions rapides';
 }

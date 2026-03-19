@@ -525,6 +525,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No results found'**
   String get noResultsFound;
+
+  /// No description provided for @totalInvoices.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Invoices'**
+  String get totalInvoices;
+
+  /// No description provided for @paidInvoices.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid Invoices'**
+  String get paidInvoices;
+
+  /// No description provided for @unpaidInvoices.
+  ///
+  /// In en, this message translates to:
+  /// **'Unpaid Invoices'**
+  String get unpaidInvoices;
+
+  /// No description provided for @totalRevenue.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Revenue'**
+  String get totalRevenue;
+
+  /// No description provided for @pendingAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending Amount'**
+  String get pendingAmount;
+
+  /// No description provided for @quickActions.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Actions'**
+  String get quickActions;
 }
 
 class _AppLocalizationsDelegate

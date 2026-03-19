@@ -70,5 +70,11 @@
   "currencySaved": "Devise mise à jour avec succès",
   "searchClients": "Rechercher des clients",
   "searchInvoices": "Rechercher des factures",
-  "noResultsFound": "Aucun résultat trouvé"
+  "noResultsFound": "Aucun résultat trouvé",
+  "totalInvoices": "Total des factures",
+  "paidInvoices": "Factures payées",
+  "unpaidInvoices": "Factures impayées",
+  "totalRevenue": "Revenu total",
+  "pendingAmount": "Montant en attente",
+  "quickActions": "Actions rapides"
 }

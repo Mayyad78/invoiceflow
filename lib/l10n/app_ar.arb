@@ -70,5 +70,11 @@
   "currencySaved": "تم تحديث العملة بنجاح",
   "searchClients": "ابحث عن العملاء",
   "searchInvoices": "ابحث عن الفواتير",
-  "noResultsFound": "لا توجد نتائج"
+  "noResultsFound": "لا توجد نتائج",
+  "totalInvoices": "إجمالي الفواتير",
+  "paidInvoices": "الفواتير المدفوعة",
+  "unpaidInvoices": "الفواتير غير المدفوعة",
+  "totalRevenue": "إجمالي الإيرادات",
+  "pendingAmount": "المبلغ المعلّق",
+  "quickActions": "الإجراءات السريعة"
 }

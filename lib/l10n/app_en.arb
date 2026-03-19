@@ -70,5 +70,11 @@
   "currencySaved": "Currency updated successfully",
   "searchClients": "Search clients",
   "searchInvoices": "Search invoices",
-  "noResultsFound": "No results found"
+  "noResultsFound": "No results found",
+  "totalInvoices": "Total Invoices",
+  "paidInvoices": "Paid Invoices",
+  "unpaidInvoices": "Unpaid Invoices",
+  "totalRevenue": "Total Revenue",
+  "pendingAmount": "Pending Amount",
+  "quickActions": "Quick Actions"
 }

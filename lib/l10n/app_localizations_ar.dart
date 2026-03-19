@@ -220,4 +220,22 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get noResultsFound => 'لا توجد نتائج';
+
+  @override
+  String get totalInvoices => 'إجمالي الفواتير';
+
+  @override
+  String get paidInvoices => 'الفواتير المدفوعة';
+
+  @override
+  String get unpaidInvoices => 'الفواتير غير المدفوعة';
+
+  @override
+  String get totalRevenue => 'إجمالي الإيرادات';
+
+  @override
+  String get pendingAmount => 'المبلغ المعلّق';
+
+  @override
+  String get quickActions => 'الإجراءات السريعة';
 }
