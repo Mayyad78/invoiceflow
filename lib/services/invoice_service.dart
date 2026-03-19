@@ -16,6 +16,16 @@ class InvoiceService {
     await _box.put(invoice.id, invoice.toMap());
   }
 
+  Future<void> updateInvoiceStatus(String id, String status) async {
+    final data = _box.get(id);
+    if (data == null) return;
+
+    final updated = Map<String, dynamic>.from(data);
+    updated['status'] = status;
+
+    await _box.put(id, updated);
+  }
+
   Future<void> deleteInvoice(String id) async {
     await _box.delete(id);
   }

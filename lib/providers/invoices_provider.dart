@@ -23,6 +23,11 @@ class InvoicesNotifier extends StateNotifier<List<InvoiceModel>> {
     loadInvoices();
   }
 
+  Future<void> updateStatus(String id, String status) async {
+    await _invoiceService.updateInvoiceStatus(id, status);
+    loadInvoices();
+  }
+
   Future<void> deleteInvoice(String id) async {
     await _invoiceService.deleteInvoice(id);
     loadInvoices();

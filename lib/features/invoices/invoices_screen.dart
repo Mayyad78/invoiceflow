@@ -60,43 +60,81 @@ class InvoicesScreen extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const SizedBox(height: 8),
-                              if (client != null) Text('${t.client}: ${client.name}'),
+                              if (client != null)
+                                Text('${t.client}: ${client.name}'),
                               const SizedBox(height: 4),
                               Text('${t.date}: $dateText'),
                               const SizedBox(height: 4),
-                              Text('${t.total}: ${invoice.total.toStringAsFixed(2)}'),
+                              Text(
+                                '${t.total}: ${invoice.total.toStringAsFixed(2)}',
+                              ),
                               const SizedBox(height: 4),
-                              Text('${t.status}: ${_localizedStatus(t, invoice.status)}'),
+                              Text(
+                                '${t.status}: ${_localizedStatus(t, invoice.status)}',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: _statusColor(invoice.status),
+                                ),
+                              ),
                             ],
                           ),
                         ),
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            TextButton.icon(
-                              onPressed: client == null
-                                  ? null
-                                  : () {
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (_) => InvoicePreviewScreen(
-                                            invoice: invoice,
-                                            client: client,
-                                          ),
-                                        ),
-                                      );
-                                    },
-                              icon: const Icon(Icons.visibility_outlined),
-                              label: Text(t.preview),
-                            ),
-                            TextButton.icon(
-                              onPressed: () async {
+                            DropdownButton<String>(
+                              value: invoice.status,
+                              items: [
+                                DropdownMenuItem(
+                                  value: 'draft',
+                                  child: Text(t.statusDraft),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'paid',
+                                  child: Text(t.statusPaid),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'unpaid',
+                                  child: Text(t.statusUnpaid),
+                                ),
+                              ],
+                              onChanged: (value) async {
+                                if (value == null) return;
+
                                 await ref
                                     .read(invoicesProvider.notifier)
-                                    .deleteInvoice(invoice.id);
+                                    .updateStatus(invoice.id, value);
                               },
-                              icon: const Icon(Icons.delete_outline),
-                              label: Text(t.delete),
+                            ),
+                            Row(
+                              children: [
+                                TextButton.icon(
+                                  onPressed: client == null
+                                      ? null
+                                      : () {
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  InvoicePreviewScreen(
+                                                invoice: invoice,
+                                                client: client,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                  icon: const Icon(Icons.visibility_outlined),
+                                  label: Text(t.preview),
+                                ),
+                                TextButton.icon(
+                                  onPressed: () async {
+                                    await ref
+                                        .read(invoicesProvider.notifier)
+                                        .deleteInvoice(invoice.id);
+                                  },
+                                  icon: const Icon(Icons.delete_outline),
+                                  label: Text(t.delete),
+                                ),
+                              ],
                             ),
                           ],
                         ),
@@ -127,6 +165,17 @@ class InvoicesScreen extends ConsumerWidget {
         return t.statusUnpaid;
       default:
         return t.statusDraft;
+    }
+  }
+
+  static Color _statusColor(String status) {
+    switch (status) {
+      case 'paid':
+        return Colors.green;
+      case 'unpaid':
+        return Colors.red;
+      default:
+        return Colors.orange;
     }
   }
 }
