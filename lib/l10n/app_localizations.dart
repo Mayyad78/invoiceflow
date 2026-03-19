@@ -507,6 +507,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Currency updated successfully'**
   String get currencySaved;
+
+  /// No description provided for @searchClients.
+  ///
+  /// In en, this message translates to:
+  /// **'Search clients'**
+  String get searchClients;
+
+  /// No description provided for @searchInvoices.
+  ///
+  /// In en, this message translates to:
+  /// **'Search invoices'**
+  String get searchInvoices;
+
+  /// No description provided for @noResultsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No results found'**
+  String get noResultsFound;
 }
 
 class _AppLocalizationsDelegate

@@ -212,4 +212,13 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get currencySaved => 'Devise mise à jour avec succès';
+
+  @override
+  String get searchClients => 'Rechercher des clients';
+
+  @override
+  String get searchInvoices => 'Rechercher des factures';
+
+  @override
+  String get noResultsFound => 'Aucun résultat trouvé';
 }

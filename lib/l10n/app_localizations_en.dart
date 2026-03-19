@@ -211,4 +211,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get currencySaved => 'Currency updated successfully';
+
+  @override
+  String get searchClients => 'Search clients';
+
+  @override
+  String get searchInvoices => 'Search invoices';
+
+  @override
+  String get noResultsFound => 'No results found';
 }

@@ -62,10 +62,13 @@
   "due": "الاستحقاق",
   "quotePreviewTitle": "معاينة عرض السعر",
   "currency": "العملة",
-   "businessProfile": "بيانات النشاط",
+  "businessProfile": "بيانات النشاط",
   "businessName": "اسم النشاط",
   "saveChanges": "حفظ التغييرات",
   "currencySettings": "العملة",
   "profileSaved": "تم حفظ البيانات بنجاح",
-  "currencySaved": "تم تحديث العملة بنجاح"
-  }
+  "currencySaved": "تم تحديث العملة بنجاح",
+  "searchClients": "ابحث عن العملاء",
+  "searchInvoices": "ابحث عن الفواتير",
+  "noResultsFound": "لا توجد نتائج"
+}

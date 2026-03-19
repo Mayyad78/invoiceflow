@@ -67,5 +67,8 @@
   "saveChanges": "Save Changes",
   "currencySettings": "Currency",
   "profileSaved": "Profile saved successfully",
-  "currencySaved": "Currency updated successfully"
+  "currencySaved": "Currency updated successfully",
+  "searchClients": "Search clients",
+  "searchInvoices": "Search invoices",
+  "noResultsFound": "No results found"
 }

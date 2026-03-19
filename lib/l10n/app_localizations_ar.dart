@@ -211,4 +211,13 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get currencySaved => 'تم تحديث العملة بنجاح';
+
+  @override
+  String get searchClients => 'ابحث عن العملاء';
+
+  @override
+  String get searchInvoices => 'ابحث عن الفواتير';
+
+  @override
+  String get noResultsFound => 'لا توجد نتائج';
 }
