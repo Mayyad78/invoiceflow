@@ -1,0 +1,214 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for Arabic (`ar`).
+class AppLocalizationsAr extends AppLocalizations {
+  AppLocalizationsAr([String locale = 'ar']) : super(locale);
+
+  @override
+  String get appTitle => 'إنفويـس فلو';
+
+  @override
+  String get homeTitle => 'الرئيسية';
+
+  @override
+  String get newInvoice => 'فاتورة جديدة';
+
+  @override
+  String get newQuote => 'عرض سعر جديد';
+
+  @override
+  String get clients => 'العملاء';
+
+  @override
+  String get history => 'السجل';
+
+  @override
+  String get settings => 'الإعدادات';
+
+  @override
+  String get language => 'اللغة';
+
+  @override
+  String get welcome => 'مرحباً بك في InvoiceFlow';
+
+  @override
+  String get dashboard => 'لوحة التحكم';
+
+  @override
+  String get clientsTitle => 'العملاء';
+
+  @override
+  String get addClient => 'إضافة عميل';
+
+  @override
+  String get clientName => 'اسم العميل';
+
+  @override
+  String get email => 'البريد الإلكتروني';
+
+  @override
+  String get phone => 'الهاتف';
+
+  @override
+  String get address => 'العنوان';
+
+  @override
+  String get save => 'حفظ';
+
+  @override
+  String get delete => 'حذف';
+
+  @override
+  String get noClientsYet => 'لا يوجد عملاء بعد';
+
+  @override
+  String get clientSaved => 'تم حفظ العميل بنجاح';
+
+  @override
+  String get requiredField => 'هذا الحقل مطلوب';
+
+  @override
+  String get invoicesTitle => 'الفواتير';
+
+  @override
+  String get createInvoice => 'إنشاء فاتورة';
+
+  @override
+  String get invoiceNumber => 'رقم الفاتورة';
+
+  @override
+  String get issueDate => 'تاريخ الإصدار';
+
+  @override
+  String get dueDate => 'تاريخ الاستحقاق';
+
+  @override
+  String get selectClient => 'اختر العميل';
+
+  @override
+  String get items => 'العناصر';
+
+  @override
+  String get addItem => 'إضافة عنصر';
+
+  @override
+  String get description => 'الوصف';
+
+  @override
+  String get quantity => 'الكمية';
+
+  @override
+  String get unitPrice => 'سعر الوحدة';
+
+  @override
+  String get taxPercent => 'الضريبة %';
+
+  @override
+  String get discount => 'الخصم';
+
+  @override
+  String get notes => 'ملاحظات';
+
+  @override
+  String get subtotal => 'الإجمالي الفرعي';
+
+  @override
+  String get tax => 'الضريبة';
+
+  @override
+  String get total => 'الإجمالي';
+
+  @override
+  String get statusDraft => 'مسودة';
+
+  @override
+  String get statusPaid => 'مدفوع';
+
+  @override
+  String get statusUnpaid => 'غير مدفوع';
+
+  @override
+  String get invoiceSaved => 'تم حفظ الفاتورة بنجاح';
+
+  @override
+  String get noInvoicesYet => 'لا توجد فواتير بعد';
+
+  @override
+  String get invoiceTypeInvoice => 'فاتورة';
+
+  @override
+  String get invoiceTypeQuote => 'عرض سعر';
+
+  @override
+  String get choose => 'اختر';
+
+  @override
+  String get itemDescriptionRequired => 'وصف العنصر مطلوب';
+
+  @override
+  String get atLeastOneItem => 'أضف عنصراً واحداً على الأقل';
+
+  @override
+  String get clientRequired => 'يرجى اختيار عميل';
+
+  @override
+  String get preview => 'معاينة';
+
+  @override
+  String get share => 'مشاركة';
+
+  @override
+  String get print => 'طباعة';
+
+  @override
+  String get client => 'العميل';
+
+  @override
+  String get invoiceDetails => 'تفاصيل الفاتورة';
+
+  @override
+  String get businessDetails => 'بيانات النشاط';
+
+  @override
+  String get invoicePreviewTitle => 'معاينة الفاتورة';
+
+  @override
+  String get downloadPdf => 'تنزيل PDF';
+
+  @override
+  String get status => 'الحالة';
+
+  @override
+  String get date => 'التاريخ';
+
+  @override
+  String get due => 'الاستحقاق';
+
+  @override
+  String get quotePreviewTitle => 'معاينة عرض السعر';
+
+  @override
+  String get currency => 'العملة';
+
+  @override
+  String get businessProfile => 'بيانات النشاط';
+
+  @override
+  String get businessName => 'اسم النشاط';
+
+  @override
+  String get saveChanges => 'حفظ التغييرات';
+
+  @override
+  String get currencySettings => 'العملة';
+
+  @override
+  String get profileSaved => 'تم حفظ البيانات بنجاح';
+
+  @override
+  String get currencySaved => 'تم تحديث العملة بنجاح';
+}
