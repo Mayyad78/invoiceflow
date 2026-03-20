@@ -176,10 +176,7 @@ class PdfService {
                         child: pw.Column(
                           crossAxisAlignment: pw.CrossAxisAlignment.start,
                           children: [
-                            pw.Text(
-                              strings.title,
-                              style: titleTextStyle,
-                            ),
+                            pw.Text(strings.title, style: titleTextStyle),
                             pw.SizedBox(height: 16),
                             _infoLine(
                               strings.numberLabel,
