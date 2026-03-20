@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
@@ -16,85 +17,249 @@ class PdfService {
     required String currency,
   }) async {
     final pdf = pw.Document();
-
     final strings = _pdfStrings(localeCode, invoice.type);
+
+    final arabicFontData =
+        await rootBundle.load('assets/fonts/NotoSansArabic-Regular.ttf');
+    final arabicFont = pw.Font.ttf(arabicFontData);
+
+    final baseFont = pw.Font.helvetica();
+    final boldFont = pw.Font.helveticaBold();
+
+    final baseTextStyle = pw.TextStyle(
+      font: baseFont,
+      fontFallback: [arabicFont],
+      fontSize: 11,
+    );
+
+    final boldTextStyle = pw.TextStyle(
+      font: boldFont,
+      fontFallback: [arabicFont],
+      fontSize: 11,
+      fontWeight: pw.FontWeight.bold,
+    );
+
+    final titleTextStyle = pw.TextStyle(
+      font: boldFont,
+      fontFallback: [arabicFont],
+      fontSize: 24,
+      fontWeight: pw.FontWeight.bold,
+    );
+
+    final businessTitleStyle = pw.TextStyle(
+      font: boldFont,
+      fontFallback: [arabicFont],
+      fontSize: 18,
+      fontWeight: pw.FontWeight.bold,
+    );
+
+    final sectionTitleStyle = pw.TextStyle(
+      font: boldFont,
+      fontFallback: [arabicFont],
+      fontSize: 14,
+      fontWeight: pw.FontWeight.bold,
+    );
+
+    final textDirection =
+        localeCode == 'ar' ? pw.TextDirection.rtl : pw.TextDirection.ltr;
+    final crossAlign = localeCode == 'ar'
+        ? pw.CrossAxisAlignment.end
+        : pw.CrossAxisAlignment.start;
+    final textAlign =
+        localeCode == 'ar' ? pw.TextAlign.right : pw.TextAlign.left;
+    final summaryAlign =
+        localeCode == 'ar' ? pw.Alignment.centerLeft : pw.Alignment.centerRight;
 
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(24),
+        textDirection: textDirection,
         build: (context) {
           return [
             pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: [
-                pw.Expanded(
-                  child: pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Text(
-                        strings.title,
-                        style: pw.TextStyle(
-                          fontSize: 24,
-                          fontWeight: pw.FontWeight.bold,
+              children: localeCode == 'ar'
+                  ? [
+                      pw.Expanded(
+                        child: pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.end,
+                          children: [
+                            pw.Text(
+                              business.name.isEmpty
+                                  ? 'InvoiceFlow'
+                                  : business.name,
+                              style: businessTitleStyle,
+                              textAlign: pw.TextAlign.right,
+                            ),
+                            if (business.email.isNotEmpty) ...[
+                              pw.SizedBox(height: 4),
+                              pw.Text(
+                                business.email,
+                                style: baseTextStyle,
+                                textAlign: pw.TextAlign.right,
+                              ),
+                            ],
+                            if (business.phone.isNotEmpty) ...[
+                              pw.SizedBox(height: 4),
+                              pw.Text(
+                                business.phone,
+                                style: baseTextStyle,
+                                textAlign: pw.TextAlign.right,
+                              ),
+                            ],
+                            if (business.address.isNotEmpty) ...[
+                              pw.SizedBox(height: 4),
+                              pw.Text(
+                                business.address,
+                                style: baseTextStyle,
+                                textAlign: pw.TextAlign.right,
+                              ),
+                            ],
+                          ],
                         ),
                       ),
-                      pw.SizedBox(height: 16),
-                      _infoLine(strings.numberLabel, invoice.invoiceNumber),
-                      _infoLine(
-                        strings.dateLabel,
-                        invoice.issueDate.toLocal().toString().split(' ').first,
+                      pw.SizedBox(width: 24),
+                      pw.Expanded(
+                        child: pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.start,
+                          children: [
+                            pw.Text(
+                              strings.title,
+                              style: titleTextStyle,
+                              textAlign: pw.TextAlign.left,
+                            ),
+                            pw.SizedBox(height: 16),
+                            _infoLine(
+                              strings.numberLabel,
+                              invoice.invoiceNumber,
+                              baseStyle: baseTextStyle,
+                              boldStyle: boldTextStyle,
+                              localeCode: localeCode,
+                            ),
+                            _infoLine(
+                              strings.dateLabel,
+                              invoice.issueDate
+                                  .toLocal()
+                                  .toString()
+                                  .split(' ')
+                                  .first,
+                              baseStyle: baseTextStyle,
+                              boldStyle: boldTextStyle,
+                              localeCode: localeCode,
+                            ),
+                            _infoLine(
+                              strings.dueLabel,
+                              invoice.dueDate
+                                  .toLocal()
+                                  .toString()
+                                  .split(' ')
+                                  .first,
+                              baseStyle: baseTextStyle,
+                              boldStyle: boldTextStyle,
+                              localeCode: localeCode,
+                            ),
+                            _infoLine(
+                              strings.statusLabel,
+                              _localizedStatus(localeCode, invoice.status),
+                              baseStyle: baseTextStyle,
+                              boldStyle: boldTextStyle,
+                              localeCode: localeCode,
+                            ),
+                          ],
+                        ),
                       ),
-                      _infoLine(
-                        strings.dueLabel,
-                        invoice.dueDate.toLocal().toString().split(' ').first,
+                    ]
+                  : [
+                      pw.Expanded(
+                        child: pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.start,
+                          children: [
+                            pw.Text(
+                              strings.title,
+                              style: titleTextStyle,
+                            ),
+                            pw.SizedBox(height: 16),
+                            _infoLine(
+                              strings.numberLabel,
+                              invoice.invoiceNumber,
+                              baseStyle: baseTextStyle,
+                              boldStyle: boldTextStyle,
+                              localeCode: localeCode,
+                            ),
+                            _infoLine(
+                              strings.dateLabel,
+                              invoice.issueDate
+                                  .toLocal()
+                                  .toString()
+                                  .split(' ')
+                                  .first,
+                              baseStyle: baseTextStyle,
+                              boldStyle: boldTextStyle,
+                              localeCode: localeCode,
+                            ),
+                            _infoLine(
+                              strings.dueLabel,
+                              invoice.dueDate
+                                  .toLocal()
+                                  .toString()
+                                  .split(' ')
+                                  .first,
+                              baseStyle: baseTextStyle,
+                              boldStyle: boldTextStyle,
+                              localeCode: localeCode,
+                            ),
+                            _infoLine(
+                              strings.statusLabel,
+                              _localizedStatus(localeCode, invoice.status),
+                              baseStyle: baseTextStyle,
+                              boldStyle: boldTextStyle,
+                              localeCode: localeCode,
+                            ),
+                          ],
+                        ),
                       ),
-                      _infoLine(
-                        strings.statusLabel,
-                        _localizedStatus(localeCode, invoice.status),
+                      pw.SizedBox(width: 24),
+                      pw.Expanded(
+                        child: pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.end,
+                          children: [
+                            pw.Text(
+                              business.name.isEmpty
+                                  ? 'InvoiceFlow'
+                                  : business.name,
+                              style: businessTitleStyle,
+                              textAlign: pw.TextAlign.right,
+                            ),
+                            if (business.email.isNotEmpty) ...[
+                              pw.SizedBox(height: 4),
+                              pw.Text(
+                                business.email,
+                                style: baseTextStyle,
+                                textAlign: pw.TextAlign.right,
+                              ),
+                            ],
+                            if (business.phone.isNotEmpty) ...[
+                              pw.SizedBox(height: 4),
+                              pw.Text(
+                                business.phone,
+                                style: baseTextStyle,
+                                textAlign: pw.TextAlign.right,
+                              ),
+                            ],
+                            if (business.address.isNotEmpty) ...[
+                              pw.SizedBox(height: 4),
+                              pw.Text(
+                                business.address,
+                                style: baseTextStyle,
+                                textAlign: pw.TextAlign.right,
+                              ),
+                            ],
+                          ],
+                        ),
                       ),
                     ],
-                  ),
-                ),
-                pw.SizedBox(width: 24),
-                pw.Expanded(
-                  child: pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.end,
-                    children: [
-                      pw.Text(
-                        business.name.isEmpty ? 'InvoiceFlow' : business.name,
-                        style: pw.TextStyle(
-                          fontSize: 18,
-                          fontWeight: pw.FontWeight.bold,
-                        ),
-                        textAlign: pw.TextAlign.right,
-                      ),
-                      if (business.email.isNotEmpty) ...[
-                        pw.SizedBox(height: 4),
-                        pw.Text(
-                          business.email,
-                          textAlign: pw.TextAlign.right,
-                        ),
-                      ],
-                      if (business.phone.isNotEmpty) ...[
-                        pw.SizedBox(height: 4),
-                        pw.Text(
-                          business.phone,
-                          textAlign: pw.TextAlign.right,
-                        ),
-                      ],
-                      if (business.address.isNotEmpty) ...[
-                        pw.SizedBox(height: 4),
-                        pw.Text(
-                          business.address,
-                          textAlign: pw.TextAlign.right,
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ],
             ),
             pw.SizedBox(height: 28),
             pw.Container(
@@ -107,20 +272,21 @@ class PdfService {
                 ),
               ),
               child: pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                crossAxisAlignment: crossAlign,
                 children: [
                   pw.Text(
                     strings.billToLabel,
-                    style: pw.TextStyle(
-                      fontSize: 14,
-                      fontWeight: pw.FontWeight.bold,
-                    ),
+                    style: sectionTitleStyle,
+                    textAlign: textAlign,
                   ),
                   pw.SizedBox(height: 8),
-                  pw.Text(client.name),
-                  if (client.email.isNotEmpty) pw.Text(client.email),
-                  if (client.phone.isNotEmpty) pw.Text(client.phone),
-                  if (client.address.isNotEmpty) pw.Text(client.address),
+                  pw.Text(client.name, style: baseTextStyle, textAlign: textAlign),
+                  if (client.email.isNotEmpty)
+                    pw.Text(client.email, style: baseTextStyle, textAlign: textAlign),
+                  if (client.phone.isNotEmpty)
+                    pw.Text(client.phone, style: baseTextStyle, textAlign: textAlign),
+                  if (client.address.isNotEmpty)
+                    pw.Text(client.address, style: baseTextStyle, textAlign: textAlign),
                 ],
               ),
             ),
@@ -133,13 +299,21 @@ class PdfService {
                 strings.totalLabel,
               ],
               headerStyle: pw.TextStyle(
+                font: boldFont,
+                fontFallback: [arabicFont],
                 fontWeight: pw.FontWeight.bold,
                 color: PdfColors.white,
               ),
               headerDecoration: const pw.BoxDecoration(
                 color: PdfColors.blueGrey700,
               ),
-              cellAlignment: pw.Alignment.centerLeft,
+              cellStyle: pw.TextStyle(
+                font: baseFont,
+                fontFallback: [arabicFont],
+              ),
+              cellAlignment: localeCode == 'ar'
+                  ? pw.Alignment.centerRight
+                  : pw.Alignment.centerLeft,
               cellPadding: const pw.EdgeInsets.all(8),
               data: invoice.items
                   .map(
@@ -154,7 +328,7 @@ class PdfService {
             ),
             pw.SizedBox(height: 24),
             pw.Align(
-              alignment: pw.Alignment.centerRight,
+              alignment: summaryAlign,
               child: pw.Container(
                 width: 240,
                 padding: const pw.EdgeInsets.all(12),
@@ -169,19 +343,31 @@ class PdfService {
                     _summaryRow(
                       strings.subtotalLabel,
                       '${invoice.subtotal.toStringAsFixed(2)} $currency',
+                      baseStyle: baseTextStyle,
+                      boldStyle: boldTextStyle,
+                      localeCode: localeCode,
                     ),
                     _summaryRow(
                       strings.taxLabel,
                       '${invoice.taxAmount.toStringAsFixed(2)} $currency',
+                      baseStyle: baseTextStyle,
+                      boldStyle: boldTextStyle,
+                      localeCode: localeCode,
                     ),
                     _summaryRow(
                       strings.discountLabel,
                       '${invoice.discount.toStringAsFixed(2)} $currency',
+                      baseStyle: baseTextStyle,
+                      boldStyle: boldTextStyle,
+                      localeCode: localeCode,
                     ),
                     pw.Divider(),
                     _summaryRow(
                       strings.totalLabel,
                       '${invoice.total.toStringAsFixed(2)} $currency',
+                      baseStyle: baseTextStyle,
+                      boldStyle: boldTextStyle,
+                      localeCode: localeCode,
                       isBold: true,
                     ),
                   ],
@@ -192,13 +378,15 @@ class PdfService {
               pw.SizedBox(height: 24),
               pw.Text(
                 strings.notesLabel,
-                style: pw.TextStyle(
-                  fontSize: 14,
-                  fontWeight: pw.FontWeight.bold,
-                ),
+                style: sectionTitleStyle,
+                textAlign: textAlign,
               ),
               pw.SizedBox(height: 8),
-              pw.Text(invoice.notes),
+              pw.Text(
+                invoice.notes,
+                style: baseTextStyle,
+                textAlign: textAlign,
+              ),
             ],
           ];
         },
@@ -208,33 +396,80 @@ class PdfService {
     return pdf.save();
   }
 
-  pw.Widget _infoLine(String label, String value) {
+  pw.Widget _infoLine(
+    String label,
+    String value, {
+    required pw.TextStyle baseStyle,
+    required pw.TextStyle boldStyle,
+    required String localeCode,
+  }) {
+    if (localeCode == 'ar') {
+      return pw.Padding(
+        padding: const pw.EdgeInsets.only(bottom: 4),
+        child: pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.start,
+          children: [
+            pw.Expanded(
+              child: pw.Text(
+                value,
+                style: baseStyle,
+                textAlign: pw.TextAlign.right,
+              ),
+            ),
+            pw.Text(
+              ' :$label',
+              style: boldStyle,
+              textAlign: pw.TextAlign.right,
+            ),
+          ],
+        ),
+      );
+    }
+
     return pw.Padding(
       padding: const pw.EdgeInsets.only(bottom: 4),
       child: pw.Row(
         children: [
-          pw.Text(
-            '$label: ',
-            style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+          pw.Text('$label: ', style: boldStyle),
+          pw.Expanded(
+            child: pw.Text(value, style: baseStyle),
           ),
-          pw.Expanded(child: pw.Text(value)),
         ],
       ),
     );
   }
 
-  pw.Widget _summaryRow(String label, String value, {bool isBold = false}) {
-    final style = isBold
-        ? pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 13)
-        : null;
+  pw.Widget _summaryRow(
+    String label,
+    String value, {
+    required pw.TextStyle baseStyle,
+    required pw.TextStyle boldStyle,
+    required String localeCode,
+    bool isBold = false,
+  }) {
+    final labelStyle = isBold ? boldStyle : baseStyle;
+    final valueStyle = isBold ? boldStyle : baseStyle;
+
+    if (localeCode == 'ar') {
+      return pw.Padding(
+        padding: const pw.EdgeInsets.symmetric(vertical: 4),
+        child: pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          children: [
+            pw.Text(value, style: valueStyle),
+            pw.Text(label, style: labelStyle),
+          ],
+        ),
+      );
+    }
 
     return pw.Padding(
       padding: const pw.EdgeInsets.symmetric(vertical: 4),
       child: pw.Row(
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
         children: [
-          pw.Text(label, style: style),
-          pw.Text(value, style: style),
+          pw.Text(label, style: labelStyle),
+          pw.Text(value, style: valueStyle),
         ],
       ),
     );
