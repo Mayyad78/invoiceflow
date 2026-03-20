@@ -259,4 +259,13 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get clearSearch => 'مسح البحث';
+
+  @override
+  String get billTo => 'إلى';
+
+  @override
+  String get thankYou => 'شكراً لتعاملكم معنا';
+
+  @override
+  String get generatedBy => 'تم الإنشاء بواسطة InvoiceFlow';
 }

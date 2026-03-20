@@ -9,9 +9,9 @@ import 'package:share_plus/share_plus.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/client_model.dart';
 import '../../models/invoice_model.dart';
+import '../../providers/app_settings_provider.dart';
 import '../../providers/business_profile_provider.dart';
 import '../../providers/pdf_service_provider.dart';
-import '../../providers/app_settings_provider.dart';
 
 class InvoicePreviewScreen extends ConsumerStatefulWidget {
   const InvoicePreviewScreen({
@@ -40,7 +40,7 @@ class _InvoicePreviewScreenState extends ConsumerState<InvoicePreviewScreen> {
     });
   }
 
-    Future<void> _loadPdf() async {
+  Future<void> _loadPdf() async {
     try {
       final localeCode =
           Localizations.maybeLocaleOf(context)?.languageCode ?? 'en';
@@ -113,14 +113,13 @@ class _InvoicePreviewScreenState extends ConsumerState<InvoicePreviewScreen> {
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
+    final title = widget.invoice.type == 'quote'
+        ? t.quotePreviewTitle
+        : t.invoicePreviewTitle;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          widget.invoice.type == 'quote'
-              ? t.quotePreviewTitle
-              : t.invoicePreviewTitle,
-        ),
+        title: Text(title),
         actions: [
           IconButton(
             onPressed: _pdfBytes == null ? null : _sharePdf,
@@ -158,7 +157,7 @@ class _InvoicePreviewScreenState extends ConsumerState<InvoicePreviewScreen> {
                                   const Icon(Icons.picture_as_pdf, size: 64),
                                   const SizedBox(height: 16),
                                   Text(
-                                    t.invoicePreviewTitle,
+                                    title,
                                     style: Theme.of(context)
                                         .textTheme
                                         .headlineSmall,

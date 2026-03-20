@@ -83,5 +83,8 @@
   "cancel": "Annuler",
   "startByAddingClient": "Commencez par ajouter votre premier client.",
   "startByCreatingInvoice": "Commencez par créer votre première facture.",
-  "clearSearch": "Effacer la recherche"
+  "clearSearch": "Effacer la recherche",
+  "billTo": "Facturer à",
+  "thankYou": "Merci pour votre confiance",
+  "generatedBy": "Généré par InvoiceFlow"
 }

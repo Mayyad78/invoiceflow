@@ -83,5 +83,8 @@
   "cancel": "إلغاء",
   "startByAddingClient": "ابدأ بإضافة أول عميل.",
   "startByCreatingInvoice": "ابدأ بإنشاء أول فاتورة.",
-  "clearSearch": "مسح البحث"
+  "clearSearch": "مسح البحث",
+  "billTo": "إلى",
+  "thankYou": "شكراً لتعاملكم معنا",
+  "generatedBy": "تم الإنشاء بواسطة InvoiceFlow"
 }

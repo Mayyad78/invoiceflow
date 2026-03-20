@@ -264,4 +264,13 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get clearSearch => 'Effacer la recherche';
+
+  @override
+  String get billTo => 'Facturer à';
+
+  @override
+  String get thankYou => 'Merci pour votre confiance';
+
+  @override
+  String get generatedBy => 'Généré par InvoiceFlow';
 }
