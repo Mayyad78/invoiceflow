@@ -76,5 +76,12 @@
   "unpaidInvoices": "الفواتير غير المدفوعة",
   "totalRevenue": "إجمالي الإيرادات",
   "pendingAmount": "المبلغ المعلّق",
-  "quickActions": "الإجراءات السريعة"
+  "quickActions": "الإجراءات السريعة",
+  "confirmDelete": "تأكيد الحذف",
+  "deleteClientMessage": "هل أنت متأكد أنك تريد حذف هذا العميل؟",
+  "deleteInvoiceMessage": "هل أنت متأكد أنك تريد حذف هذه الفاتورة؟",
+  "cancel": "إلغاء",
+  "startByAddingClient": "ابدأ بإضافة أول عميل.",
+  "startByCreatingInvoice": "ابدأ بإنشاء أول فاتورة.",
+  "clearSearch": "مسح البحث"
 }

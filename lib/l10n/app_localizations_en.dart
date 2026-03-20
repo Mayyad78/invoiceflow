@@ -238,4 +238,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get quickActions => 'Quick Actions';
+
+  @override
+  String get confirmDelete => 'Confirm Delete';
+
+  @override
+  String get deleteClientMessage =>
+      'Are you sure you want to delete this client?';
+
+  @override
+  String get deleteInvoiceMessage =>
+      'Are you sure you want to delete this invoice?';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get startByAddingClient => 'Start by adding your first client.';
+
+  @override
+  String get startByCreatingInvoice => 'Start by creating your first invoice.';
+
+  @override
+  String get clearSearch => 'Clear Search';
 }

@@ -76,5 +76,12 @@
   "unpaidInvoices": "Factures impayées",
   "totalRevenue": "Revenu total",
   "pendingAmount": "Montant en attente",
-  "quickActions": "Actions rapides"
+  "quickActions": "Actions rapides",
+  "confirmDelete": "Confirmer la suppression",
+  "deleteClientMessage": "Voulez-vous vraiment supprimer ce client ?",
+  "deleteInvoiceMessage": "Voulez-vous vraiment supprimer cette facture ?",
+  "cancel": "Annuler",
+  "startByAddingClient": "Commencez par ajouter votre premier client.",
+  "startByCreatingInvoice": "Commencez par créer votre première facture.",
+  "clearSearch": "Effacer la recherche"
 }

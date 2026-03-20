@@ -561,6 +561,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Quick Actions'**
   String get quickActions;
+
+  /// No description provided for @confirmDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Delete'**
+  String get confirmDelete;
+
+  /// No description provided for @deleteClientMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this client?'**
+  String get deleteClientMessage;
+
+  /// No description provided for @deleteInvoiceMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this invoice?'**
+  String get deleteInvoiceMessage;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @startByAddingClient.
+  ///
+  /// In en, this message translates to:
+  /// **'Start by adding your first client.'**
+  String get startByAddingClient;
+
+  /// No description provided for @startByCreatingInvoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Start by creating your first invoice.'**
+  String get startByCreatingInvoice;
+
+  /// No description provided for @clearSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Search'**
+  String get clearSearch;
 }
 
 class _AppLocalizationsDelegate

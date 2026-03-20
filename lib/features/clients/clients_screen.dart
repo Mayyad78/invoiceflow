@@ -21,6 +21,30 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
     super.dispose();
   }
 
+  Future<bool?> _confirmDelete(
+    BuildContext context,
+    AppLocalizations t,
+    String message,
+  ) {
+    return showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(t.confirmDelete),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(t.cancel),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(t.delete),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
@@ -58,6 +82,7 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
                           setState(() {});
                         },
                         icon: const Icon(Icons.clear),
+                        tooltip: t.clearSearch,
                       ),
               ),
               onChanged: (_) => setState(() {}),
@@ -65,12 +90,16 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
           ),
           Expanded(
             child: clients.isEmpty
-                ? Center(
-                    child: Text(t.noClientsYet),
+                ? _EmptyState(
+                    icon: Icons.people_outline,
+                    title: t.noClientsYet,
+                    subtitle: t.startByAddingClient,
                   )
                 : filteredClients.isEmpty
-                    ? Center(
-                        child: Text(t.noResultsFound),
+                    ? _EmptyState(
+                        icon: Icons.search_off,
+                        title: t.noResultsFound,
+                        subtitle: t.searchClients,
                       )
                     : ListView.separated(
                         padding: const EdgeInsets.all(16),
@@ -82,6 +111,13 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
                           return Card(
                             child: ListTile(
                               contentPadding: const EdgeInsets.all(16),
+                              leading: CircleAvatar(
+                                child: Text(
+                                  client.name.isNotEmpty
+                                      ? client.name[0].toUpperCase()
+                                      : '?',
+                                ),
+                              ),
                               title: Text(client.name),
                               subtitle: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -103,9 +139,17 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
                               trailing: IconButton(
                                 icon: const Icon(Icons.delete_outline),
                                 onPressed: () async {
-                                  await ref
-                                      .read(clientsProvider.notifier)
-                                      .deleteClient(client.id);
+                                  final confirmed = await _confirmDelete(
+                                    context,
+                                    t,
+                                    t.deleteClientMessage,
+                                  );
+
+                                  if (confirmed == true) {
+                                    await ref
+                                        .read(clientsProvider.notifier)
+                                        .deleteClient(client.id);
+                                  }
                                 },
                                 tooltip: t.delete,
                               ),
@@ -116,7 +160,7 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.of(context).push(
             MaterialPageRoute(
@@ -124,7 +168,46 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
             ),
           );
         },
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: Text(t.addClient),
+      ),
+    );
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  const _EmptyState({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 56),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleLarge,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              subtitle,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }

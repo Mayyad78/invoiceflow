@@ -239,4 +239,29 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get quickActions => 'Actions rapides';
+
+  @override
+  String get confirmDelete => 'Confirmer la suppression';
+
+  @override
+  String get deleteClientMessage =>
+      'Voulez-vous vraiment supprimer ce client ?';
+
+  @override
+  String get deleteInvoiceMessage =>
+      'Voulez-vous vraiment supprimer cette facture ?';
+
+  @override
+  String get cancel => 'Annuler';
+
+  @override
+  String get startByAddingClient =>
+      'Commencez par ajouter votre premier client.';
+
+  @override
+  String get startByCreatingInvoice =>
+      'Commencez par créer votre première facture.';
+
+  @override
+  String get clearSearch => 'Effacer la recherche';
 }

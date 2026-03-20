@@ -27,6 +27,30 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
     super.dispose();
   }
 
+  Future<bool?> _confirmDelete(
+    BuildContext context,
+    AppLocalizations t,
+    String message,
+  ) {
+    return showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(t.confirmDelete),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(t.cancel),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(t.delete),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
@@ -78,6 +102,7 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
                           setState(() {});
                         },
                         icon: const Icon(Icons.clear),
+                        tooltip: t.clearSearch,
                       ),
               ),
               onChanged: (_) => setState(() {}),
@@ -85,9 +110,17 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
           ),
           Expanded(
             child: invoices.isEmpty
-                ? Center(child: Text(t.noInvoicesYet))
+                ? _EmptyState(
+                    icon: Icons.receipt_long_outlined,
+                    title: t.noInvoicesYet,
+                    subtitle: t.startByCreatingInvoice,
+                  )
                 : filteredInvoices.isEmpty
-                    ? Center(child: Text(t.noResultsFound))
+                    ? _EmptyState(
+                        icon: Icons.search_off,
+                        title: t.noResultsFound,
+                        subtitle: t.searchInvoices,
+                      )
                     : ListView.separated(
                         padding: const EdgeInsets.all(16),
                         itemCount: filteredInvoices.length,
@@ -159,7 +192,8 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
                                               .updateStatus(invoice.id, value);
                                         },
                                       ),
-                                      Row(
+                                      Wrap(
+                                        spacing: 4,
                                         children: [
                                           TextButton.icon(
                                             onPressed: client == null
@@ -182,11 +216,20 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
                                           ),
                                           TextButton.icon(
                                             onPressed: () async {
-                                              await ref
-                                                  .read(
-                                                    invoicesProvider.notifier,
-                                                  )
-                                                  .deleteInvoice(invoice.id);
+                                              final confirmed =
+                                                  await _confirmDelete(
+                                                context,
+                                                t,
+                                                t.deleteInvoiceMessage,
+                                              );
+
+                                              if (confirmed == true) {
+                                                await ref
+                                                    .read(
+                                                      invoicesProvider.notifier,
+                                                    )
+                                                    .deleteInvoice(invoice.id);
+                                              }
                                             },
                                             icon: const Icon(
                                               Icons.delete_outline,
@@ -206,7 +249,7 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.of(context).push(
             MaterialPageRoute(
@@ -214,7 +257,10 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
             ),
           );
         },
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: Text(
+          widget.type == 'quote' ? t.newQuote : t.newInvoice,
+        ),
       ),
     );
   }
@@ -239,5 +285,43 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
       default:
         return Colors.orange;
     }
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  const _EmptyState({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 56),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleLarge,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              subtitle,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

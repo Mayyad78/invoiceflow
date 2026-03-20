@@ -238,4 +238,25 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get quickActions => 'الإجراءات السريعة';
+
+  @override
+  String get confirmDelete => 'تأكيد الحذف';
+
+  @override
+  String get deleteClientMessage => 'هل أنت متأكد أنك تريد حذف هذا العميل؟';
+
+  @override
+  String get deleteInvoiceMessage => 'هل أنت متأكد أنك تريد حذف هذه الفاتورة؟';
+
+  @override
+  String get cancel => 'إلغاء';
+
+  @override
+  String get startByAddingClient => 'ابدأ بإضافة أول عميل.';
+
+  @override
+  String get startByCreatingInvoice => 'ابدأ بإنشاء أول فاتورة.';
+
+  @override
+  String get clearSearch => 'مسح البحث';
 }
