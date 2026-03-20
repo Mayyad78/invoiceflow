@@ -110,7 +110,8 @@ lib/
 
 * Web PDF preview not working → fallback used
 * No backend (local only)
-
+* Arabic PDF glyphs render, but proper Arabic joining/  shaping is still unresolved in current PDF stack
+* Attempted arabic_reshaper package, but it was unstable for this workflow
 ---
 
 ## 🎯 Next Step
