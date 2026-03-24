@@ -628,6 +628,36 @@ abstract class AppLocalizations {
   /// **'Pending Amount'**
   String get pendingAmount;
 
+  /// No description provided for @collectedAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Collected Amount'**
+  String get collectedAmount;
+
+  /// No description provided for @outstandingBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Outstanding Balance'**
+  String get outstandingBalance;
+
+  /// No description provided for @totalClients.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Clients'**
+  String get totalClients;
+
+  /// No description provided for @totalQuotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Quotes'**
+  String get totalQuotes;
+
+  /// No description provided for @invoiceStatusBreakdown.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice Status Breakdown'**
+  String get invoiceStatusBreakdown;
+
   /// No description provided for @quickActions.
   ///
   /// In en, this message translates to:
@@ -807,12 +837,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Total Documents'**
   String get totalDocuments;
-
-  /// No description provided for @totalQuotes.
-  ///
-  /// In en, this message translates to:
-  /// **'Total Quotes'**
-  String get totalQuotes;
 
   /// No description provided for @noClientDocuments.
   ///

@@ -88,6 +88,11 @@
   "unpaidInvoices": "Factures impayées",
   "totalRevenue": "Revenu total",
   "pendingAmount": "Montant en attente",
+  "collectedAmount": "Montant encaissé",
+  "outstandingBalance": "Solde impayé",
+  "totalClients": "Total des clients",
+  "totalQuotes": "Total des devis",
+  "invoiceStatusBreakdown": "Répartition des statuts de facture",
   "quickActions": "Actions rapides",
   "confirmDelete": "Confirmer la suppression",
   "deleteClientMessage": "Voulez-vous vraiment supprimer ce client ?",
@@ -118,7 +123,6 @@
   "clientSummary": "Résumé du client",
   "clientHistory": "Historique du client",
   "totalDocuments": "Total des documents",
-  "totalQuotes": "Total des devis",
   "noClientDocuments": "Aucune facture ou devis trouvé pour ce client pour le moment.",
   "tapToViewDetails": "Touchez pour voir les détails"
 }

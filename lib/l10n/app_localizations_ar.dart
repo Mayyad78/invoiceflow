@@ -274,6 +274,21 @@ class AppLocalizationsAr extends AppLocalizations {
   String get pendingAmount => 'المبلغ المعلّق';
 
   @override
+  String get collectedAmount => 'المبلغ المحصل';
+
+  @override
+  String get outstandingBalance => 'الرصيد المستحق';
+
+  @override
+  String get totalClients => 'إجمالي العملاء';
+
+  @override
+  String get totalQuotes => 'إجمالي عروض السعر';
+
+  @override
+  String get invoiceStatusBreakdown => 'تفصيل حالات الفواتير';
+
+  @override
   String get quickActions => 'الإجراءات السريعة';
 
   @override
@@ -364,9 +379,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get totalDocuments => 'إجمالي المستندات';
-
-  @override
-  String get totalQuotes => 'إجمالي عروض السعر';
 
   @override
   String get noClientDocuments =>

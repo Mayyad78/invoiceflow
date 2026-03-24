@@ -275,6 +275,21 @@ class AppLocalizationsFr extends AppLocalizations {
   String get pendingAmount => 'Montant en attente';
 
   @override
+  String get collectedAmount => 'Montant encaissé';
+
+  @override
+  String get outstandingBalance => 'Solde impayé';
+
+  @override
+  String get totalClients => 'Total des clients';
+
+  @override
+  String get totalQuotes => 'Total des devis';
+
+  @override
+  String get invoiceStatusBreakdown => 'Répartition des statuts de facture';
+
+  @override
   String get quickActions => 'Actions rapides';
 
   @override
@@ -369,9 +384,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get totalDocuments => 'Total des documents';
-
-  @override
-  String get totalQuotes => 'Total des devis';
 
   @override
   String get noClientDocuments =>

@@ -88,6 +88,11 @@
   "unpaidInvoices": "الفواتير غير المدفوعة",
   "totalRevenue": "إجمالي الإيرادات",
   "pendingAmount": "المبلغ المعلّق",
+  "collectedAmount": "المبلغ المحصل",
+  "outstandingBalance": "الرصيد المستحق",
+  "totalClients": "إجمالي العملاء",
+  "totalQuotes": "إجمالي عروض السعر",
+  "invoiceStatusBreakdown": "تفصيل حالات الفواتير",
   "quickActions": "الإجراءات السريعة",
   "confirmDelete": "تأكيد الحذف",
   "deleteClientMessage": "هل أنت متأكد أنك تريد حذف هذا العميل؟",
@@ -118,7 +123,6 @@
   "clientSummary": "ملخص العميل",
   "clientHistory": "سجل العميل",
   "totalDocuments": "إجمالي المستندات",
-  "totalQuotes": "إجمالي عروض السعر",
   "noClientDocuments": "لا توجد فواتير أو عروض سعر لهذا العميل حتى الآن.",
   "tapToViewDetails": "اضغط لعرض التفاصيل"
 }

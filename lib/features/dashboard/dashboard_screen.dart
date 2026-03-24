@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../providers/app_settings_provider.dart';
+import '../../providers/clients_provider.dart';
 import '../../providers/invoices_provider.dart';
 import '../clients/clients_screen.dart';
 import '../invoices/invoices_screen.dart';
@@ -14,19 +15,38 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final t = AppLocalizations.of(context)!;
-    final invoices = ref.watch(invoicesProvider);
+    final allDocuments = ref.watch(invoicesProvider);
+    final clients = ref.watch(clientsProvider);
     final appSettings = ref.watch(appSettingsProvider);
     final currency = appSettings.currency;
 
-    final totalInvoices = invoices.length;
-    final paidInvoices = invoices.where((invoice) => invoice.status == 'paid').toList();
-    final unpaidInvoices =
-        invoices.where((invoice) => invoice.status == 'unpaid').toList();
+    final invoices = allDocuments.where((invoice) => invoice.type == 'invoice').toList();
+    final quotes = allDocuments.where((invoice) => invoice.type == 'quote').toList();
 
-    final totalRevenue =
-        paidInvoices.fold<double>(0, (sum, invoice) => sum + invoice.total);
-    final pendingAmount =
-        unpaidInvoices.fold<double>(0, (sum, invoice) => sum + invoice.total);
+    final totalInvoices = invoices.length;
+    final totalQuotes = quotes.length;
+
+    final paidInvoices = invoices.where((invoice) => invoice.status == 'paid').toList();
+    final unpaidInvoices = invoices.where((invoice) => invoice.status == 'unpaid').toList();
+    final partialInvoices = invoices.where((invoice) {
+      return invoice.status == 'partial' || invoice.status == 'partially_paid';
+    }).toList();
+    final draftInvoices = invoices.where((invoice) => invoice.status == 'draft').toList();
+
+    final totalRevenue = invoices.fold<double>(
+      0,
+      (sum, invoice) => sum + invoice.total,
+    );
+
+    final collectedAmount = invoices.fold<double>(
+      0,
+      (sum, invoice) => sum + invoice.paidAmount,
+    );
+
+    final outstandingBalance = invoices.fold<double>(
+      0,
+      (sum, invoice) => sum + invoice.remainingAmount,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -63,34 +83,81 @@ class DashboardScreen extends ConsumerWidget {
             mainAxisSpacing: 12,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
+            childAspectRatio: 1.1,
             children: [
-              _SummaryCard(
-                title: t.totalInvoices,
-                value: totalInvoices.toString(),
-                icon: Icons.receipt_long,
-              ),
-              _SummaryCard(
-                title: t.paidInvoices,
-                value: paidInvoices.length.toString(),
-                icon: Icons.check_circle_outline,
-              ),
-              _SummaryCard(
-                title: t.unpaidInvoices,
-                value: unpaidInvoices.length.toString(),
-                icon: Icons.pending_actions,
-              ),
               _SummaryCard(
                 title: t.totalRevenue,
                 value: '${totalRevenue.toStringAsFixed(2)} $currency',
-                icon: Icons.attach_money,
+                icon: Icons.receipt_long,
+              ),
+              _SummaryCard(
+                title: t.collectedAmount,
+                value: '${collectedAmount.toStringAsFixed(2)} $currency',
+                icon: Icons.payments_outlined,
+              ),
+              _SummaryCard(
+                title: t.outstandingBalance,
+                value: '${outstandingBalance.toStringAsFixed(2)} $currency',
+                icon: Icons.account_balance_wallet_outlined,
+              ),
+              _SummaryCard(
+                title: t.totalClients,
+                value: clients.length.toString(),
+                icon: Icons.people_outline,
+              ),
+              _SummaryCard(
+                title: t.totalInvoices,
+                value: totalInvoices.toString(),
+                icon: Icons.description_outlined,
+              ),
+              _SummaryCard(
+                title: t.totalQuotes,
+                value: totalQuotes.toString(),
+                icon: Icons.request_quote_outlined,
               ),
             ],
           ),
+          const SizedBox(height: 24),
+          Text(
+            t.invoiceStatusBreakdown,
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
           const SizedBox(height: 12),
+          GridView.count(
+            crossAxisCount: 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            childAspectRatio: 1.25,
+            children: [
+              _StatusCard(
+                title: t.statusPaid,
+                value: paidInvoices.length.toString(),
+                icon: Icons.check_circle_outline,
+              ),
+              _StatusCard(
+                title: t.statusUnpaid,
+                value: unpaidInvoices.length.toString(),
+                icon: Icons.error_outline,
+              ),
+              _StatusCard(
+                title: t.statusPartial,
+                value: partialInvoices.length.toString(),
+                icon: Icons.timelapse_outlined,
+              ),
+              _StatusCard(
+                title: t.statusDraft,
+                value: draftInvoices.length.toString(),
+                icon: Icons.edit_note_outlined,
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
           _WideSummaryCard(
             title: t.pendingAmount,
-            value: '${pendingAmount.toStringAsFixed(2)} $currency',
-            icon: Icons.account_balance_wallet_outlined,
+            value: '${outstandingBalance.toStringAsFixed(2)} $currency',
+            icon: Icons.trending_down_outlined,
           ),
           const SizedBox(height: 24),
           Text(
@@ -191,6 +258,40 @@ class _SummaryCard extends StatelessWidget {
   }
 }
 
+class _StatusCard extends StatelessWidget {
+  const _StatusCard({
+    required this.title,
+    required this.value,
+    required this.icon,
+  });
+
+  final String title;
+  final String value;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, size: 26),
+            const Spacer(),
+            Text(
+              value,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 4),
+            Text(title),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _WideSummaryCard extends StatelessWidget {
   const _WideSummaryCard({
     required this.title,
@@ -218,15 +319,15 @@ class _WideSummaryCard extends StatelessWidget {
 }
 
 class _DashboardCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final VoidCallback onTap;
-
   const _DashboardCard({
     required this.icon,
     required this.title,
     required this.onTap,
   });
+
+  final IconData icon;
+  final String title;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {

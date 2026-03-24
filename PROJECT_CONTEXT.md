@@ -213,45 +213,82 @@ Completed as one full step.
 Implemented:
 - edit clients
 - edit invoices/quotes
-- duplicate prevention
-- numbering fix
-- improved ordering
+- reuse existing screens
+- preserve document numbers
+- prevent duplicate clients
+- fix invoice numbering during creation
+- improved invoice ordering (newest first)
 
 Final result:
-- edit flows stable
+- edit flows work correctly
+- no duplicates
+- numbering preserved
+- UX improved
 
 ---
 
-## Step 14 – Item Editing
+## Step 14 – Item Editing Inside Invoice and Quote Forms
 
 Completed as one full step.
 
 Implemented:
-- edit items inline
-- reuse dialog
-- totals auto update
+- edit existing items inside invoice and quote forms
+- reuse add item dialog for editing
+- add edit button for each item
+- update item inline without recreating list
+- totals automatically recalculate after edit
+
+Important decisions:
+- no new screens added, reused dialog
+- minimal UI change to preserve current design
+- kept create/edit invoice flow unchanged
+- edit + delete actions shown together per item
 
 Final result:
-- item editing stable
+- items can be edited safely
+- totals update correctly after edit
+- no duplicate items created
+- UX significantly improved
+- Step 14 confirmed working
 
 ---
 
-## Step 15 – Payment Tracking
+## Step 15 – Invoice/Quote Status Improvements + Paid Tracking
 
 Completed as one full step.
 
 Implemented:
-- paid amount
-- remaining amount
-- partial payments
-- improved status system
+- added paid amount to invoice model
+- added remaining amount calculation to invoice model
+- improved invoice payment status handling
+- added support for draft, unpaid, partial, and paid invoice states
+- moved invoice status and paid amount handling into the invoice form
+- added invoice summary display for paid amount and remaining amount
+- invoice list now shows:
+  - total
+  - paid amount
+  - remaining amount
+  - payment status badge
+
+Important decisions:
+- quote flow stays simple and does not use payment tracking
+- partial payment requires entering a paid amount
+- paid status auto-fills the full total as paid amount
+- unpaid and draft reset paid amount to zero
+- status dropdown was removed from the list screen because partial payment needs amount input and is safer inside the invoice form
+- existing create/edit flow was preserved while extending the business logic
 
 Final result:
-- real business payment tracking working
+- invoices now support real payment tracking
+- partial payment works correctly
+- remaining balance is calculated correctly
+- invoice list reflects payment progress clearly
+- quote flow remains clean and unaffected
+- Step 15 confirmed working
 
 ---
 
-## Step 16 – Client Details + History
+## Step 16 – Client Details + Client Invoice History
 
 Completed as one full step.
 
@@ -279,36 +316,94 @@ Final result:
 
 ---
 
+## Step 17 – Dashboard Upgrade (Real Business Metrics)
+
+Completed as one full step.
+
+Implemented:
+- upgraded dashboard to use real invoice payment data
+- added dashboard metrics:
+  - total revenue
+  - collected amount
+  - outstanding balance
+  - total clients
+  - total invoices
+  - total quotes
+- added invoice status breakdown:
+  - paid
+  - unpaid
+  - partially paid
+  - draft
+- kept quick actions working with current navigation flow
+- ensured quotes affect quote count but do not distort invoice payment metrics
+
+Important decisions:
+- dashboard now separates invoices from quotes before calculating payment-related metrics
+- outstanding balance is based on remaining amounts from invoices
+- collected amount is based on paid amounts from invoices
+- kept the dashboard structure simple while making the numbers more useful for real business follow-up
+- used existing localization structure for new dashboard labels
+
+Final result:
+- dashboard now reflects real business performance
+- user can quickly see collected money vs pending money
+- invoice status overview is clearer
+- dashboard is much more useful for day-to-day business tracking
+- Step 17 confirmed working
+
+---
+
 ## Current Features
 
 ### Dashboard
-- summary cards
-- revenue overview
+- total revenue
+- collected amount
+- outstanding balance
+- total clients
+- total invoices
+- total quotes
+- invoice status breakdown
+- quick actions
 
 ### Clients
-- CRUD
-- search
-- details screen
-- full history
-- financial summary
+- add client
+- list clients
+- edit client
+- delete client
+- search clients
+- duplicate protection
+- client details screen
+- client history
+- client financial summary
 
-### Invoices & Quotes
-- create/edit
-- item editing
-- numbering
-- payment tracking
-- partial payments
+### Invoices and Quotes
+- create invoices
+- create quotes
+- edit invoices
+- edit quotes
+- add/edit/delete items
+- tax and discount calculation
+- numbering system
+- search invoices
+- newest-first ordering
+- payment status tracking
+- paid amount
+- remaining amount
+- partial payment support
 
 ### PDF
-- full document generation
-- localized
-- branding
+- generate PDFs
+- print
+- share
+- preview
+- branding + logo
+- localized status display
 
 ### Settings
 - business profile
 - currency
 - numbering
-- backup/restore
+- backup & restore
 
 ---
 
@@ -317,7 +412,8 @@ Final result:
 - App stable
 - Business-ready core features
 - Clean user flows
-- Ready for advanced UX improvements
+- Dashboard now reflects real metrics
+- Ready for next feature
 
 ---
 
@@ -339,25 +435,22 @@ Final result:
 
 ## Next Step
 
-## Step 17 – Dashboard Upgrade (Real Business Metrics)
+## Step 18 – Centralized Status Localization + PDF Cleanup
 
 Goal:
-- upgrade dashboard to reflect real business data
-- show:
-  - total revenue
-  - collected amount
-  - outstanding balance
-  - invoice counts by status
-- improve decision-making visibility
+- remove duplicated status localization logic
+- use a single shared status-localization helper across UI and PDF
+- reduce bugs caused by repeated manual status strings
+- clean up localization usage where the same labels are being rewritten manually
 
 ---
 
 ## How to Continue
 
-Repo: https://github.com/Mayyad78/invoiceflow  
-Branch: main  
-Last completed: Step 16  
-Next task: Step 17
+Repo: https://github.com/Mayyad78/invoiceflow
+Branch: main
+Last completed: Step 17
+Next task: Step 18
 
 ---
 

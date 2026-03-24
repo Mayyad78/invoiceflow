@@ -88,6 +88,11 @@
   "unpaidInvoices": "Unpaid Invoices",
   "totalRevenue": "Total Revenue",
   "pendingAmount": "Pending Amount",
+  "collectedAmount": "Collected Amount",
+  "outstandingBalance": "Outstanding Balance",
+  "totalClients": "Total Clients",
+  "totalQuotes": "Total Quotes",
+  "invoiceStatusBreakdown": "Invoice Status Breakdown",
   "quickActions": "Quick Actions",
   "confirmDelete": "Confirm Delete",
   "deleteClientMessage": "Are you sure you want to delete this client?",
@@ -118,7 +123,6 @@
   "clientSummary": "Client Summary",
   "clientHistory": "Client History",
   "totalDocuments": "Total Documents",
-  "totalQuotes": "Total Quotes",
   "noClientDocuments": "No invoices or quotes found for this client yet.",
   "tapToViewDetails": "Tap to view details"
 }

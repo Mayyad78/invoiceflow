@@ -273,6 +273,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pendingAmount => 'Pending Amount';
 
   @override
+  String get collectedAmount => 'Collected Amount';
+
+  @override
+  String get outstandingBalance => 'Outstanding Balance';
+
+  @override
+  String get totalClients => 'Total Clients';
+
+  @override
+  String get totalQuotes => 'Total Quotes';
+
+  @override
+  String get invoiceStatusBreakdown => 'Invoice Status Breakdown';
+
+  @override
   String get quickActions => 'Quick Actions';
 
   @override
@@ -365,9 +380,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get totalDocuments => 'Total Documents';
-
-  @override
-  String get totalQuotes => 'Total Quotes';
 
   @override
   String get noClientDocuments =>
