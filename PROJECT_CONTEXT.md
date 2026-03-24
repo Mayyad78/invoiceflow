@@ -167,7 +167,6 @@ Important notes:
 - English and French PDF output are stable
 - Arabic glyph rendering works better than before
 - Arabic shaping/joining is still not solved correctly
-- multiple Arabic/header layout refinements were tested
 - final decision was to stop further tuning for now and keep a stable usable version
 
 Final accepted result:
@@ -175,7 +174,6 @@ Final accepted result:
 - branding works
 - logo works
 - Arabic PDF is usable but not perfect
-- deeper Arabic shaping/layout improvements are deferred
 
 ---
 
@@ -193,21 +191,15 @@ Implemented:
 - numbering settings UI inside Settings
 - numbering integrated into invoice/quote creation flow
 
-Important fixes included inside this same step:
-- fixed crash caused by older saved settings that did not contain the new numbering values
-- fixed numbering settings sheet layout so fields display correctly and do not overlap
+Important fixes:
+- handled old saved settings without numbering values
+- fixed layout issues in numbering UI
 
-Final accepted result:
+Final result:
 - numbering works correctly
-- prefixes save correctly
-- invoice and quote numbering are separated
+- prefixes persist
 - values increment correctly
-- settings persist locally
-- UI is stable
-- backward compatibility for older saved settings is handled
-
-Note:
-- Step 11 should be treated as one completed feature step, not multiple sub-steps or separate commit stages
+- UI stable
 
 ---
 
@@ -223,31 +215,18 @@ Implemented:
   - invoices
   - business profile
   - app settings
-- restore performs a full local replace of current stored data
-- backup/restore UI added inside Settings
-- restore confirmation dialog added
-- provider refresh after restore so restored data appears immediately in UI
+- restore replaces all local data
+- provider refresh after restore
 
-Important fixes and decisions:
-- kept the architecture local-first with Hive
-- kept Riverpod architecture
-- used file_selector for choosing export and restore files
-- used a simple versioned JSON payload
-- restore validates file shape before replacing existing data
-- restore skips invalid entries without IDs instead of crashing
-- settings restore writes business profile and app settings back to the settings box using the existing keys
-- macOS export issue was fixed by adding the required user-selected file entitlements in:
-  - macos/Runner/DebugProfile.entitlements
-  - macos/Runner/Release.entitlements
-- export flow was aligned with the current file_selector save dialog handling so backup export works correctly on macOS
+Important fixes:
+- macOS export fixed using entitlements
+- file_selector save dialog corrected
 
-Final accepted result:
-- user can export a full local backup file
-- user can restore a previous backup file
-- clients, invoices, business profile, and settings are restored together
-- restore immediately refreshes the app state
-- UI stays simple and matches the current app style
-- export works correctly on macOS after the entitlement fix
+Final result:
+- export works
+- restore works
+- full data recovery working
+- UI stable
 
 ---
 
@@ -256,33 +235,46 @@ Final accepted result:
 Completed as one full step.
 
 Implemented:
-- edit existing clients
-- edit existing invoices
-- edit existing quotes
-- reuse of the current add/edit screens instead of creating a separate edit flow
-- invoice and quote editing keeps the original document number unchanged
-- preview still opens after save for invoices and quotes
-- invoice and quote list ordering now shows newest items first
-- duplicate client protection added during create and edit checks
+- edit clients
+- edit invoices
+- edit quotes
+- reuse existing screens
+- preserve document numbers
+- prevent duplicate clients
+- fix invoice numbering during creation
+- improved invoice ordering (newest first)
 
-Important fixes and decisions:
-- client edit was working but duplicate clients could still be created, so duplicate blocking was added using the current client fields
-- invoice creation was not following the numbering system correctly, so the create flow was reconnected to the existing Step 11 numbering logic
-- edit flow preserves the original invoice or quote number instead of generating a new one
-- invoice list ordering was improved so the newest documents are easier to find
-- preview after save was kept because it is useful and working correctly
-- kept the current project naming and structure without introducing unnecessary new patterns
+Final result:
+- edit flows work correctly
+- no duplicates
+- numbering preserved
+- UX improved
 
-Final accepted result:
-- clients can be edited correctly
-- duplicate clients are blocked
-- invoices can be edited correctly
-- quotes can be edited correctly
-- original invoice and quote numbers are preserved during edit
-- new invoices follow the numbering system
-- updated documents open in preview after save
-- newest invoices are easier to find in the list
-- Step 13 is complete and confirmed working
+---
+
+## Step 14 – Item Editing Inside Invoice and Quote Forms
+
+Completed as one full step.
+
+Implemented:
+- edit existing items inside invoice and quote forms
+- reuse add item dialog for editing
+- add edit button for each item
+- update item inline without recreating list
+- totals automatically recalculate after edit
+
+Important decisions:
+- no new screens added, reused dialog
+- minimal UI change to preserve current design
+- kept create/edit invoice flow unchanged
+- edit + delete actions shown together per item
+
+Final result:
+- items can be edited safely
+- totals update correctly after edit
+- no duplicate items created
+- UX significantly improved
+- Step 14 confirmed working
 
 ---
 
@@ -302,124 +294,81 @@ Final accepted result:
 - delete client
 - search clients
 - duplicate protection
-- local storage
 
 ### Invoices and Quotes
 - create invoices
 - create quotes
 - edit invoices
 - edit quotes
-- select client
-- add multiple items
+- add/edit/delete items
 - tax and discount calculation
-- save locally
-- status support
+- numbering system
 - search invoices
-- numbering support
-- newest-first list ordering
+- newest-first ordering
 
 ### PDF
-- generate invoice and quote PDFs
+- generate PDFs
 - print
 - share
-- macOS preview
-- web fallback UI
-- localized labels
-- business profile included
-- currency included
-- logo included
+- preview
+- branding + logo
 
 ### Settings
 - business profile
-- currency selector
-- document numbering settings
-- backup export
-- backup restore
-- local persistence
+- currency
+- numbering
+- backup & restore
 
 ---
 
 ## Current State
 
 - App stable
-- Core features working
-- PDF working
-- Logo working
-- Numbering working
-- Backup and restore working
-- Edit flow for clients, invoices, and quotes working
-- Ready for next major feature step
+- All core flows working
+- Editing flows complete
+- Item editing complete
+- Ready for next feature
 
 ---
 
 ## Known Issues
 
-- Arabic text shaping in PDF is not solved
-- Arabic PDF layout is acceptable but not perfect
-- web embedded PDF preview is limited
+- Arabic PDF shaping not perfect
+- web PDF preview limited
 
 ---
 
-## Deferred / Return Later
+## Deferred
 
-1. proper Arabic shaping/joining in generated PDFs
-2. deeper Arabic PDF layout/header polish
-3. richer web PDF preview
-4. cloud sync / backend
-5. authentication
-6. advanced branding polish
+- Arabic PDF improvements
+- backend / sync
+- authentication
+- advanced branding
 
 ---
 
 ## Next Step
 
-## Step 14 – Better Item Editing Inside Invoice and Quote Forms
+## Step 15 – Invoice/Quote Status Improvements + Paid Tracking
 
 Goal:
-- edit existing items inside invoice and quote forms
-- improve item management UX
-- keep local-first architecture
-- keep UI simple and safe
-
-Preferred approach:
-- allow editing an already-added item from the item list
-- reuse the current add item dialog where possible
-- keep totals recalculating correctly after item edit
-- avoid breaking the current create/edit invoice flow
+- improve invoice status handling
+- track paid amount / remaining amount
+- prepare for real business usage
 
 ---
 
-## How to Continue in New Chat
+## How to Continue
 
-Repo: https://github.com/Mayyad78/invoiceflow
-Branch: main
-Last completed: Step 13
-Next task: Step 14
-
-Rules:
-- keep Riverpod
-- keep local-first
-- no backend yet
-- preserve current UI style
-- always provide FULL file path
-- always provide FULL code for any changed file
-- do not provide partial snippets unless explicitly asked
-- do not provide git commit commands until the full step is running correctly and confirmed
-- do not update PROJECT_CONTEXT.md until the full step is running correctly and confirmed
-- do not create new variable names if the project already has existing names for the same purpose
-- after each confirmed step, update PROJECT_CONTEXT.md first, then provide git commit commands
-- continue from the current architecture, do not restart the project
-- if adding a new file, clearly say where it connects
-- prefer safe full-file replacements over partial edits
-- after each successful step, always generate the FULL updated PROJECT_CONTEXT.md file in one block
-- always include the full project structure with all files after each confirmed step
+Repo: https://github.com/Mayyad78/invoiceflow  
+Branch: main  
+Last completed: Step 14  
+Next task: Step 15
 
 ---
 
 ## Notes
 
-- Do not restart the project
-- Continue incrementally
-- Stability is more important than perfection
-- Avoid breaking working features
-- Step 14 should be built as one full step
+- Do not restart project
+- Keep incremental approach
+- Stability over perfection

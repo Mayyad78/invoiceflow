@@ -116,6 +116,28 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
     }
   }
 
+  Future<void> _addItem() async {
+    final item = await showAddItemDialog(context);
+    if (item != null) {
+      setState(() {
+        _items.add(item);
+      });
+    }
+  }
+
+  Future<void> _editItem(int index) async {
+    final updatedItem = await showAddItemDialog(
+      context,
+      item: _items[index],
+    );
+
+    if (updatedItem != null) {
+      setState(() {
+        _items[index] = updatedItem;
+      });
+    }
+  }
+
   Future<void> _saveInvoice() async {
     final t = AppLocalizations.of(context)!;
 
@@ -280,14 +302,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                   ),
                 ),
                 TextButton.icon(
-                  onPressed: () async {
-                    final item = await showAddItemDialog(context);
-                    if (item != null) {
-                      setState(() {
-                        _items.add(item);
-                      });
-                    }
-                  },
+                  onPressed: _addItem,
                   icon: const Icon(Icons.add),
                   label: Text(t.addItem),
                 ),
@@ -308,13 +323,24 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                   subtitle: Text(
                     '${item.quantity} × ${item.unitPrice.toStringAsFixed(2)} = ${item.total.toStringAsFixed(2)}',
                   ),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete_outline),
-                    onPressed: () {
-                      setState(() {
-                        _items.removeAt(index);
-                      });
-                    },
+                  trailing: Wrap(
+                    spacing: 4,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit_outlined),
+                        onPressed: () => _editItem(index),
+                        tooltip: t.edit,
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline),
+                        onPressed: () {
+                          setState(() {
+                            _items.removeAt(index);
+                          });
+                        },
+                        tooltip: t.delete,
+                      ),
+                    ],
                   ),
                 ),
               );
