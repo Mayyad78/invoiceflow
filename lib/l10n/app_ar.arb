@@ -128,5 +128,6 @@
   "clientHistory": "سجل العميل",
   "totalDocuments": "إجمالي المستندات",
   "noClientDocuments": "لا توجد فواتير أو عروض سعر لهذا العميل حتى الآن.",
-  "tapToViewDetails": "اضغط لعرض التفاصيل"
+  "tapToViewDetails": "اضغط لعرض التفاصيل",
+  "quoteAlreadyConverted": "تم تحويل عرض السعر هذا إلى فاتورة بالفعل"
 }

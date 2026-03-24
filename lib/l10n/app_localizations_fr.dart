@@ -404,4 +404,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tapToViewDetails => 'Touchez pour voir les détails';
+
+  @override
+  String get quoteAlreadyConverted => 'Ce devis a déjà été converti en facture';
 }

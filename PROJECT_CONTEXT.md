@@ -159,15 +159,7 @@ System stable through Step 9.
 
 Completed and accepted as one phase.
 
-Implemented:
-- Arabic font added to PDF workflow
-- logo upload added to business profile
-- logo stored locally as base64
-- logo preview added
-- logo included in PDF header
-- header layout reviewed and improved
-
-Final accepted result:
+Final result:
 - PDF works
 - branding works
 - logo works
@@ -179,16 +171,6 @@ Final accepted result:
 
 Completed as one full step.
 
-Implemented:
-- invoice prefix
-- quote prefix
-- next invoice number
-- next quote number
-- automatic numbering generation
-- local persistence
-- numbering UI
-- integrated into create flow
-
 Final result:
 - numbering stable and working
 
@@ -197,12 +179,6 @@ Final result:
 ## Step 12 – Backup and Restore
 
 Completed as one full step.
-
-Implemented:
-- JSON export & restore
-- full data replacement
-- provider refresh
-- macOS entitlement fix
 
 Final result:
 - backup/restore fully working
@@ -213,20 +189,10 @@ Final result:
 
 Completed as one full step.
 
-Implemented:
-- edit clients
-- edit invoices/quotes
-- reuse existing screens
-- preserve document numbers
-- prevent duplicate clients
-- fix invoice numbering during creation
-- improved invoice ordering (newest first)
-
 Final result:
 - edit flows work correctly
 - no duplicates
 - numbering preserved
-- UX improved
 
 ---
 
@@ -234,298 +200,145 @@ Final result:
 
 Completed as one full step.
 
-Implemented:
-- edit existing items inside invoice and quote forms
-- reuse add item dialog for editing
-- add edit button for each item
-- update item inline without recreating list
-- totals automatically recalculate after edit
-
-Important decisions:
-- no new screens added, reused dialog
-- minimal UI change to preserve current design
-- kept create/edit invoice flow unchanged
-- edit + delete actions shown together per item
-
 Final result:
-- items can be edited safely
-- totals update correctly after edit
-- no duplicate items created
-- UX significantly improved
-- Step 14 confirmed working
+- items editable
+- totals recalc correctly
 
 ---
 
-## Step 15 – Invoice/Quote Status Improvements + Paid Tracking
+## Step 15 – Payment Tracking
+
+Completed as one full step.
+
+Final result:
+- paid / partial / remaining working
+
+---
+
+## Step 16 – Client Details
+
+Completed as one full step.
+
+Final result:
+- client financial view working
+
+---
+
+## Step 17 – Dashboard Upgrade
+
+Completed as one full step.
+
+Final result:
+- real business metrics working
+
+---
+
+## Step 18 – Status Localization Cleanup
+
+Completed as one full step.
+
+Final result:
+- status logic centralized
+- no duplication
+- PDF and UI consistent
+
+---
+
+## Step 19 – Quote-to-Invoice Conversion (with Fix)
 
 Completed as one full step.
 
 Implemented:
-- added paid amount to invoice model
-- added remaining amount calculation to invoice model
-- improved invoice payment status handling
-- added support for draft, unpaid, partial, and paid invoice states
-- moved invoice status and paid amount handling into the invoice form
-- added invoice summary display for paid amount and remaining amount
-- invoice list now shows:
-  - total
-  - paid amount
-  - remaining amount
-  - payment status badge
-
-Important decisions:
-- quote flow stays simple and does not use payment tracking
-- partial payment requires entering a paid amount
-- paid status auto-fills the full total as paid amount
-- unpaid and draft reset paid amount to zero
-- status dropdown was removed from the list screen because partial payment needs amount input and is safer inside the invoice form
-- existing create/edit flow was preserved while extending the business logic
-
-Final result:
-- invoices now support real payment tracking
-- partial payment works correctly
-- remaining balance is calculated correctly
-- invoice list reflects payment progress clearly
-- quote flow remains clean and unaffected
-- Step 15 confirmed working
-
----
-
-## Step 16 – Client Details + Client Invoice History
-
-Completed as one full step.
-
-Implemented:
-- client details screen
-- client invoice/quote history
-- summary metrics:
-  - total documents
-  - invoices
-  - quotes
-  - total billed
-  - total paid
-  - total remaining
-- direct access to document preview from client screen
-
-Important fixes:
-- handled status mismatch (`partial` vs `partially_paid`)
-- fixed PDF status localization for partial payments
-
-Final result:
-- client becomes a full business entity view
-- history and financial summary available per client
-- navigation flow clean and intuitive
-- Step 16 confirmed working
-
----
-
-## Step 17 – Dashboard Upgrade (Real Business Metrics)
-
-Completed as one full step.
-
-Implemented:
-- upgraded dashboard to use real invoice payment data
-- added dashboard metrics:
-  - total revenue
-  - collected amount
-  - outstanding balance
-  - total clients
-  - total invoices
-  - total quotes
-- added invoice status breakdown:
-  - paid
-  - unpaid
-  - partially paid
-  - draft
-- kept quick actions working with current navigation flow
-- ensured quotes affect quote count but do not distort invoice payment metrics
-
-Important decisions:
-- dashboard now separates invoices from quotes before calculating payment-related metrics
-- outstanding balance is based on remaining amounts from invoices
-- collected amount is based on paid amounts from invoices
-- kept the dashboard structure simple while making the numbers more useful for real business follow-up
-- used existing localization structure for new dashboard labels
-
-Final result:
-- dashboard now reflects real business performance
-- user can quickly see collected money vs pending money
-- invoice status overview is clearer
-- dashboard is much more useful for day-to-day business tracking
-- Step 17 confirmed working
-
----
-
-## Step 18 – Centralized Status Localization + PDF Cleanup
-
-Completed as one full step.
-
-Implemented:
-- added shared status helper file:
-  - `lib/utils/invoice_status_localizer.dart`
-- centralized invoice status normalization
-- centralized invoice status localization for UI
-- centralized invoice status localization by locale code for PDF usage
-- updated invoice list to use shared helper
-- updated client details screen to use shared helper
-- updated dashboard calculations to use normalized status values
-- updated PDF service to use shared helper instead of manual duplicated status strings
-
-Important decisions:
-- `partial` remains the official current status value
-- backward compatibility kept for older `partially_paid` values
-- status fallback remains `draft` only for unknown or missing values
-- kept PDF localization compatible with current structure without requiring a larger localization refactor
-- reduced duplication without changing working business flows
-
-Final result:
-- status text is now consistent across UI and PDF
-- older stored data with `partially_paid` still works correctly
-- partially paid status no longer falls back incorrectly in PDF or UI
-- repeated status logic was removed from multiple files
-- Step 18 confirmed working
-
----
-
-## Step 19 – Quote-to-Invoice Conversion
-
-Completed as one full step.
-
-Implemented:
-- added quote-to-invoice conversion action in the quote list
-- conversion creates a new invoice from the selected quote
-- original quote remains unchanged
-- new invoice uses the invoice numbering system
-- copied quote data into the new invoice:
+- convert quote → invoice
+- new invoice number generated
+- quote preserved
+- copied:
   - client
   - items
   - tax
   - discount
   - notes
-- reset payment tracking for the new invoice:
-  - status starts as `draft`
-  - paid amount starts as `0`
-- added confirmation dialog before conversion
-- added localized labels/messages for conversion flow
+- reset payment:
+  - draft
+  - paid = 0
+- confirmation dialog
 
-Important decisions:
-- quote is preserved instead of replaced, which is safer for real business workflow
-- converted invoice gets a fresh invoice number from Step 11 numbering
-- new invoice starts as a clean billing document, separate from the quote
-- current create/edit flows were left unchanged
+### Fix (critical improvement):
+- added `convertedInvoiceId` to quote
+- quote can only be converted once
+- conversion button hidden after conversion
+- visual indicator shown for converted quotes
+- duplicate invoice creation prevented
 
 Final result:
-- quote can now be converted into a real invoice safely
-- original quote history is preserved
-- invoice numbering remains correct
-- converted invoices appear correctly in the invoice list
-- conversion fits real quotation-to-billing workflow
-- Step 19 confirmed working
+- safe real-world workflow
+- no duplicate invoices from same quote
+- conversion fully controlled and stable
 
 ---
 
 ## Current Features
 
 ### Dashboard
-- total revenue
-- collected amount
-- outstanding balance
-- total clients
-- total invoices
-- total quotes
-- invoice status breakdown
-- quick actions
+- full business metrics
 
 ### Clients
-- add client
-- list clients
-- edit client
-- delete client
-- search clients
-- duplicate protection
-- client details screen
-- client history
-- client financial summary
+- CRUD + history + summary
 
-### Invoices and Quotes
-- create invoices
-- create quotes
-- edit invoices
-- edit quotes
-- add/edit/delete items
-- tax and discount calculation
-- numbering system
-- search invoices
-- newest-first ordering
-- payment status tracking
-- paid amount
-- remaining amount
-- partial payment support
-- quote-to-invoice conversion
+### Invoices
+- create/edit
+- numbering
+- payment tracking
+- search
+- ordering
+- duplication prevention
+
+### Quotes
+- create/edit
+- convert to invoice (safe)
 
 ### PDF
-- generate PDFs
-- print
-- share
-- preview
-- branding + logo
-- localized status display
-- centralized status handling for PDF
+- branding + localization
 
 ### Settings
-- business profile
+- profile
 - currency
 - numbering
-- backup & restore
+- backup/restore
 
 ---
 
 ## Current State
 
-- App stable
-- Business-ready core features
-- Clean user flows
-- Dashboard reflects real metrics
-- Status localization logic centralized
-- Quote-to-invoice workflow now supported
-- Ready for next feature
+- Stable
+- Business-ready
+- No critical issues
+- Workflow aligned with real usage
 
 ---
 
 ## Known Issues
 
 - Arabic PDF shaping not perfect
-- PDF still has some non-status text localized manually by locale code instead of fully sharing app localization
-
----
-
-## Deferred
-
-- Arabic PDF improvements
-- backend sync
-- authentication
-- UI polish improvements
-- broader PDF text localization cleanup
 
 ---
 
 ## Next Step
 
-## Step 20 – Duplicate Invoice/Quote Action
+## Step 20 – Duplicate Invoice/Quote
 
 Goal:
-- allow duplicating an existing invoice or quote
-- keep all line items and values
-- generate a new correct document number for the new copy
-- speed up repeated business workflows
+- duplicate existing invoice or quote
+- generate new correct number
+- speed up repeated business cases
 
 ---
 
 ## How to Continue
 
-Repo: https://github.com/Mayyad78/invoiceflow
-Branch: main
-Last completed: Step 19
+Repo: https://github.com/Mayyad78/invoiceflow  
+Branch: main  
+Last completed: Step 19  
 Next task: Step 20
 
 ---
@@ -533,5 +346,5 @@ Next task: Step 20
 ## Notes
 
 - Do not restart project
-- Keep incremental approach
-- Stability over perfection
+- Continue incrementally
+- Stability > perfection

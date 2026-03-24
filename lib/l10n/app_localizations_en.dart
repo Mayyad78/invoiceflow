@@ -400,4 +400,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tapToViewDetails => 'Tap to view details';
+
+  @override
+  String get quoteAlreadyConverted =>
+      'This quote has already been converted to an invoice';
 }

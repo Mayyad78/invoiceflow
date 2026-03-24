@@ -80,6 +80,14 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
     AppLocalizations t,
     InvoiceModel quote,
   ) async {
+    if (quote.isConvertedQuote) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(t.quoteAlreadyConverted)),
+      );
+      return;
+    }
+
     final confirmed = await _confirmConvertQuote(context, t);
     if (confirmed != true) return;
 
@@ -88,9 +96,10 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
         await numberingNotifier.consumeNextDocumentNumber('invoice');
 
     final now = DateTime.now();
+    final newInvoiceId = const Uuid().v4();
 
     final invoice = InvoiceModel(
-      id: const Uuid().v4(),
+      id: newInvoiceId,
       invoiceNumber: invoiceNumber,
       clientId: quote.clientId,
       issueDate: now,
@@ -102,9 +111,15 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
       status: 'draft',
       type: 'invoice',
       paidAmount: 0,
+      convertedInvoiceId: null,
+    );
+
+    final updatedQuote = quote.copyWith(
+      convertedInvoiceId: newInvoiceId,
     );
 
     await ref.read(invoicesProvider.notifier).addInvoice(invoice);
+    await ref.read(invoicesProvider.notifier).updateInvoice(updatedQuote);
 
     if (!mounted) return;
 
@@ -233,6 +248,19 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
                                             '${t.remainingAmount}: ${invoice.remainingAmount.toStringAsFixed(2)}',
                                           ),
                                         ],
+                                        if (invoice.type == 'quote' &&
+                                            invoice.isConvertedQuote) ...[
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            t.quoteAlreadyConverted,
+                                            style: TextStyle(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
                                         const SizedBox(height: 6),
                                         _StatusBadge(
                                           label: localizeInvoiceStatus(
@@ -250,7 +278,8 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
                                       Wrap(
                                         spacing: 4,
                                         children: [
-                                          if (widget.type == 'quote')
+                                          if (widget.type == 'quote' &&
+                                              !invoice.isConvertedQuote)
                                             TextButton.icon(
                                               onPressed: () =>
                                                   _convertQuoteToInvoice(

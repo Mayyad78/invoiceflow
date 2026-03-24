@@ -399,4 +399,8 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get tapToViewDetails => 'اضغط لعرض التفاصيل';
+
+  @override
+  String get quoteAlreadyConverted =>
+      'تم تحويل عرض السعر هذا إلى فاتورة بالفعل';
 }

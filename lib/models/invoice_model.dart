@@ -13,6 +13,7 @@ class InvoiceModel {
   final String status;
   final String type;
   final double paidAmount;
+  final String? convertedInvoiceId;
 
   InvoiceModel({
     required this.id,
@@ -27,6 +28,7 @@ class InvoiceModel {
     required this.status,
     required this.type,
     required this.paidAmount,
+    this.convertedInvoiceId,
   });
 
   double get subtotal {
@@ -46,6 +48,47 @@ class InvoiceModel {
     return remaining < 0 ? 0 : remaining;
   }
 
+  bool get isConvertedQuote {
+    return type == 'quote' &&
+        convertedInvoiceId != null &&
+        convertedInvoiceId!.trim().isNotEmpty;
+  }
+
+  InvoiceModel copyWith({
+    String? id,
+    String? invoiceNumber,
+    String? clientId,
+    DateTime? issueDate,
+    DateTime? dueDate,
+    List<InvoiceItemModel>? items,
+    double? taxPercent,
+    double? discount,
+    String? notes,
+    String? status,
+    String? type,
+    double? paidAmount,
+    String? convertedInvoiceId,
+    bool clearConvertedInvoiceId = false,
+  }) {
+    return InvoiceModel(
+      id: id ?? this.id,
+      invoiceNumber: invoiceNumber ?? this.invoiceNumber,
+      clientId: clientId ?? this.clientId,
+      issueDate: issueDate ?? this.issueDate,
+      dueDate: dueDate ?? this.dueDate,
+      items: items ?? this.items,
+      taxPercent: taxPercent ?? this.taxPercent,
+      discount: discount ?? this.discount,
+      notes: notes ?? this.notes,
+      status: status ?? this.status,
+      type: type ?? this.type,
+      paidAmount: paidAmount ?? this.paidAmount,
+      convertedInvoiceId: clearConvertedInvoiceId
+          ? null
+          : (convertedInvoiceId ?? this.convertedInvoiceId),
+    );
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -60,6 +103,7 @@ class InvoiceModel {
       'status': status,
       'type': type,
       'paidAmount': paidAmount,
+      'convertedInvoiceId': convertedInvoiceId,
     };
   }
 
@@ -79,6 +123,7 @@ class InvoiceModel {
       status: map['status'] ?? 'draft',
       type: map['type'] ?? 'invoice',
       paidAmount: (map['paidAmount'] ?? 0).toDouble(),
+      convertedInvoiceId: map['convertedInvoiceId']?.toString(),
     );
   }
 }

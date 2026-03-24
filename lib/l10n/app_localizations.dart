@@ -873,6 +873,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tap to view details'**
   String get tapToViewDetails;
+
+  /// No description provided for @quoteAlreadyConverted.
+  ///
+  /// In en, this message translates to:
+  /// **'This quote has already been converted to an invoice'**
+  String get quoteAlreadyConverted;
 }
 
 class _AppLocalizationsDelegate

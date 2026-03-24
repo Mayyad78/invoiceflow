@@ -128,5 +128,6 @@
   "clientHistory": "Historique du client",
   "totalDocuments": "Total des documents",
   "noClientDocuments": "Aucune facture ou devis trouvé pour ce client pour le moment.",
-  "tapToViewDetails": "Touchez pour voir les détails"
+  "tapToViewDetails": "Touchez pour voir les détails",
+  "quoteAlreadyConverted": "Ce devis a déjà été converti en facture"
 }
