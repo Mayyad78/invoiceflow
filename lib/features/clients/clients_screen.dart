@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/app_localizations.dart';
 import '../../providers/clients_provider.dart';
 import 'add_client_screen.dart';
+import 'client_details_screen.dart';
 
 class ClientsScreen extends ConsumerStatefulWidget {
   const ClientsScreen({super.key});
@@ -110,6 +111,14 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
                           return Card(
                             child: ListTile(
                               contentPadding: const EdgeInsets.all(16),
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        ClientDetailsScreen(client: client),
+                                  ),
+                                );
+                              },
                               leading: CircleAvatar(
                                 child: Text(
                                   client.name.isNotEmpty
@@ -133,6 +142,13 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
                                     const SizedBox(height: 4),
                                     Text(client.address),
                                   ],
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    t.tapToViewDetails,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall,
+                                  ),
                                 ],
                               ),
                               trailing: Wrap(

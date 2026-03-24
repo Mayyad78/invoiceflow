@@ -352,4 +352,26 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get backupRestored => 'تمت استعادة النسخة الاحتياطية بنجاح';
+
+  @override
+  String get clientDetails => 'تفاصيل العميل';
+
+  @override
+  String get clientSummary => 'ملخص العميل';
+
+  @override
+  String get clientHistory => 'سجل العميل';
+
+  @override
+  String get totalDocuments => 'إجمالي المستندات';
+
+  @override
+  String get totalQuotes => 'إجمالي عروض السعر';
+
+  @override
+  String get noClientDocuments =>
+      'لا توجد فواتير أو عروض سعر لهذا العميل حتى الآن.';
+
+  @override
+  String get tapToViewDetails => 'اضغط لعرض التفاصيل';
 }

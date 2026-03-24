@@ -73,6 +73,7 @@ lib/
 │   │   └── dashboard_screen.dart
 │   ├── clients/
 │   │   ├── add_client_screen.dart
+│   │   ├── client_details_screen.dart
 │   │   └── clients_screen.dart
 │   ├── invoices/
 │   │   ├── create_invoice_screen.dart
@@ -163,17 +164,11 @@ Implemented:
 - logo included in PDF header
 - header layout reviewed and improved
 
-Important notes:
-- English and French PDF output are stable
-- Arabic glyph rendering works better than before
-- Arabic shaping/joining is still not solved correctly
-- final decision was to stop further tuning for now and keep a stable usable version
-
 Final accepted result:
 - PDF works
 - branding works
 - logo works
-- Arabic PDF is usable but not perfect
+- Arabic PDF usable but not perfect
 
 ---
 
@@ -187,19 +182,12 @@ Implemented:
 - next invoice number
 - next quote number
 - automatic numbering generation
-- local persistence for numbering settings
-- numbering settings UI inside Settings
-- numbering integrated into invoice/quote creation flow
-
-Important fixes:
-- handled old saved settings without numbering values
-- fixed layout issues in numbering UI
+- local persistence
+- numbering UI
+- integrated into create flow
 
 Final result:
-- numbering works correctly
-- prefixes persist
-- values increment correctly
-- UI stable
+- numbering stable and working
 
 ---
 
@@ -208,25 +196,13 @@ Final result:
 Completed as one full step.
 
 Implemented:
-- JSON backup export
-- JSON backup restore
-- backup includes:
-  - clients
-  - invoices
-  - business profile
-  - app settings
-- restore replaces all local data
-- provider refresh after restore
-
-Important fixes:
-- macOS export fixed using entitlements
-- file_selector save dialog corrected
+- JSON export & restore
+- full data replacement
+- provider refresh
+- macOS entitlement fix
 
 Final result:
-- export works
-- restore works
-- full data recovery working
-- UI stable
+- backup/restore fully working
 
 ---
 
@@ -236,165 +212,143 @@ Completed as one full step.
 
 Implemented:
 - edit clients
-- edit invoices
-- edit quotes
-- reuse existing screens
-- preserve document numbers
-- prevent duplicate clients
-- fix invoice numbering during creation
-- improved invoice ordering (newest first)
+- edit invoices/quotes
+- duplicate prevention
+- numbering fix
+- improved ordering
 
 Final result:
-- edit flows work correctly
-- no duplicates
-- numbering preserved
-- UX improved
+- edit flows stable
 
 ---
 
-## Step 14 – Item Editing Inside Invoice and Quote Forms
+## Step 14 – Item Editing
 
 Completed as one full step.
 
 Implemented:
-- edit existing items inside invoice and quote forms
-- reuse add item dialog for editing
-- add edit button for each item
-- update item inline without recreating list
-- totals automatically recalculate after edit
-
-Important decisions:
-- no new screens added, reused dialog
-- minimal UI change to preserve current design
-- kept create/edit invoice flow unchanged
-- edit + delete actions shown together per item
+- edit items inline
+- reuse dialog
+- totals auto update
 
 Final result:
-- items can be edited safely
-- totals update correctly after edit
-- no duplicate items created
-- UX significantly improved
-- Step 14 confirmed working
+- item editing stable
 
 ---
 
-## Step 15 – Invoice/Quote Status Improvements + Paid Tracking
+## Step 15 – Payment Tracking
 
 Completed as one full step.
 
 Implemented:
-- added paid amount to invoice model
-- added remaining amount calculation to invoice model
-- improved invoice payment status handling
-- added support for draft, unpaid, partial, and paid invoice states
-- moved invoice status and paid amount handling into the invoice form
-- added invoice summary display for paid amount and remaining amount
-- invoice list now shows:
-  - total
-  - paid amount
-  - remaining amount
-  - payment status badge
-
-Important decisions:
-- quote flow stays simple and does not use payment tracking
-- partial payment requires entering a paid amount
-- paid status auto-fills the full total as paid amount
-- unpaid and draft reset paid amount to zero
-- status dropdown was removed from the list screen because partial payment needs amount input and is safer inside the invoice form
-- existing create/edit flow was preserved while extending the business logic
+- paid amount
+- remaining amount
+- partial payments
+- improved status system
 
 Final result:
-- invoices now support real payment tracking
-- partial payment works correctly
-- remaining balance is calculated correctly
-- invoice list reflects payment progress clearly
-- quote flow remains clean and unaffected
-- Step 15 confirmed working
+- real business payment tracking working
+
+---
+
+## Step 16 – Client Details + History
+
+Completed as one full step.
+
+Implemented:
+- client details screen
+- client invoice/quote history
+- summary metrics:
+  - total documents
+  - invoices
+  - quotes
+  - total billed
+  - total paid
+  - total remaining
+- direct access to document preview from client screen
+
+Important fixes:
+- handled status mismatch (`partial` vs `partially_paid`)
+- fixed PDF status localization for partial payments
+
+Final result:
+- client becomes a full business entity view
+- history and financial summary available per client
+- navigation flow clean and intuitive
+- Step 16 confirmed working
 
 ---
 
 ## Current Features
 
 ### Dashboard
-- total invoices
-- paid invoices
-- unpaid invoices
-- total revenue
-- pending amount
+- summary cards
+- revenue overview
 
 ### Clients
-- add client
-- list clients
-- edit client
-- delete client
-- search clients
-- duplicate protection
+- CRUD
+- search
+- details screen
+- full history
+- financial summary
 
-### Invoices and Quotes
-- create invoices
-- create quotes
-- edit invoices
-- edit quotes
-- add/edit/delete items
-- tax and discount calculation
-- numbering system
-- search invoices
-- newest-first ordering
-- payment status tracking
-- paid amount
-- remaining amount
-- partial payment support
+### Invoices & Quotes
+- create/edit
+- item editing
+- numbering
+- payment tracking
+- partial payments
 
 ### PDF
-- generate PDFs
-- print
-- share
-- preview
-- branding + logo
+- full document generation
+- localized
+- branding
 
 ### Settings
 - business profile
 - currency
 - numbering
-- backup & restore
+- backup/restore
 
 ---
 
 ## Current State
 
 - App stable
-- All core flows working
-- Editing flows complete
-- Item editing complete
-- Payment tracking complete
-- Ready for next feature
+- Business-ready core features
+- Clean user flows
+- Ready for advanced UX improvements
 
 ---
 
 ## Known Issues
 
 - Arabic PDF shaping not perfect
-- web PDF preview limited
+- PDF logic still duplicates some localization logic (to improve later)
 
 ---
 
 ## Deferred
 
 - Arabic PDF improvements
-- backend / sync
+- backend sync
 - authentication
-- advanced branding
+- UI polish improvements
 
 ---
 
 ## Next Step
 
-## Step 16 – Client Details Screen + Client Invoice History
+## Step 17 – Dashboard Upgrade (Real Business Metrics)
 
 Goal:
-- add a client details screen
-- show all invoices and quotes related to a selected client
-- make client records more useful for real business follow-up
+- upgrade dashboard to reflect real business data
+- show:
+  - total revenue
+  - collected amount
+  - outstanding balance
+  - invoice counts by status
+- improve decision-making visibility
 
 ---
 
@@ -402,8 +356,8 @@ Goal:
 
 Repo: https://github.com/Mayyad78/invoiceflow  
 Branch: main  
-Last completed: Step 15  
-Next task: Step 16
+Last completed: Step 16  
+Next task: Step 17
 
 ---
 

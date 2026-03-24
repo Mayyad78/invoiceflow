@@ -113,5 +113,12 @@
   "restore": "Restore",
   "restoreBackupWarning": "Restoring a backup will replace current clients, invoices, settings, and business profile on this device. This cannot be undone.",
   "backupExported": "Backup exported successfully",
-  "backupRestored": "Backup restored successfully"
+  "backupRestored": "Backup restored successfully",
+  "clientDetails": "Client Details",
+  "clientSummary": "Client Summary",
+  "clientHistory": "Client History",
+  "totalDocuments": "Total Documents",
+  "totalQuotes": "Total Quotes",
+  "noClientDocuments": "No invoices or quotes found for this client yet.",
+  "tapToViewDetails": "Tap to view details"
 }

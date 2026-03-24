@@ -636,24 +636,35 @@ class PdfService {
             return 'مدفوع';
           case 'unpaid':
             return 'غير مدفوع';
+          case 'partial':
+          case 'partially_paid':
+            return 'مدفوع جزئياً';
           default:
             return 'مسودة';
         }
+
       case 'fr':
         switch (status) {
           case 'paid':
             return 'Payée';
           case 'unpaid':
             return 'Impayée';
+          case 'partial':
+          case 'partially_paid':
+            return 'Partiellement payée';
           default:
             return 'Brouillon';
         }
+
       default:
         switch (status) {
           case 'paid':
             return 'Paid';
           case 'unpaid':
             return 'Unpaid';
+          case 'partial':
+          case 'partially_paid':
+            return 'Partially Paid';
           default:
             return 'Draft';
         }

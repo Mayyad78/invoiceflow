@@ -357,4 +357,26 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get backupRestored => 'Sauvegarde restaurée avec succès';
+
+  @override
+  String get clientDetails => 'Détails du client';
+
+  @override
+  String get clientSummary => 'Résumé du client';
+
+  @override
+  String get clientHistory => 'Historique du client';
+
+  @override
+  String get totalDocuments => 'Total des documents';
+
+  @override
+  String get totalQuotes => 'Total des devis';
+
+  @override
+  String get noClientDocuments =>
+      'Aucune facture ou devis trouvé pour ce client pour le moment.';
+
+  @override
+  String get tapToViewDetails => 'Touchez pour voir les détails';
 }

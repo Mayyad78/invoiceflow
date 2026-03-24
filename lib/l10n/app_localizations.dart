@@ -783,6 +783,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Backup restored successfully'**
   String get backupRestored;
+
+  /// No description provided for @clientDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Client Details'**
+  String get clientDetails;
+
+  /// No description provided for @clientSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Client Summary'**
+  String get clientSummary;
+
+  /// No description provided for @clientHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Client History'**
+  String get clientHistory;
+
+  /// No description provided for @totalDocuments.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Documents'**
+  String get totalDocuments;
+
+  /// No description provided for @totalQuotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Quotes'**
+  String get totalQuotes;
+
+  /// No description provided for @noClientDocuments.
+  ///
+  /// In en, this message translates to:
+  /// **'No invoices or quotes found for this client yet.'**
+  String get noClientDocuments;
+
+  /// No description provided for @tapToViewDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to view details'**
+  String get tapToViewDetails;
 }
 
 class _AppLocalizationsDelegate

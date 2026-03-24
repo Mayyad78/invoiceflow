@@ -353,4 +353,26 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get backupRestored => 'Backup restored successfully';
+
+  @override
+  String get clientDetails => 'Client Details';
+
+  @override
+  String get clientSummary => 'Client Summary';
+
+  @override
+  String get clientHistory => 'Client History';
+
+  @override
+  String get totalDocuments => 'Total Documents';
+
+  @override
+  String get totalQuotes => 'Total Quotes';
+
+  @override
+  String get noClientDocuments =>
+      'No invoices or quotes found for this client yet.';
+
+  @override
+  String get tapToViewDetails => 'Tap to view details';
 }

@@ -113,5 +113,12 @@
   "restore": "Restaurer",
   "restoreBackupWarning": "La restauration d'une sauvegarde remplacera les clients, factures, paramètres et le profil d'entreprise actuellement présents sur cet appareil. Cette action est irréversible.",
   "backupExported": "Sauvegarde exportée avec succès",
-  "backupRestored": "Sauvegarde restaurée avec succès"
+  "backupRestored": "Sauvegarde restaurée avec succès",
+  "clientDetails": "Détails du client",
+  "clientSummary": "Résumé du client",
+  "clientHistory": "Historique du client",
+  "totalDocuments": "Total des documents",
+  "totalQuotes": "Total des devis",
+  "noClientDocuments": "Aucune facture ou devis trouvé pour ce client pour le moment.",
+  "tapToViewDetails": "Touchez pour voir les détails"
 }

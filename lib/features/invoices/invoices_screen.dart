@@ -273,6 +273,7 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
       case 'unpaid':
         return t.statusUnpaid;
       case 'partial':
+      case 'partially_paid':
         return t.statusPartial;
       default:
         return t.statusDraft;
