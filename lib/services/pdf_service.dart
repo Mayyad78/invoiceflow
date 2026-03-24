@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/services.dart' show rootBundle;
@@ -67,8 +68,13 @@ class PdfService {
         : pw.CrossAxisAlignment.start;
     final textAlign =
         localeCode == 'ar' ? pw.TextAlign.right : pw.TextAlign.left;
-    final summaryAlign =
-        localeCode == 'ar' ? pw.Alignment.centerLeft : pw.Alignment.centerRight;
+    final summaryAlign = localeCode == 'ar'
+        ? pw.Alignment.centerLeft
+        : pw.Alignment.centerRight;
+
+    final logoBytes = _decodeLogoBytes(business.logoBase64);
+    final logoProvider =
+        logoBytes != null ? pw.MemoryImage(logoBytes) : null;
 
     pdf.addPage(
       pw.MultiPage(
@@ -86,10 +92,20 @@ class PdfService {
                         child: pw.Column(
                           crossAxisAlignment: pw.CrossAxisAlignment.end,
                           children: [
+                            if (logoProvider != null) ...[
+                              pw.Container(
+                                height: 64,
+                                alignment: pw.Alignment.centerRight,
+                                child: pw.Image(
+                                  logoProvider,
+                                  height: 64,
+                                  fit: pw.BoxFit.contain,
+                                ),
+                              ),
+                              pw.SizedBox(height: 12),
+                            ],
                             pw.Text(
-                              business.name.isEmpty
-                                  ? 'InvoiceFlow'
-                                  : business.name,
+                              business.name.isEmpty ? 'InvoiceFlow' : business.name,
                               style: businessTitleStyle,
                               textAlign: pw.TextAlign.right,
                             ),
@@ -140,22 +156,14 @@ class PdfService {
                             ),
                             _infoLine(
                               strings.dateLabel,
-                              invoice.issueDate
-                                  .toLocal()
-                                  .toString()
-                                  .split(' ')
-                                  .first,
+                              invoice.issueDate.toLocal().toString().split(' ').first,
                               baseStyle: baseTextStyle,
                               boldStyle: boldTextStyle,
                               localeCode: localeCode,
                             ),
                             _infoLine(
                               strings.dueLabel,
-                              invoice.dueDate
-                                  .toLocal()
-                                  .toString()
-                                  .split(' ')
-                                  .first,
+                              invoice.dueDate.toLocal().toString().split(' ').first,
                               baseStyle: baseTextStyle,
                               boldStyle: boldTextStyle,
                               localeCode: localeCode,
@@ -187,22 +195,14 @@ class PdfService {
                             ),
                             _infoLine(
                               strings.dateLabel,
-                              invoice.issueDate
-                                  .toLocal()
-                                  .toString()
-                                  .split(' ')
-                                  .first,
+                              invoice.issueDate.toLocal().toString().split(' ').first,
                               baseStyle: baseTextStyle,
                               boldStyle: boldTextStyle,
                               localeCode: localeCode,
                             ),
                             _infoLine(
                               strings.dueLabel,
-                              invoice.dueDate
-                                  .toLocal()
-                                  .toString()
-                                  .split(' ')
-                                  .first,
+                              invoice.dueDate.toLocal().toString().split(' ').first,
                               baseStyle: baseTextStyle,
                               boldStyle: boldTextStyle,
                               localeCode: localeCode,
@@ -222,10 +222,20 @@ class PdfService {
                         child: pw.Column(
                           crossAxisAlignment: pw.CrossAxisAlignment.end,
                           children: [
+                            if (logoProvider != null) ...[
+                              pw.Container(
+                                height: 64,
+                                alignment: pw.Alignment.centerRight,
+                                child: pw.Image(
+                                  logoProvider,
+                                  height: 64,
+                                  fit: pw.BoxFit.contain,
+                                ),
+                              ),
+                              pw.SizedBox(height: 12),
+                            ],
                             pw.Text(
-                              business.name.isEmpty
-                                  ? 'InvoiceFlow'
-                                  : business.name,
+                              business.name.isEmpty ? 'InvoiceFlow' : business.name,
                               style: businessTitleStyle,
                               textAlign: pw.TextAlign.right,
                             ),
@@ -283,7 +293,11 @@ class PdfService {
                   if (client.phone.isNotEmpty)
                     pw.Text(client.phone, style: baseTextStyle, textAlign: textAlign),
                   if (client.address.isNotEmpty)
-                    pw.Text(client.address, style: baseTextStyle, textAlign: textAlign),
+                    pw.Text(
+                      client.address,
+                      style: baseTextStyle,
+                      textAlign: textAlign,
+                    ),
                 ],
               ),
             ),
@@ -391,6 +405,18 @@ class PdfService {
     );
 
     return pdf.save();
+  }
+
+  Uint8List? _decodeLogoBytes(String? logoBase64) {
+    if (logoBase64 == null || logoBase64.isEmpty) {
+      return null;
+    }
+
+    try {
+      return base64Decode(logoBase64);
+    } catch (_) {
+      return null;
+    }
   }
 
   pw.Widget _infoLine(

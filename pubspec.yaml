@@ -1,5 +1,6 @@
 name: invoice_flow
 description: A multilingual invoice app.
+
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -22,6 +23,7 @@ dependencies:
   share_plus: ^10.0.2
   path_provider: ^2.1.4
   image_picker: ^1.1.2
+  file_selector: ^1.0.3
 
 dev_dependencies:
   flutter_test:
