@@ -45,6 +45,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get addClient => 'Ajouter un client';
 
   @override
+  String get editClient => 'Modifier le client';
+
+  @override
   String get clientName => 'Nom du client';
 
   @override
@@ -60,13 +63,22 @@ class AppLocalizationsFr extends AppLocalizations {
   String get save => 'Enregistrer';
 
   @override
+  String get saveChanges => 'Enregistrer les modifications';
+
+  @override
   String get delete => 'Supprimer';
+
+  @override
+  String get edit => 'Modifier';
 
   @override
   String get noClientsYet => 'Aucun client pour le moment';
 
   @override
   String get clientSaved => 'Client enregistré avec succès';
+
+  @override
+  String get clientUpdated => 'Client mis à jour avec succès';
 
   @override
   String get requiredField => 'Ce champ est obligatoire';
@@ -76,6 +88,12 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get createInvoice => 'Créer une facture';
+
+  @override
+  String get editInvoice => 'Modifier la facture';
+
+  @override
+  String get editQuote => 'Modifier le devis';
 
   @override
   String get invoiceNumber => 'Numéro de facture';
@@ -133,6 +151,9 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get invoiceSaved => 'Facture enregistrée avec succès';
+
+  @override
+  String get invoiceUpdated => 'Document mis à jour avec succès';
 
   @override
   String get noInvoicesYet => 'Aucune facture pour le moment';
@@ -202,7 +223,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get businessName => 'Nom de l\'entreprise';
 
   @override
-  String get saveChanges => 'Enregistrer les modifications';
+  String get saveChangesInfo => 'Save Changes';
 
   @override
   String get currencySettings => 'Devise';

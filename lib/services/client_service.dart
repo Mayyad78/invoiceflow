@@ -8,11 +8,15 @@ class ClientService {
 
   List<ClientModel> getClients() {
     return _box.values
-        .map((e) => ClientModel.fromMap(Map<dynamic, dynamic>.from(e)))
+        .map((e) => ClientModel.fromMap(Map.from(e)))
         .toList();
   }
 
   Future<void> saveClient(ClientModel client) async {
+    await _box.put(client.id, client.toMap());
+  }
+
+  Future<void> updateClient(ClientModel client) async {
     await _box.put(client.id, client.toMap());
   }
 

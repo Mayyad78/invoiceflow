@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../models/client_model.dart';
+import '../../models/invoice_model.dart';
 import '../../providers/clients_provider.dart';
 import '../../providers/invoices_provider.dart';
 import 'create_invoice_screen.dart';
@@ -78,11 +79,16 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
       return invoice.invoiceNumber.toLowerCase().contains(query) ||
           clientName.contains(query) ||
           invoice.status.toLowerCase().contains(query);
-    }).toList();
+    }).toList()
+      ..sort((a, b) {
+        final dateCompare = b.issueDate.compareTo(a.issueDate);
+        if (dateCompare != 0) return dateCompare;
+        return b.invoiceNumber.compareTo(a.invoiceNumber);
+      });
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.type == 'quote' ? t.newQuote : t.invoicesTitle),
+        title: Text(widget.type == 'quote' ? t.quotePreviewTitle : t.invoicesTitle),
       ),
       body: Column(
         children: [
@@ -128,6 +134,7 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
                         itemBuilder: (context, index) {
                           final invoice = filteredInvoices[index];
                           final client = findClient(invoice.clientId);
+
                           final dateText = DateFormat.yMMMd(
                             Localizations.localeOf(context).languageCode,
                           ).format(invoice.issueDate);
@@ -202,6 +209,23 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
                                                     Navigator.of(context).push(
                                                       MaterialPageRoute(
                                                         builder: (_) =>
+                                                            CreateInvoiceScreen(
+                                                          type: widget.type,
+                                                          invoice: invoice,
+                                                        ),
+                                                      ),
+                                                    );
+                                                  },
+                                            icon: const Icon(Icons.edit_outlined),
+                                            label: Text(t.edit),
+                                          ),
+                                          TextButton.icon(
+                                            onPressed: client == null
+                                                ? null
+                                                : () {
+                                                    Navigator.of(context).push(
+                                                      MaterialPageRoute(
+                                                        builder: (_) =>
                                                             InvoicePreviewScreen(
                                                           invoice: invoice,
                                                           client: client,
@@ -209,9 +233,7 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
                                                       ),
                                                     );
                                                   },
-                                            icon: const Icon(
-                                              Icons.visibility_outlined,
-                                            ),
+                                            icon: const Icon(Icons.visibility_outlined),
                                             label: Text(t.preview),
                                           ),
                                           TextButton.icon(
@@ -222,18 +244,13 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
                                                 t,
                                                 t.deleteInvoiceMessage,
                                               );
-
                                               if (confirmed == true) {
                                                 await ref
-                                                    .read(
-                                                      invoicesProvider.notifier,
-                                                    )
+                                                    .read(invoicesProvider.notifier)
                                                     .deleteInvoice(invoice.id);
                                               }
                                             },
-                                            icon: const Icon(
-                                              Icons.delete_outline,
-                                            ),
+                                            icon: const Icon(Icons.delete_outline),
                                             label: Text(t.delete),
                                           ),
                                         ],

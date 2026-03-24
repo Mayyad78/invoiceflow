@@ -101,5 +101,11 @@
   "restore": "Restaurer",
   "restoreBackupWarning": "La restauration d'une sauvegarde remplacera les clients, factures, paramètres et le profil d'entreprise actuellement présents sur cet appareil. Cette action est irréversible.",
   "backupExported": "Sauvegarde exportée avec succès",
-  "backupRestored": "Sauvegarde restaurée avec succès"
+  "backupRestored": "Sauvegarde restaurée avec succès",
+  "edit": "Modifier",
+  "editClient": "Modifier le client",
+  "clientUpdated": "Client mis à jour avec succès",
+  "editInvoice": "Modifier la facture",
+  "editQuote": "Modifier le devis",
+  "invoiceUpdated": "Document mis à jour avec succès"
 }

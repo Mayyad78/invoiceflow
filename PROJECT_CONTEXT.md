@@ -251,6 +251,41 @@ Final accepted result:
 
 ---
 
+## Step 13 – Edit Existing Clients and Documents
+
+Completed as one full step.
+
+Implemented:
+- edit existing clients
+- edit existing invoices
+- edit existing quotes
+- reuse of the current add/edit screens instead of creating a separate edit flow
+- invoice and quote editing keeps the original document number unchanged
+- preview still opens after save for invoices and quotes
+- invoice and quote list ordering now shows newest items first
+- duplicate client protection added during create and edit checks
+
+Important fixes and decisions:
+- client edit was working but duplicate clients could still be created, so duplicate blocking was added using the current client fields
+- invoice creation was not following the numbering system correctly, so the create flow was reconnected to the existing Step 11 numbering logic
+- edit flow preserves the original invoice or quote number instead of generating a new one
+- invoice list ordering was improved so the newest documents are easier to find
+- preview after save was kept because it is useful and working correctly
+- kept the current project naming and structure without introducing unnecessary new patterns
+
+Final accepted result:
+- clients can be edited correctly
+- duplicate clients are blocked
+- invoices can be edited correctly
+- quotes can be edited correctly
+- original invoice and quote numbers are preserved during edit
+- new invoices follow the numbering system
+- updated documents open in preview after save
+- newest invoices are easier to find in the list
+- Step 13 is complete and confirmed working
+
+---
+
 ## Current Features
 
 ### Dashboard
@@ -263,13 +298,17 @@ Final accepted result:
 ### Clients
 - add client
 - list clients
+- edit client
 - delete client
 - search clients
+- duplicate protection
 - local storage
 
 ### Invoices and Quotes
 - create invoices
 - create quotes
+- edit invoices
+- edit quotes
 - select client
 - add multiple items
 - tax and discount calculation
@@ -277,6 +316,7 @@ Final accepted result:
 - status support
 - search invoices
 - numbering support
+- newest-first list ordering
 
 ### PDF
 - generate invoice and quote PDFs
@@ -307,6 +347,7 @@ Final accepted result:
 - Logo working
 - Numbering working
 - Backup and restore working
+- Edit flow for clients, invoices, and quotes working
 - Ready for next major feature step
 
 ---
@@ -332,21 +373,19 @@ Final accepted result:
 
 ## Next Step
 
-## Step 13 – Edit Existing Clients and Documents
+## Step 14 – Better Item Editing Inside Invoice and Quote Forms
 
 Goal:
-- edit existing clients
-- edit existing invoices
-- edit existing quotes
-- preserve numbering correctly during edits
+- edit existing items inside invoice and quote forms
+- improve item management UX
 - keep local-first architecture
 - keep UI simple and safe
 
 Preferred approach:
-- add edit actions from list screens
-- reuse current form screens where possible
-- preserve original document number when editing an existing invoice/quote
-- avoid creating duplicate records during edit
+- allow editing an already-added item from the item list
+- reuse the current add item dialog where possible
+- keep totals recalculating correctly after item edit
+- avoid breaking the current create/edit invoice flow
 
 ---
 
@@ -354,8 +393,8 @@ Preferred approach:
 
 Repo: https://github.com/Mayyad78/invoiceflow
 Branch: main
-Last completed: Step 12
-Next task: Step 13
+Last completed: Step 13
+Next task: Step 14
 
 Rules:
 - keep Riverpod
@@ -383,4 +422,4 @@ Rules:
 - Continue incrementally
 - Stability is more important than perfection
 - Avoid breaking working features
-- Step 13 should be built as one full step
+- Step 14 should be built as one full step

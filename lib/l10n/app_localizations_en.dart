@@ -45,6 +45,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addClient => 'Add Client';
 
   @override
+  String get editClient => 'Edit Client';
+
+  @override
   String get clientName => 'Client Name';
 
   @override
@@ -60,13 +63,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get save => 'Save';
 
   @override
+  String get saveChanges => 'Save Changes';
+
+  @override
   String get delete => 'Delete';
+
+  @override
+  String get edit => 'Edit';
 
   @override
   String get noClientsYet => 'No clients yet';
 
   @override
   String get clientSaved => 'Client saved successfully';
+
+  @override
+  String get clientUpdated => 'Client updated successfully';
 
   @override
   String get requiredField => 'This field is required';
@@ -76,6 +88,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get createInvoice => 'Create Invoice';
+
+  @override
+  String get editInvoice => 'Edit Invoice';
+
+  @override
+  String get editQuote => 'Edit Quote';
 
   @override
   String get invoiceNumber => 'Invoice Number';
@@ -133,6 +151,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get invoiceSaved => 'Invoice saved successfully';
+
+  @override
+  String get invoiceUpdated => 'Document updated successfully';
 
   @override
   String get noInvoicesYet => 'No invoices yet';
@@ -201,7 +222,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get businessName => 'Business Name';
 
   @override
-  String get saveChanges => 'Save Changes';
+  String get saveChangesInfo => 'Save Changes';
 
   @override
   String get currencySettings => 'Currency';

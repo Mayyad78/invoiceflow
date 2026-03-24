@@ -13,12 +13,18 @@ import 'invoice_preview_screen.dart';
 import 'widgets/add_item_dialog.dart';
 
 class CreateInvoiceScreen extends ConsumerStatefulWidget {
-  const CreateInvoiceScreen({super.key, this.type = 'invoice'});
+  const CreateInvoiceScreen({
+    super.key,
+    this.type = 'invoice',
+    this.invoice,
+  });
 
   final String type;
+  final InvoiceModel? invoice;
 
   @override
-  ConsumerState<CreateInvoiceScreen> createState() => _CreateInvoiceScreenState();
+  ConsumerState<CreateInvoiceScreen> createState() =>
+      _CreateInvoiceScreenState();
 }
 
 class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
@@ -30,18 +36,49 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
 
   DateTime _issueDate = DateTime.now();
   DateTime _dueDate = DateTime.now().add(const Duration(days: 7));
-
   ClientModel? _selectedClient;
   final List<InvoiceItemModel> _items = [];
-
   late String _initialGeneratedNumber;
+
+  bool get _isEdit => widget.invoice != null;
 
   @override
   void initState() {
     super.initState();
-    final settingsNotifier = ref.read(appSettingsProvider.notifier);
-    _initialGeneratedNumber = settingsNotifier.previewDocumentNumber(widget.type);
-    _invoiceNumberController.text = _initialGeneratedNumber;
+
+    if (_isEdit) {
+      final invoice = widget.invoice!;
+      _invoiceNumberController.text = invoice.invoiceNumber;
+      _taxController.text = invoice.taxPercent.toString();
+      _discountController.text = invoice.discount.toString();
+      _notesController.text = invoice.notes;
+      _issueDate = invoice.issueDate;
+      _dueDate = invoice.dueDate;
+      _items.addAll(invoice.items.cast<InvoiceItemModel>());
+      _initialGeneratedNumber = invoice.invoiceNumber;
+    } else {
+      final settingsNotifier = ref.read(appSettingsProvider.notifier);
+      _initialGeneratedNumber =
+          settingsNotifier.previewDocumentNumber(widget.type);
+      _invoiceNumberController.text = _initialGeneratedNumber;
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (_selectedClient != null || !_isEdit) return;
+
+    final clients = ref.read(clientsProvider);
+
+    try {
+      _selectedClient = clients.firstWhere(
+        (client) => client.id == widget.invoice!.clientId,
+      );
+    } catch (_) {
+      _selectedClient = null;
+    }
   }
 
   @override
@@ -98,38 +135,45 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       return;
     }
 
-    final enteredNumber = _invoiceNumberController.text.trim();
-    final numberingNotifier = ref.read(appSettingsProvider.notifier);
+    String finalDocumentNumber;
 
-    final consumedGeneratedNumber =
-        await numberingNotifier.consumeNextDocumentNumber(widget.type);
-
-    final finalDocumentNumber = enteredNumber.isEmpty
-        ? consumedGeneratedNumber
-        : enteredNumber;
+    if (_isEdit) {
+      finalDocumentNumber = widget.invoice!.invoiceNumber;
+    } else {
+      final enteredNumber = _invoiceNumberController.text.trim();
+      final numberingNotifier = ref.read(appSettingsProvider.notifier);
+      final consumedGeneratedNumber =
+          await numberingNotifier.consumeNextDocumentNumber(widget.type);
+      finalDocumentNumber =
+          enteredNumber.isEmpty ? consumedGeneratedNumber : enteredNumber;
+    }
 
     final invoice = InvoiceModel(
-      id: const Uuid().v4(),
+      id: widget.invoice?.id ?? const Uuid().v4(),
       invoiceNumber: finalDocumentNumber,
       clientId: _selectedClient!.id,
       issueDate: _issueDate,
       dueDate: _dueDate,
-      items: _items,
+      items: List<InvoiceItemModel>.from(_items),
       taxPercent: double.tryParse(_taxController.text.trim()) ?? 0,
       discount: double.tryParse(_discountController.text.trim()) ?? 0,
       notes: _notesController.text.trim(),
-      status: 'draft',
-      type: widget.type,
+      status: widget.invoice?.status ?? 'draft',
+      type: widget.invoice?.type ?? widget.type,
     );
 
-    await ref.read(invoicesProvider.notifier).addInvoice(invoice);
+    if (_isEdit) {
+      await ref.read(invoicesProvider.notifier).updateInvoice(invoice);
+    } else {
+      await ref.read(invoicesProvider.notifier).addInvoice(invoice);
+    }
 
     if (!mounted) return;
 
     final selectedClient = _selectedClient!;
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(t.invoiceSaved)),
+      SnackBar(content: Text(_isEdit ? t.invoiceUpdated : t.invoiceSaved)),
     );
 
     Navigator.of(context).pushReplacement(
@@ -149,7 +193,11 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.type == 'quote' ? t.newQuote : t.createInvoice),
+        title: Text(
+          _isEdit
+              ? (widget.type == 'quote' ? t.editQuote : t.editInvoice)
+              : (widget.type == 'quote' ? t.newQuote : t.createInvoice),
+        ),
       ),
       body: Form(
         key: _formKey,
@@ -158,6 +206,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
           children: [
             TextFormField(
               controller: _invoiceNumberController,
+              readOnly: _isEdit,
               decoration: InputDecoration(
                 labelText: t.invoiceNumber,
                 border: const OutlineInputBorder(),
@@ -171,7 +220,9 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<ClientModel>(
-              value: _selectedClient,
+              value: clients.any((client) => client.id == _selectedClient?.id)
+                  ? _selectedClient
+                  : null,
               decoration: InputDecoration(
                 labelText: t.selectClient,
                 border: const OutlineInputBorder(),
@@ -323,7 +374,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _saveInvoice,
-              child: Text(t.save),
+              child: Text(_isEdit ? t.saveChanges : t.save),
             ),
           ],
         ),

@@ -4,10 +4,12 @@ import '../models/invoice_model.dart';
 import 'invoice_service_provider.dart';
 
 final invoicesProvider =
-    StateNotifierProvider<InvoicesNotifier, List<InvoiceModel>>((ref) {
-  final service = ref.watch(invoiceServiceProvider);
-  return InvoicesNotifier(service)..loadInvoices();
-});
+    StateNotifierProvider<InvoicesNotifier, List<InvoiceModel>>(
+  (ref) {
+    final service = ref.watch(invoiceServiceProvider);
+    return InvoicesNotifier(service)..loadInvoices();
+  },
+);
 
 class InvoicesNotifier extends StateNotifier<List<InvoiceModel>> {
   InvoicesNotifier(this._invoiceService) : super([]);
@@ -20,6 +22,11 @@ class InvoicesNotifier extends StateNotifier<List<InvoiceModel>> {
 
   Future<void> addInvoice(InvoiceModel invoice) async {
     await _invoiceService.saveInvoice(invoice);
+    loadInvoices();
+  }
+
+  Future<void> updateInvoice(InvoiceModel invoice) async {
+    await _invoiceService.updateInvoice(invoice);
     loadInvoices();
   }
 

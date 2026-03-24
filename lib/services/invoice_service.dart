@@ -8,7 +8,7 @@ class InvoiceService {
 
   List<InvoiceModel> getInvoices() {
     return _box.values
-        .map((e) => InvoiceModel.fromMap(Map<dynamic, dynamic>.from(e)))
+        .map((e) => InvoiceModel.fromMap(Map.from(e)))
         .toList();
   }
 
@@ -16,11 +16,15 @@ class InvoiceService {
     await _box.put(invoice.id, invoice.toMap());
   }
 
+  Future<void> updateInvoice(InvoiceModel invoice) async {
+    await _box.put(invoice.id, invoice.toMap());
+  }
+
   Future<void> updateInvoiceStatus(String id, String status) async {
     final data = _box.get(id);
     if (data == null) return;
 
-    final updated = Map<String, dynamic>.from(data);
+    final updated = Map.from(data);
     updated['status'] = status;
 
     await _box.put(id, updated);

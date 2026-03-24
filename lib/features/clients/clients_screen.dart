@@ -53,7 +53,6 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
 
     final filteredClients = clients.where((client) {
       if (query.isEmpty) return true;
-
       return client.name.toLowerCase().contains(query) ||
           client.email.toLowerCase().contains(query) ||
           client.phone.toLowerCase().contains(query) ||
@@ -136,22 +135,38 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
                                   ],
                                 ],
                               ),
-                              trailing: IconButton(
-                                icon: const Icon(Icons.delete_outline),
-                                onPressed: () async {
-                                  final confirmed = await _confirmDelete(
-                                    context,
-                                    t,
-                                    t.deleteClientMessage,
-                                  );
-
-                                  if (confirmed == true) {
-                                    await ref
-                                        .read(clientsProvider.notifier)
-                                        .deleteClient(client.id);
-                                  }
-                                },
-                                tooltip: t.delete,
+                              trailing: Wrap(
+                                spacing: 4,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.edit_outlined),
+                                    tooltip: t.edit,
+                                    onPressed: () {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (_) =>
+                                              AddClientScreen(client: client),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete_outline),
+                                    tooltip: t.delete,
+                                    onPressed: () async {
+                                      final confirmed = await _confirmDelete(
+                                        context,
+                                        t,
+                                        t.deleteClientMessage,
+                                      );
+                                      if (confirmed == true) {
+                                        await ref
+                                            .read(clientsProvider.notifier)
+                                            .deleteClient(client.id);
+                                      }
+                                    },
+                                  ),
+                                ],
                               ),
                             ),
                           );

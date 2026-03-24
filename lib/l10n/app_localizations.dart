@@ -172,6 +172,12 @@ abstract class AppLocalizations {
   /// **'Add Client'**
   String get addClient;
 
+  /// No description provided for @editClient.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Client'**
+  String get editClient;
+
   /// No description provided for @clientName.
   ///
   /// In en, this message translates to:
@@ -202,11 +208,23 @@ abstract class AppLocalizations {
   /// **'Save'**
   String get save;
 
+  /// No description provided for @saveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Changes'**
+  String get saveChanges;
+
   /// No description provided for @delete.
   ///
   /// In en, this message translates to:
   /// **'Delete'**
   String get delete;
+
+  /// No description provided for @edit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get edit;
 
   /// No description provided for @noClientsYet.
   ///
@@ -219,6 +237,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Client saved successfully'**
   String get clientSaved;
+
+  /// No description provided for @clientUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Client updated successfully'**
+  String get clientUpdated;
 
   /// No description provided for @requiredField.
   ///
@@ -237,6 +261,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Create Invoice'**
   String get createInvoice;
+
+  /// No description provided for @editInvoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Invoice'**
+  String get editInvoice;
+
+  /// No description provided for @editQuote.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Quote'**
+  String get editQuote;
 
   /// No description provided for @invoiceNumber.
   ///
@@ -351,6 +387,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Invoice saved successfully'**
   String get invoiceSaved;
+
+  /// No description provided for @invoiceUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Document updated successfully'**
+  String get invoiceUpdated;
 
   /// No description provided for @noInvoicesYet.
   ///
@@ -484,11 +526,11 @@ abstract class AppLocalizations {
   /// **'Business Name'**
   String get businessName;
 
-  /// No description provided for @saveChanges.
+  /// No description provided for @saveChangesInfo.
   ///
   /// In en, this message translates to:
   /// **'Save Changes'**
-  String get saveChanges;
+  String get saveChangesInfo;
 
   /// No description provided for @currencySettings.
   ///

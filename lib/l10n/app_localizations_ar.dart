@@ -45,6 +45,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get addClient => 'إضافة عميل';
 
   @override
+  String get editClient => 'تعديل العميل';
+
+  @override
   String get clientName => 'اسم العميل';
 
   @override
@@ -60,13 +63,22 @@ class AppLocalizationsAr extends AppLocalizations {
   String get save => 'حفظ';
 
   @override
+  String get saveChanges => 'حفظ التغييرات';
+
+  @override
   String get delete => 'حذف';
+
+  @override
+  String get edit => 'تعديل';
 
   @override
   String get noClientsYet => 'لا يوجد عملاء بعد';
 
   @override
   String get clientSaved => 'تم حفظ العميل بنجاح';
+
+  @override
+  String get clientUpdated => 'تم تحديث العميل بنجاح';
 
   @override
   String get requiredField => 'هذا الحقل مطلوب';
@@ -76,6 +88,12 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get createInvoice => 'إنشاء فاتورة';
+
+  @override
+  String get editInvoice => 'تعديل الفاتورة';
+
+  @override
+  String get editQuote => 'تعديل عرض السعر';
 
   @override
   String get invoiceNumber => 'رقم الفاتورة';
@@ -133,6 +151,9 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get invoiceSaved => 'تم حفظ الفاتورة بنجاح';
+
+  @override
+  String get invoiceUpdated => 'تم تحديث المستند بنجاح';
 
   @override
   String get noInvoicesYet => 'لا توجد فواتير بعد';
@@ -201,7 +222,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get businessName => 'اسم النشاط';
 
   @override
-  String get saveChanges => 'حفظ التغييرات';
+  String get saveChangesInfo => 'Save Changes';
 
   @override
   String get currencySettings => 'العملة';
