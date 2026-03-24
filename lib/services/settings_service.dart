@@ -20,8 +20,7 @@ class SettingsService {
         address: 'Your business address here',
       );
     }
-
-    return BusinessProfileModel.fromMap(Map<dynamic, dynamic>.from(data));
+    return BusinessProfileModel.fromMap(Map.from(data));
   }
 
   Future<void> saveBusinessProfile(BusinessProfileModel profile) async {
@@ -31,10 +30,15 @@ class SettingsService {
   AppSettingsModel getAppSettings() {
     final data = _box.get(appSettingsKey);
     if (data == null) {
-      return const AppSettingsModel(currency: 'USD');
+      return const AppSettingsModel(
+        currency: 'USD',
+        invoicePrefix: 'INV-',
+        quotePrefix: 'QUO-',
+        nextInvoiceNumber: 1,
+        nextQuoteNumber: 1,
+      );
     }
-
-    return AppSettingsModel.fromMap(Map<dynamic, dynamic>.from(data));
+    return AppSettingsModel.fromMap(Map.from(data));
   }
 
   Future<void> saveAppSettings(AppSettingsModel settings) async {

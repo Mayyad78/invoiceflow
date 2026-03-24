@@ -6,11 +6,11 @@ import '../../l10n/app_localizations.dart';
 import '../../models/client_model.dart';
 import '../../models/invoice_item_model.dart';
 import '../../models/invoice_model.dart';
+import '../../providers/app_settings_provider.dart';
 import '../../providers/clients_provider.dart';
 import '../../providers/invoices_provider.dart';
-import 'widgets/add_item_dialog.dart';
 import 'invoice_preview_screen.dart';
-
+import 'widgets/add_item_dialog.dart';
 
 class CreateInvoiceScreen extends ConsumerStatefulWidget {
   const CreateInvoiceScreen({super.key, this.type = 'invoice'});
@@ -18,13 +18,11 @@ class CreateInvoiceScreen extends ConsumerStatefulWidget {
   final String type;
 
   @override
-  ConsumerState<CreateInvoiceScreen> createState() =>
-      _CreateInvoiceScreenState();
+  ConsumerState<CreateInvoiceScreen> createState() => _CreateInvoiceScreenState();
 }
 
 class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
   final _formKey = GlobalKey<FormState>();
-
   final _invoiceNumberController = TextEditingController();
   final _taxController = TextEditingController(text: '0');
   final _discountController = TextEditingController(text: '0');
@@ -32,14 +30,18 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
 
   DateTime _issueDate = DateTime.now();
   DateTime _dueDate = DateTime.now().add(const Duration(days: 7));
+
   ClientModel? _selectedClient;
   final List<InvoiceItemModel> _items = [];
+
+  late String _initialGeneratedNumber;
 
   @override
   void initState() {
     super.initState();
-    _invoiceNumberController.text =
-        '${widget.type == 'quote' ? 'Q' : 'INV'}-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
+    final settingsNotifier = ref.read(appSettingsProvider.notifier);
+    _initialGeneratedNumber = settingsNotifier.previewDocumentNumber(widget.type);
+    _invoiceNumberController.text = _initialGeneratedNumber;
   }
 
   @override
@@ -52,9 +54,12 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
   }
 
   double get _subtotal => _items.fold(0, (sum, item) => sum + item.total);
+
   double get _taxAmount =>
       _subtotal * ((double.tryParse(_taxController.text) ?? 0) / 100);
+
   double get _discount => double.tryParse(_discountController.text) ?? 0;
+
   double get _total => _subtotal + _taxAmount - _discount;
 
   Future<void> _pickDate({
@@ -93,9 +98,19 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       return;
     }
 
+    final enteredNumber = _invoiceNumberController.text.trim();
+    final numberingNotifier = ref.read(appSettingsProvider.notifier);
+
+    final consumedGeneratedNumber =
+        await numberingNotifier.consumeNextDocumentNumber(widget.type);
+
+    final finalDocumentNumber = enteredNumber.isEmpty
+        ? consumedGeneratedNumber
+        : enteredNumber;
+
     final invoice = InvoiceModel(
       id: const Uuid().v4(),
-      invoiceNumber: _invoiceNumberController.text.trim(),
+      invoiceNumber: finalDocumentNumber,
       clientId: _selectedClient!.id,
       issueDate: _issueDate,
       dueDate: _dueDate,
@@ -109,7 +124,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
 
     await ref.read(invoicesProvider.notifier).addInvoice(invoice);
 
-if (!mounted) return;
+    if (!mounted) return;
 
     final selectedClient = _selectedClient!;
 
@@ -178,7 +193,9 @@ if (!mounted) return;
             const SizedBox(height: 16),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              title: Text('${t.issueDate}: ${_issueDate.toLocal().toString().split(' ').first}'),
+              title: Text(
+                '${t.issueDate}: ${_issueDate.toLocal().toString().split(' ').first}',
+              ),
               trailing: IconButton(
                 icon: const Icon(Icons.calendar_today),
                 onPressed: () => _pickDate(
@@ -190,7 +207,9 @@ if (!mounted) return;
             ),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              title: Text('${t.dueDate}: ${_dueDate.toLocal().toString().split(' ').first}'),
+              title: Text(
+                '${t.dueDate}: ${_dueDate.toLocal().toString().split(' ').first}',
+              ),
               trailing: IconButton(
                 icon: const Icon(Icons.calendar_today),
                 onPressed: () => _pickDate(
@@ -256,7 +275,8 @@ if (!mounted) return;
                 labelText: t.taxPercent,
                 border: const OutlineInputBorder(),
               ),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               onChanged: (_) => setState(() {}),
             ),
             const SizedBox(height: 16),
@@ -266,7 +286,8 @@ if (!mounted) return;
                 labelText: t.discount,
                 border: const OutlineInputBorder(),
               ),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               onChanged: (_) => setState(() {}),
             ),
             const SizedBox(height: 16),
