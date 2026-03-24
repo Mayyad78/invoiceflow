@@ -141,6 +141,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get total => 'الإجمالي';
 
   @override
+  String get paidAmount => 'المبلغ المدفوع';
+
+  @override
+  String get remainingAmount => 'المبلغ المتبقي';
+
+  @override
+  String get paymentStatus => 'حالة الدفع';
+
+  @override
   String get statusDraft => 'مسودة';
 
   @override
@@ -148,6 +157,9 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get statusUnpaid => 'غير مدفوع';
+
+  @override
+  String get statusPartial => 'مدفوع جزئياً';
 
   @override
   String get invoiceSaved => 'تم حفظ الفاتورة بنجاح';
@@ -175,6 +187,13 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get clientRequired => 'يرجى اختيار عميل';
+
+  @override
+  String get enterValidPaidAmount => 'أدخل مبلغ دفعة جزئية صحيح';
+
+  @override
+  String get paidAmountCannotExceedTotal =>
+      'لا يمكن أن يتجاوز المبلغ المدفوع الإجمالي';
 
   @override
   String get preview => 'معاينة';
@@ -220,9 +239,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get businessName => 'اسم النشاط';
-
-  @override
-  String get saveChangesInfo => 'Save Changes';
 
   @override
   String get currencySettings => 'العملة';

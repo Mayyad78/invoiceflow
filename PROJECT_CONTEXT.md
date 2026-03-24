@@ -278,6 +278,41 @@ Final result:
 
 ---
 
+## Step 15 – Invoice/Quote Status Improvements + Paid Tracking
+
+Completed as one full step.
+
+Implemented:
+- added paid amount to invoice model
+- added remaining amount calculation to invoice model
+- improved invoice payment status handling
+- added support for draft, unpaid, partial, and paid invoice states
+- moved invoice status and paid amount handling into the invoice form
+- added invoice summary display for paid amount and remaining amount
+- invoice list now shows:
+  - total
+  - paid amount
+  - remaining amount
+  - payment status badge
+
+Important decisions:
+- quote flow stays simple and does not use payment tracking
+- partial payment requires entering a paid amount
+- paid status auto-fills the full total as paid amount
+- unpaid and draft reset paid amount to zero
+- status dropdown was removed from the list screen because partial payment needs amount input and is safer inside the invoice form
+- existing create/edit flow was preserved while extending the business logic
+
+Final result:
+- invoices now support real payment tracking
+- partial payment works correctly
+- remaining balance is calculated correctly
+- invoice list reflects payment progress clearly
+- quote flow remains clean and unaffected
+- Step 15 confirmed working
+
+---
+
 ## Current Features
 
 ### Dashboard
@@ -305,6 +340,10 @@ Final result:
 - numbering system
 - search invoices
 - newest-first ordering
+- payment status tracking
+- paid amount
+- remaining amount
+- partial payment support
 
 ### PDF
 - generate PDFs
@@ -327,6 +366,7 @@ Final result:
 - All core flows working
 - Editing flows complete
 - Item editing complete
+- Payment tracking complete
 - Ready for next feature
 
 ---
@@ -349,12 +389,12 @@ Final result:
 
 ## Next Step
 
-## Step 15 – Invoice/Quote Status Improvements + Paid Tracking
+## Step 16 – Client Details Screen + Client Invoice History
 
 Goal:
-- improve invoice status handling
-- track paid amount / remaining amount
-- prepare for real business usage
+- add a client details screen
+- show all invoices and quotes related to a selected client
+- make client records more useful for real business follow-up
 
 ---
 
@@ -362,8 +402,8 @@ Goal:
 
 Repo: https://github.com/Mayyad78/invoiceflow  
 Branch: main  
-Last completed: Step 14  
-Next task: Step 15
+Last completed: Step 15  
+Next task: Step 16
 
 ---
 

@@ -141,6 +141,15 @@ class AppLocalizationsFr extends AppLocalizations {
   String get total => 'Total';
 
   @override
+  String get paidAmount => 'Montant payé';
+
+  @override
+  String get remainingAmount => 'Montant restant';
+
+  @override
+  String get paymentStatus => 'Statut du paiement';
+
+  @override
   String get statusDraft => 'Brouillon';
 
   @override
@@ -148,6 +157,9 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get statusUnpaid => 'Impayée';
+
+  @override
+  String get statusPartial => 'Partiellement payée';
 
   @override
   String get invoiceSaved => 'Facture enregistrée avec succès';
@@ -176,6 +188,13 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get clientRequired => 'Veuillez sélectionner un client';
+
+  @override
+  String get enterValidPaidAmount => 'Entrez un montant partiel valide';
+
+  @override
+  String get paidAmountCannotExceedTotal =>
+      'Le montant payé ne peut pas dépasser le total';
 
   @override
   String get preview => 'Aperçu';
@@ -221,9 +240,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get businessName => 'Nom de l\'entreprise';
-
-  @override
-  String get saveChangesInfo => 'Save Changes';
 
   @override
   String get currencySettings => 'Devise';

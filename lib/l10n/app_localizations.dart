@@ -364,6 +364,24 @@ abstract class AppLocalizations {
   /// **'Total'**
   String get total;
 
+  /// No description provided for @paidAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid Amount'**
+  String get paidAmount;
+
+  /// No description provided for @remainingAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Remaining Amount'**
+  String get remainingAmount;
+
+  /// No description provided for @paymentStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Status'**
+  String get paymentStatus;
+
   /// No description provided for @statusDraft.
   ///
   /// In en, this message translates to:
@@ -381,6 +399,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unpaid'**
   String get statusUnpaid;
+
+  /// No description provided for @statusPartial.
+  ///
+  /// In en, this message translates to:
+  /// **'Partially Paid'**
+  String get statusPartial;
 
   /// No description provided for @invoiceSaved.
   ///
@@ -435,6 +459,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Please select a client'**
   String get clientRequired;
+
+  /// No description provided for @enterValidPaidAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid partial paid amount'**
+  String get enterValidPaidAmount;
+
+  /// No description provided for @paidAmountCannotExceedTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid amount cannot exceed total'**
+  String get paidAmountCannotExceedTotal;
 
   /// No description provided for @preview.
   ///
@@ -525,12 +561,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Business Name'**
   String get businessName;
-
-  /// No description provided for @saveChangesInfo.
-  ///
-  /// In en, this message translates to:
-  /// **'Save Changes'**
-  String get saveChangesInfo;
 
   /// No description provided for @currencySettings.
   ///

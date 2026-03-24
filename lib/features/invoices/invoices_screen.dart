@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../models/client_model.dart';
-import '../../models/invoice_model.dart';
 import '../../providers/clients_provider.dart';
 import '../../providers/invoices_provider.dart';
 import 'create_invoice_screen.dart';
@@ -88,7 +87,9 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.type == 'quote' ? t.quotePreviewTitle : t.invoicesTitle),
+        title: Text(
+          widget.type == 'quote' ? t.quotePreviewTitle : t.invoicesTitle,
+        ),
       ),
       body: Column(
         children: [
@@ -160,45 +161,28 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
                                         Text(
                                           '${t.total}: ${invoice.total.toStringAsFixed(2)}',
                                         ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          '${t.status}: ${_localizedStatus(t, invoice.status)}',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            color: _statusColor(invoice.status),
+                                        if (invoice.type == 'invoice') ...[
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            '${t.paidAmount}: ${invoice.paidAmount.toStringAsFixed(2)}',
                                           ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            '${t.remainingAmount}: ${invoice.remainingAmount.toStringAsFixed(2)}',
+                                          ),
+                                        ],
+                                        const SizedBox(height: 6),
+                                        _StatusBadge(
+                                          label: _localizedStatus(t, invoice.status),
+                                          color: _statusColor(invoice.status),
                                         ),
                                       ],
                                     ),
                                   ),
                                   Row(
                                     mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                                        MainAxisAlignment.end,
                                     children: [
-                                      DropdownButton<String>(
-                                        value: invoice.status,
-                                        items: [
-                                          DropdownMenuItem(
-                                            value: 'draft',
-                                            child: Text(t.statusDraft),
-                                          ),
-                                          DropdownMenuItem(
-                                            value: 'paid',
-                                            child: Text(t.statusPaid),
-                                          ),
-                                          DropdownMenuItem(
-                                            value: 'unpaid',
-                                            child: Text(t.statusUnpaid),
-                                          ),
-                                        ],
-                                        onChanged: (value) async {
-                                          if (value == null) return;
-
-                                          await ref
-                                              .read(invoicesProvider.notifier)
-                                              .updateStatus(invoice.id, value);
-                                        },
-                                      ),
                                       Wrap(
                                         spacing: 4,
                                         children: [
@@ -288,6 +272,8 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
         return t.statusPaid;
       case 'unpaid':
         return t.statusUnpaid;
+      case 'partial':
+        return t.statusPartial;
       default:
         return t.statusDraft;
     }
@@ -299,9 +285,39 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
         return Colors.green;
       case 'unpaid':
         return Colors.red;
-      default:
+      case 'partial':
         return Colors.orange;
+      default:
+        return Colors.blueGrey;
     }
+  }
+}
+
+class _StatusBadge extends StatelessWidget {
+  const _StatusBadge({
+    required this.label,
+    required this.color,
+  });
+
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
   }
 }
 

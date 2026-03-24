@@ -33,14 +33,17 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
   final _taxController = TextEditingController(text: '0');
   final _discountController = TextEditingController(text: '0');
   final _notesController = TextEditingController();
+  final _paidAmountController = TextEditingController(text: '0');
 
   DateTime _issueDate = DateTime.now();
   DateTime _dueDate = DateTime.now().add(const Duration(days: 7));
   ClientModel? _selectedClient;
   final List<InvoiceItemModel> _items = [];
   late String _initialGeneratedNumber;
+  String _status = 'draft';
 
   bool get _isEdit => widget.invoice != null;
+  bool get _isInvoice => widget.type == 'invoice';
 
   @override
   void initState() {
@@ -52,15 +55,18 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       _taxController.text = invoice.taxPercent.toString();
       _discountController.text = invoice.discount.toString();
       _notesController.text = invoice.notes;
+      _paidAmountController.text = invoice.paidAmount.toStringAsFixed(2);
       _issueDate = invoice.issueDate;
       _dueDate = invoice.dueDate;
       _items.addAll(invoice.items.cast<InvoiceItemModel>());
       _initialGeneratedNumber = invoice.invoiceNumber;
+      _status = invoice.status;
     } else {
       final settingsNotifier = ref.read(appSettingsProvider.notifier);
       _initialGeneratedNumber =
           settingsNotifier.previewDocumentNumber(widget.type);
       _invoiceNumberController.text = _initialGeneratedNumber;
+      _status = _isInvoice ? 'draft' : 'draft';
     }
   }
 
@@ -87,6 +93,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
     _taxController.dispose();
     _discountController.dispose();
     _notesController.dispose();
+    _paidAmountController.dispose();
     super.dispose();
   }
 
@@ -98,6 +105,14 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
   double get _discount => double.tryParse(_discountController.text) ?? 0;
 
   double get _total => _subtotal + _taxAmount - _discount;
+
+  double get _paidAmount =>
+      double.tryParse(_paidAmountController.text.trim()) ?? 0;
+
+  double get _remainingAmount {
+    final remaining = _total - _paidAmount;
+    return remaining < 0 ? 0 : remaining;
+  }
 
   Future<void> _pickDate({
     required BuildContext context,
@@ -138,6 +153,57 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
     }
   }
 
+  double _resolvePaidAmount() {
+    if (!_isInvoice) {
+      return 0;
+    }
+
+    switch (_status) {
+      case 'draft':
+        return 0;
+      case 'unpaid':
+        return 0;
+      case 'paid':
+        return _total;
+      case 'partial':
+        return _paidAmount;
+      default:
+        return 0;
+    }
+  }
+
+  String _resolveStatus() {
+    if (!_isInvoice) {
+      return 'draft';
+    }
+
+    return _status;
+  }
+
+  bool _validatePayment(AppLocalizations t) {
+    if (!_isInvoice) {
+      return true;
+    }
+
+    if (_status == 'partial') {
+      if (_paidAmount <= 0 || _paidAmount >= _total) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(t.enterValidPaidAmount)),
+        );
+        return false;
+      }
+    }
+
+    if (_paidAmount > _total && _status == 'partial') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(t.paidAmountCannotExceedTotal)),
+      );
+      return false;
+    }
+
+    return true;
+  }
+
   Future<void> _saveInvoice() async {
     final t = AppLocalizations.of(context)!;
 
@@ -154,6 +220,10 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(t.atLeastOneItem)),
       );
+      return;
+    }
+
+    if (!_validatePayment(t)) {
       return;
     }
 
@@ -180,8 +250,9 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       taxPercent: double.tryParse(_taxController.text.trim()) ?? 0,
       discount: double.tryParse(_discountController.text.trim()) ?? 0,
       notes: _notesController.text.trim(),
-      status: widget.invoice?.status ?? 'draft',
+      status: _resolveStatus(),
       type: widget.invoice?.type ?? widget.type,
+      paidAmount: _resolvePaidAmount(),
     );
 
     if (_isEdit) {
@@ -368,6 +439,57 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
               onChanged: (_) => setState(() {}),
             ),
             const SizedBox(height: 16),
+            if (_isInvoice) ...[
+              DropdownButtonFormField<String>(
+                value: _status,
+                decoration: InputDecoration(
+                  labelText: t.paymentStatus,
+                  border: const OutlineInputBorder(),
+                ),
+                items: [
+                  DropdownMenuItem(
+                    value: 'draft',
+                    child: Text(t.statusDraft),
+                  ),
+                  DropdownMenuItem(
+                    value: 'unpaid',
+                    child: Text(t.statusUnpaid),
+                  ),
+                  DropdownMenuItem(
+                    value: 'partial',
+                    child: Text(t.statusPartial),
+                  ),
+                  DropdownMenuItem(
+                    value: 'paid',
+                    child: Text(t.statusPaid),
+                  ),
+                ],
+                onChanged: (value) {
+                  if (value == null) return;
+                  setState(() {
+                    _status = value;
+                    if (_status == 'draft' || _status == 'unpaid') {
+                      _paidAmountController.text = '0';
+                    } else if (_status == 'paid') {
+                      _paidAmountController.text = _total.toStringAsFixed(2);
+                    }
+                  });
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _paidAmountController,
+                enabled: _status == 'partial',
+                decoration: InputDecoration(
+                  labelText: t.paidAmount,
+                  border: const OutlineInputBorder(),
+                ),
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                onChanged: (_) => setState(() {}),
+              ),
+              const SizedBox(height: 16),
+            ],
             TextFormField(
               controller: _notesController,
               decoration: InputDecoration(
@@ -393,6 +515,26 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                       value: _total,
                       isBold: true,
                     ),
+                    if (_isInvoice) ...[
+                      const SizedBox(height: 8),
+                      _SummaryRow(
+                        label: t.paidAmount,
+                        value: _status == 'paid'
+                            ? _total
+                            : _status == 'partial'
+                                ? _paidAmount
+                                : 0,
+                      ),
+                      const SizedBox(height: 8),
+                      _SummaryRow(
+                        label: t.remainingAmount,
+                        value: _status == 'paid'
+                            ? 0
+                            : _status == 'partial'
+                                ? _remainingAmount
+                                : _total,
+                      ),
+                    ],
                   ],
                 ),
               ),

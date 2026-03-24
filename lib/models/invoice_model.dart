@@ -12,6 +12,7 @@ class InvoiceModel {
   final String notes;
   final String status;
   final String type;
+  final double paidAmount;
 
   InvoiceModel({
     required this.id,
@@ -25,6 +26,7 @@ class InvoiceModel {
     required this.notes,
     required this.status,
     required this.type,
+    required this.paidAmount,
   });
 
   double get subtotal {
@@ -37,6 +39,11 @@ class InvoiceModel {
 
   double get total {
     return subtotal + taxAmount - discount;
+  }
+
+  double get remainingAmount {
+    final remaining = total - paidAmount;
+    return remaining < 0 ? 0 : remaining;
   }
 
   Map<String, dynamic> toMap() {
@@ -52,24 +59,26 @@ class InvoiceModel {
       'notes': notes,
       'status': status,
       'type': type,
+      'paidAmount': paidAmount,
     };
   }
 
-  factory InvoiceModel.fromMap(Map<dynamic, dynamic> map) {
+  factory InvoiceModel.fromMap(Map map) {
     return InvoiceModel(
       id: map['id'] ?? '',
       invoiceNumber: map['invoiceNumber'] ?? '',
       clientId: map['clientId'] ?? '',
       issueDate: DateTime.tryParse(map['issueDate'] ?? '') ?? DateTime.now(),
       dueDate: DateTime.tryParse(map['dueDate'] ?? '') ?? DateTime.now(),
-      items: (map['items'] as List<dynamic>? ?? [])
-          .map((e) => InvoiceItemModel.fromMap(Map<dynamic, dynamic>.from(e)))
+      items: (map['items'] as List? ?? [])
+          .map((e) => InvoiceItemModel.fromMap(Map<String, dynamic>.from(e)))
           .toList(),
       taxPercent: (map['taxPercent'] ?? 0).toDouble(),
       discount: (map['discount'] ?? 0).toDouble(),
       notes: map['notes'] ?? '',
       status: map['status'] ?? 'draft',
       type: map['type'] ?? 'invoice',
+      paidAmount: (map['paidAmount'] ?? 0).toDouble(),
     );
   }
 }
