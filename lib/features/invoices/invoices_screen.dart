@@ -6,6 +6,7 @@ import '../../l10n/app_localizations.dart';
 import '../../models/client_model.dart';
 import '../../providers/clients_provider.dart';
 import '../../providers/invoices_provider.dart';
+import '../../utils/invoice_status_localizer.dart';
 import 'create_invoice_screen.dart';
 import 'invoice_preview_screen.dart';
 
@@ -77,7 +78,7 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
 
       return invoice.invoiceNumber.toLowerCase().contains(query) ||
           clientName.contains(query) ||
-          invoice.status.toLowerCase().contains(query);
+          normalizeInvoiceStatus(invoice.status).contains(query);
     }).toList()
       ..sort((a, b) {
         final dateCompare = b.issueDate.compareTo(a.issueDate);
@@ -173,15 +174,17 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
                                         ],
                                         const SizedBox(height: 6),
                                         _StatusBadge(
-                                          label: _localizedStatus(t, invoice.status),
+                                          label: localizeInvoiceStatus(
+                                            t,
+                                            invoice.status,
+                                          ),
                                           color: _statusColor(invoice.status),
                                         ),
                                       ],
                                     ),
                                   ),
                                   Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.end,
+                                    mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
                                       Wrap(
                                         spacing: 4,
@@ -200,7 +203,9 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
                                                       ),
                                                     );
                                                   },
-                                            icon: const Icon(Icons.edit_outlined),
+                                            icon: const Icon(
+                                              Icons.edit_outlined,
+                                            ),
                                             label: Text(t.edit),
                                           ),
                                           TextButton.icon(
@@ -217,7 +222,9 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
                                                       ),
                                                     );
                                                   },
-                                            icon: const Icon(Icons.visibility_outlined),
+                                            icon: const Icon(
+                                              Icons.visibility_outlined,
+                                            ),
                                             label: Text(t.preview),
                                           ),
                                           TextButton.icon(
@@ -230,11 +237,15 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
                                               );
                                               if (confirmed == true) {
                                                 await ref
-                                                    .read(invoicesProvider.notifier)
+                                                    .read(
+                                                      invoicesProvider.notifier,
+                                                    )
                                                     .deleteInvoice(invoice.id);
                                               }
                                             },
-                                            icon: const Icon(Icons.delete_outline),
+                                            icon: const Icon(
+                                              Icons.delete_outline,
+                                            ),
                                             label: Text(t.delete),
                                           ),
                                         ],
@@ -266,22 +277,8 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
     );
   }
 
-  static String _localizedStatus(AppLocalizations t, String status) {
-    switch (status) {
-      case 'paid':
-        return t.statusPaid;
-      case 'unpaid':
-        return t.statusUnpaid;
-      case 'partial':
-      case 'partially_paid':
-        return t.statusPartial;
-      default:
-        return t.statusDraft;
-    }
-  }
-
   static Color _statusColor(String status) {
-    switch (status) {
+    switch (normalizeInvoiceStatus(status)) {
       case 'paid':
         return Colors.green;
       case 'unpaid':

@@ -87,7 +87,8 @@ lib/
 ├── l10n/
 │   ├── app_ar.arb
 │   ├── app_en.arb
-│   └── app_fr.arb
+│   ├── app_fr.arb
+│   └── app_localizations.dart
 ├── models/
 │   ├── app_settings_model.dart
 │   ├── business_profile_model.dart
@@ -112,6 +113,8 @@ lib/
 │   ├── local_storage_service.dart
 │   ├── pdf_service.dart
 │   └── settings_service.dart
+├── utils/
+│   └── invoice_status_localizer.dart
 └── main.dart
 
 Other important files:
@@ -353,6 +356,37 @@ Final result:
 
 ---
 
+## Step 18 – Centralized Status Localization + PDF Cleanup
+
+Completed as one full step.
+
+Implemented:
+- added shared status helper file:
+  - `lib/utils/invoice_status_localizer.dart`
+- centralized invoice status normalization
+- centralized invoice status localization for UI
+- centralized invoice status localization by locale code for PDF usage
+- updated invoice list to use shared helper
+- updated client details screen to use shared helper
+- updated dashboard calculations to use normalized status values
+- updated PDF service to use shared helper instead of manual duplicated status strings
+
+Important decisions:
+- `partial` remains the official current status value
+- backward compatibility kept for older `partially_paid` values
+- status fallback remains `draft` only for unknown or missing values
+- kept PDF localization compatible with current structure without requiring a larger localization refactor
+- reduced duplication without changing working business flows
+
+Final result:
+- status text is now consistent across UI and PDF
+- older stored data with `partially_paid` still works correctly
+- partially paid status no longer falls back incorrectly in PDF or UI
+- repeated status logic was removed from multiple files
+- Step 18 confirmed working
+
+---
+
 ## Current Features
 
 ### Dashboard
@@ -398,6 +432,7 @@ Final result:
 - preview
 - branding + logo
 - localized status display
+- centralized status handling for PDF
 
 ### Settings
 - business profile
@@ -412,7 +447,8 @@ Final result:
 - App stable
 - Business-ready core features
 - Clean user flows
-- Dashboard now reflects real metrics
+- Dashboard reflects real metrics
+- Status localization logic is now centralized and more maintainable
 - Ready for next feature
 
 ---
@@ -420,7 +456,7 @@ Final result:
 ## Known Issues
 
 - Arabic PDF shaping not perfect
-- PDF logic still duplicates some localization logic (to improve later)
+- PDF still has some non-status text localized manually by locale code instead of fully sharing app localization
 
 ---
 
@@ -430,18 +466,19 @@ Final result:
 - backend sync
 - authentication
 - UI polish improvements
+- broader PDF text localization cleanup
 
 ---
 
 ## Next Step
 
-## Step 18 – Centralized Status Localization + PDF Cleanup
+## Step 19 – Quote-to-Invoice Conversion
 
 Goal:
-- remove duplicated status localization logic
-- use a single shared status-localization helper across UI and PDF
-- reduce bugs caused by repeated manual status strings
-- clean up localization usage where the same labels are being rewritten manually
+- allow converting a saved quote into an invoice
+- preserve client and item data
+- generate a proper invoice number using the numbering system
+- improve the real sales workflow from quotation to billing
 
 ---
 
@@ -449,8 +486,8 @@ Goal:
 
 Repo: https://github.com/Mayyad78/invoiceflow
 Branch: main
-Last completed: Step 17
-Next task: Step 18
+Last completed: Step 18
+Next task: Step 19
 
 ---
 

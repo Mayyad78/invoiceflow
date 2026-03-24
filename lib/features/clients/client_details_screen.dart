@@ -6,6 +6,7 @@ import '../../l10n/app_localizations.dart';
 import '../../models/client_model.dart';
 import '../../models/invoice_model.dart';
 import '../../providers/invoices_provider.dart';
+import '../../utils/invoice_status_localizer.dart';
 import '../invoices/invoice_preview_screen.dart';
 
 class ClientDetailsScreen extends ConsumerWidget {
@@ -230,7 +231,9 @@ class _DocumentCard extends StatelessWidget {
                 '${t.remainingAmount}: ${invoice.remainingAmount.toStringAsFixed(2)}',
               ),
               const SizedBox(height: 4),
-              Text('${t.status}: ${_localizedStatus(t, invoice.status)}'),
+              Text(
+                '${t.status}: ${localizeInvoiceStatus(t, invoice.status)}',
+              ),
             ],
           ],
         ),
@@ -250,19 +253,5 @@ class _DocumentCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  static String _localizedStatus(AppLocalizations t, String status) {
-    switch (status) {
-      case 'paid':
-        return t.statusPaid;
-      case 'unpaid':
-        return t.statusUnpaid;
-      case 'partial':
-      case 'partially_paid':
-        return t.statusPartial;
-      default:
-        return t.statusDraft;
-    }
   }
 }

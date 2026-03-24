@@ -5,6 +5,7 @@ import '../../l10n/app_localizations.dart';
 import '../../providers/app_settings_provider.dart';
 import '../../providers/clients_provider.dart';
 import '../../providers/invoices_provider.dart';
+import '../../utils/invoice_status_localizer.dart';
 import '../clients/clients_screen.dart';
 import '../invoices/invoices_screen.dart';
 import '../settings/settings_screen.dart';
@@ -20,18 +21,28 @@ class DashboardScreen extends ConsumerWidget {
     final appSettings = ref.watch(appSettingsProvider);
     final currency = appSettings.currency;
 
-    final invoices = allDocuments.where((invoice) => invoice.type == 'invoice').toList();
-    final quotes = allDocuments.where((invoice) => invoice.type == 'quote').toList();
+    final invoices = allDocuments
+        .where((invoice) => invoice.type == 'invoice')
+        .toList();
+    final quotes = allDocuments
+        .where((invoice) => invoice.type == 'quote')
+        .toList();
 
     final totalInvoices = invoices.length;
     final totalQuotes = quotes.length;
 
-    final paidInvoices = invoices.where((invoice) => invoice.status == 'paid').toList();
-    final unpaidInvoices = invoices.where((invoice) => invoice.status == 'unpaid').toList();
-    final partialInvoices = invoices.where((invoice) {
-      return invoice.status == 'partial' || invoice.status == 'partially_paid';
-    }).toList();
-    final draftInvoices = invoices.where((invoice) => invoice.status == 'draft').toList();
+    final paidInvoices = invoices
+        .where((invoice) => normalizeInvoiceStatus(invoice.status) == 'paid')
+        .toList();
+    final unpaidInvoices = invoices
+        .where((invoice) => normalizeInvoiceStatus(invoice.status) == 'unpaid')
+        .toList();
+    final partialInvoices = invoices
+        .where((invoice) => normalizeInvoiceStatus(invoice.status) == 'partial')
+        .toList();
+    final draftInvoices = invoices
+        .where((invoice) => normalizeInvoiceStatus(invoice.status) == 'draft')
+        .toList();
 
     final totalRevenue = invoices.fold<double>(
       0,
