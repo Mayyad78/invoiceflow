@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../models/client_model.dart';
+import '../../models/invoice_model.dart';
+import '../../providers/app_settings_provider.dart';
 import '../../providers/clients_provider.dart';
 import '../../providers/invoices_provider.dart';
 import '../../utils/invoice_status_localizer.dart';
@@ -49,6 +52,64 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Future<bool?> _confirmConvertQuote(BuildContext context, AppLocalizations t) {
+    return showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(t.confirmConvertQuote),
+        content: Text(t.confirmConvertQuoteMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(t.cancel),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(t.convertToInvoice),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _convertQuoteToInvoice(
+    BuildContext context,
+    AppLocalizations t,
+    InvoiceModel quote,
+  ) async {
+    final confirmed = await _confirmConvertQuote(context, t);
+    if (confirmed != true) return;
+
+    final numberingNotifier = ref.read(appSettingsProvider.notifier);
+    final invoiceNumber =
+        await numberingNotifier.consumeNextDocumentNumber('invoice');
+
+    final now = DateTime.now();
+
+    final invoice = InvoiceModel(
+      id: const Uuid().v4(),
+      invoiceNumber: invoiceNumber,
+      clientId: quote.clientId,
+      issueDate: now,
+      dueDate: now.add(const Duration(days: 7)),
+      items: List.from(quote.items),
+      taxPercent: quote.taxPercent,
+      discount: quote.discount,
+      notes: quote.notes,
+      status: 'draft',
+      type: 'invoice',
+      paidAmount: 0,
+    );
+
+    await ref.read(invoicesProvider.notifier).addInvoice(invoice);
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(t.quoteConverted)),
     );
   }
 
@@ -189,6 +250,19 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
                                       Wrap(
                                         spacing: 4,
                                         children: [
+                                          if (widget.type == 'quote')
+                                            TextButton.icon(
+                                              onPressed: () =>
+                                                  _convertQuoteToInvoice(
+                                                context,
+                                                t,
+                                                invoice,
+                                              ),
+                                              icon: const Icon(
+                                                Icons.transform_outlined,
+                                              ),
+                                              label: Text(t.convertToInvoice),
+                                            ),
                                           TextButton.icon(
                                             onPressed: client == null
                                                 ? null

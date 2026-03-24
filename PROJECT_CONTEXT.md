@@ -387,6 +387,43 @@ Final result:
 
 ---
 
+## Step 19 – Quote-to-Invoice Conversion
+
+Completed as one full step.
+
+Implemented:
+- added quote-to-invoice conversion action in the quote list
+- conversion creates a new invoice from the selected quote
+- original quote remains unchanged
+- new invoice uses the invoice numbering system
+- copied quote data into the new invoice:
+  - client
+  - items
+  - tax
+  - discount
+  - notes
+- reset payment tracking for the new invoice:
+  - status starts as `draft`
+  - paid amount starts as `0`
+- added confirmation dialog before conversion
+- added localized labels/messages for conversion flow
+
+Important decisions:
+- quote is preserved instead of replaced, which is safer for real business workflow
+- converted invoice gets a fresh invoice number from Step 11 numbering
+- new invoice starts as a clean billing document, separate from the quote
+- current create/edit flows were left unchanged
+
+Final result:
+- quote can now be converted into a real invoice safely
+- original quote history is preserved
+- invoice numbering remains correct
+- converted invoices appear correctly in the invoice list
+- conversion fits real quotation-to-billing workflow
+- Step 19 confirmed working
+
+---
+
 ## Current Features
 
 ### Dashboard
@@ -424,6 +461,7 @@ Final result:
 - paid amount
 - remaining amount
 - partial payment support
+- quote-to-invoice conversion
 
 ### PDF
 - generate PDFs
@@ -448,7 +486,8 @@ Final result:
 - Business-ready core features
 - Clean user flows
 - Dashboard reflects real metrics
-- Status localization logic is now centralized and more maintainable
+- Status localization logic centralized
+- Quote-to-invoice workflow now supported
 - Ready for next feature
 
 ---
@@ -472,13 +511,13 @@ Final result:
 
 ## Next Step
 
-## Step 19 – Quote-to-Invoice Conversion
+## Step 20 – Duplicate Invoice/Quote Action
 
 Goal:
-- allow converting a saved quote into an invoice
-- preserve client and item data
-- generate a proper invoice number using the numbering system
-- improve the real sales workflow from quotation to billing
+- allow duplicating an existing invoice or quote
+- keep all line items and values
+- generate a new correct document number for the new copy
+- speed up repeated business workflows
 
 ---
 
@@ -486,8 +525,8 @@ Goal:
 
 Repo: https://github.com/Mayyad78/invoiceflow
 Branch: main
-Last completed: Step 18
-Next task: Step 19
+Last completed: Step 19
+Next task: Step 20
 
 ---
 

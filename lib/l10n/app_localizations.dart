@@ -682,6 +682,30 @@ abstract class AppLocalizations {
   /// **'Are you sure you want to delete this invoice?'**
   String get deleteInvoiceMessage;
 
+  /// No description provided for @confirmConvertQuote.
+  ///
+  /// In en, this message translates to:
+  /// **'Convert Quote'**
+  String get confirmConvertQuote;
+
+  /// No description provided for @confirmConvertQuoteMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This will create a new invoice from the selected quote and keep the original quote unchanged.'**
+  String get confirmConvertQuoteMessage;
+
+  /// No description provided for @convertToInvoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Convert to Invoice'**
+  String get convertToInvoice;
+
+  /// No description provided for @quoteConverted.
+  ///
+  /// In en, this message translates to:
+  /// **'Quote converted to invoice successfully'**
+  String get quoteConverted;
+
   /// No description provided for @cancel.
   ///
   /// In en, this message translates to:

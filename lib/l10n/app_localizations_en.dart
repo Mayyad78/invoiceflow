@@ -302,6 +302,19 @@ class AppLocalizationsEn extends AppLocalizations {
       'Are you sure you want to delete this invoice?';
 
   @override
+  String get confirmConvertQuote => 'Convert Quote';
+
+  @override
+  String get confirmConvertQuoteMessage =>
+      'This will create a new invoice from the selected quote and keep the original quote unchanged.';
+
+  @override
+  String get convertToInvoice => 'Convert to Invoice';
+
+  @override
+  String get quoteConverted => 'Quote converted to invoice successfully';
+
+  @override
   String get cancel => 'Cancel';
 
   @override

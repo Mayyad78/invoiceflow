@@ -304,6 +304,19 @@ class AppLocalizationsFr extends AppLocalizations {
       'Voulez-vous vraiment supprimer cette facture ?';
 
   @override
+  String get confirmConvertQuote => 'Convertir le devis';
+
+  @override
+  String get confirmConvertQuoteMessage =>
+      'Cela créera une nouvelle facture à partir du devis sélectionné tout en conservant le devis d\'origine inchangé.';
+
+  @override
+  String get convertToInvoice => 'Convertir en facture';
+
+  @override
+  String get quoteConverted => 'Devis converti en facture avec succès';
+
+  @override
   String get cancel => 'Annuler';
 
   @override

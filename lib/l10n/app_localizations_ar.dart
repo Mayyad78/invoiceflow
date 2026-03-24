@@ -301,6 +301,19 @@ class AppLocalizationsAr extends AppLocalizations {
   String get deleteInvoiceMessage => 'هل أنت متأكد أنك تريد حذف هذه الفاتورة؟';
 
   @override
+  String get confirmConvertQuote => 'تحويل عرض السعر';
+
+  @override
+  String get confirmConvertQuoteMessage =>
+      'سيؤدي هذا إلى إنشاء فاتورة جديدة من عرض السعر المحدد مع الإبقاء على عرض السعر الأصلي بدون تغيير.';
+
+  @override
+  String get convertToInvoice => 'تحويل إلى فاتورة';
+
+  @override
+  String get quoteConverted => 'تم تحويل عرض السعر إلى فاتورة بنجاح';
+
+  @override
   String get cancel => 'إلغاء';
 
   @override
