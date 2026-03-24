@@ -86,5 +86,20 @@
   "clearSearch": "Effacer la recherche",
   "billTo": "Facturer à",
   "thankYou": "Merci pour votre confiance",
-  "generatedBy": "Généré par InvoiceFlow"
+  "generatedBy": "Généré par InvoiceFlow",
+  "documentNumbering": "Numérotation des documents",
+  "invoicePrefix": "Préfixe de facture",
+  "quotePrefix": "Préfixe de devis",
+  "nextInvoiceNumber": "Prochain numéro de facture",
+  "nextQuoteNumber": "Prochain numéro de devis",
+  "enterValidNumber": "Entrez un numéro valide",
+  "saveNumberingSettings": "Enregistrer la numérotation",
+  "backupAndRestore": "Sauvegarde et restauration",
+  "backupDescription": "Exportez vos données locales dans un fichier JSON de sauvegarde, ou restaurez une sauvegarde précédente. La restauration remplacera entièrement les données locales actuelles.",
+  "exportBackup": "Exporter la sauvegarde",
+  "restoreBackup": "Restaurer une sauvegarde",
+  "restore": "Restaurer",
+  "restoreBackupWarning": "La restauration d'une sauvegarde remplacera les clients, factures, paramètres et le profil d'entreprise actuellement présents sur cet appareil. Cette action est irréversible.",
+  "backupExported": "Sauvegarde exportée avec succès",
+  "backupRestored": "Sauvegarde restaurée avec succès"
 }

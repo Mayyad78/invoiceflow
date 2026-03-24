@@ -86,5 +86,20 @@
   "clearSearch": "مسح البحث",
   "billTo": "إلى",
   "thankYou": "شكراً لتعاملكم معنا",
-  "generatedBy": "تم الإنشاء بواسطة InvoiceFlow"
+  "generatedBy": "تم الإنشاء بواسطة InvoiceFlow",
+  "documentNumbering": "ترقيم المستندات",
+  "invoicePrefix": "بادئة الفاتورة",
+  "quotePrefix": "بادئة عرض السعر",
+  "nextInvoiceNumber": "رقم الفاتورة التالي",
+  "nextQuoteNumber": "رقم عرض السعر التالي",
+  "enterValidNumber": "أدخل رقماً صحيحاً",
+  "saveNumberingSettings": "حفظ إعدادات الترقيم",
+  "backupAndRestore": "النسخ الاحتياطي والاستعادة",
+  "backupDescription": "قم بتصدير بيانات التطبيق المحلية إلى ملف JSON احتياطي، أو استعد نسخة احتياطية سابقة. الاستعادة ستستبدل جميع البيانات المحلية الحالية.",
+  "exportBackup": "تصدير نسخة احتياطية",
+  "restoreBackup": "استعادة نسخة احتياطية",
+  "restore": "استعادة",
+  "restoreBackupWarning": "استعادة النسخة الاحتياطية ستستبدل العملاء والفواتير والإعدادات وبيانات النشاط الحالية على هذا الجهاز. لا يمكن التراجع عن هذا الإجراء.",
+  "backupExported": "تم تصدير النسخة الاحتياطية بنجاح",
+  "backupRestored": "تمت استعادة النسخة الاحتياطية بنجاح"
 }

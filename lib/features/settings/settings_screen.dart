@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../providers/app_settings_provider.dart';
+import '../../providers/backup_restore_service_provider.dart';
 import '../../providers/business_profile_provider.dart';
+import '../../providers/clients_provider.dart';
+import '../../providers/invoices_provider.dart';
 import '../../providers/locale_provider.dart';
 import 'business_profile_screen.dart';
 
@@ -11,6 +14,69 @@ class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   static const currencies = ['USD', 'EUR', 'GBP', 'JOD', 'AED'];
+
+  Future<void> _exportBackup(BuildContext context, WidgetRef ref) async {
+    final t = AppLocalizations.of(context)!;
+
+    final result = await ref.read(backupRestoreServiceProvider).exportBackup();
+
+    if (!context.mounted || result.cancelled) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          result.success ? t.backupExported : result.message,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _restoreBackup(BuildContext context, WidgetRef ref) async {
+    final t = AppLocalizations.of(context)!;
+
+    final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (dialogContext) {
+            return AlertDialog(
+              title: Text(t.restoreBackup),
+              content: Text(t.restoreBackupWarning),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                  child: Text(t.cancel),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(true),
+                  child: Text(t.restore),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
+
+    if (!confirmed || !context.mounted) return;
+
+    final result = await ref.read(backupRestoreServiceProvider).restoreBackup();
+
+    if (!context.mounted || result.cancelled) return;
+
+    if (result.success) {
+      ref.invalidate(clientsProvider);
+      ref.invalidate(invoicesProvider);
+      ref.invalidate(businessProfileProvider);
+      ref.invalidate(appSettingsProvider);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(t.backupRestored)),
+      );
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(result.message)),
+    );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -72,14 +138,14 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 24),
           Card(
             child: ListTile(
-              title: const Text('Document numbering'),
+              title: Text(t.documentNumbering),
               subtitle: Text(
                 'Invoice: ${appSettings.invoicePrefix}${appSettings.nextInvoiceNumber.toString().padLeft(4, '0')} • '
                 'Quote: ${appSettings.quotePrefix}${appSettings.nextQuoteNumber.toString().padLeft(4, '0')}',
               ),
               trailing: const Icon(Icons.chevron_right),
               onTap: () {
-                showModalBottomSheet<void>(
+                showModalBottomSheet(
                   context: context,
                   isScrollControlled: true,
                   builder: (_) => _NumberingSettingsSheet(
@@ -90,6 +156,43 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                 );
               },
+            ),
+          ),
+          const SizedBox(height: 24),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    t.backupAndRestore,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    t.backupDescription,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 16),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: [
+                      FilledButton.icon(
+                        onPressed: () => _exportBackup(context, ref),
+                        icon: const Icon(Icons.upload_file_outlined),
+                        label: Text(t.exportBackup),
+                      ),
+                      OutlinedButton.icon(
+                        onPressed: () => _restoreBackup(context, ref),
+                        icon: const Icon(Icons.settings_backup_restore_outlined),
+                        label: Text(t.restoreBackup),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 24),
@@ -214,7 +317,6 @@ class _NumberingSettingsSheetState
     if (!mounted) return;
 
     Navigator.of(context).pop();
-
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Document numbering settings saved'),
@@ -224,6 +326,7 @@ class _NumberingSettingsSheetState
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return SafeArea(
@@ -235,9 +338,9 @@ class _NumberingSettingsSheetState
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'Document numbering',
-                style: TextStyle(
+              Text(
+                t.documentNumbering,
+                style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
@@ -245,13 +348,13 @@ class _NumberingSettingsSheetState
               const SizedBox(height: 20),
               TextFormField(
                 controller: _invoicePrefixController,
-                decoration: const InputDecoration(
-                  labelText: 'Invoice prefix',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: t.invoicePrefix,
+                  border: const OutlineInputBorder(),
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Required';
+                    return t.requiredField;
                   }
                   return null;
                 },
@@ -260,14 +363,14 @@ class _NumberingSettingsSheetState
               TextFormField(
                 controller: _nextInvoiceNumberController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Next invoice number',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: t.nextInvoiceNumber,
+                  border: const OutlineInputBorder(),
                 ),
                 validator: (value) {
                   final parsed = int.tryParse((value ?? '').trim());
                   if (parsed == null || parsed < 1) {
-                    return 'Enter a valid number';
+                    return t.enterValidNumber;
                   }
                   return null;
                 },
@@ -275,13 +378,13 @@ class _NumberingSettingsSheetState
               const SizedBox(height: 16),
               TextFormField(
                 controller: _quotePrefixController,
-                decoration: const InputDecoration(
-                  labelText: 'Quote prefix',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: t.quotePrefix,
+                  border: const OutlineInputBorder(),
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Required';
+                    return t.requiredField;
                   }
                   return null;
                 },
@@ -290,14 +393,14 @@ class _NumberingSettingsSheetState
               TextFormField(
                 controller: _nextQuoteNumberController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Next quote number',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: t.nextQuoteNumber,
+                  border: const OutlineInputBorder(),
                 ),
                 validator: (value) {
                   final parsed = int.tryParse((value ?? '').trim());
                   if (parsed == null || parsed < 1) {
-                    return 'Enter a valid number';
+                    return t.enterValidNumber;
                   }
                   return null;
                 },
@@ -307,7 +410,7 @@ class _NumberingSettingsSheetState
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _save,
-                  child: const Text('Save numbering settings'),
+                  child: Text(t.saveNumberingSettings),
                 ),
               ),
             ],

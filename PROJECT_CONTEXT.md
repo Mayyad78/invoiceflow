@@ -37,6 +37,9 @@ Core principles:
 - No backend
 - Preserve current UI
 - Use full file replacements
+- Do not provide git commit commands until the full step is running correctly and the user confirms
+- Do not update PROJECT_CONTEXT.md until the full step is running correctly and the user confirms
+- Do not create new variable names when the project already has existing names for the same purpose; stick to current project naming and structure
 
 IMPORTANT WORKFLOW RULE:
 - After each completed step:
@@ -50,6 +53,13 @@ IMPORTANT WORKFLOW RULE:
     - important fixes/decisions inside that step
     - current state
     - next step
+- After the step is confirmed working:
+  - update PROJECT_CONTEXT.md first
+  - then provide git commit commands
+  - both should happen together only after confirmation
+- Always include the full project structure with all files so it is clear what files were added or changed
+- If adding a new file, clearly say where it connects
+- Prefer safe full-file replacements over partial edits
 
 ---
 
@@ -85,6 +95,7 @@ lib/
 │   └── invoice_model.dart
 ├── providers/
 │   ├── app_settings_provider.dart
+│   ├── backup_restore_service_provider.dart
 │   ├── business_profile_provider.dart
 │   ├── client_service_provider.dart
 │   ├── clients_provider.dart
@@ -94,6 +105,7 @@ lib/
 │   ├── pdf_service_provider.dart
 │   └── settings_service_provider.dart
 ├── services/
+│   ├── backup_restore_service.dart
 │   ├── client_service.dart
 │   ├── invoice_service.dart
 │   ├── local_storage_service.dart
@@ -199,6 +211,46 @@ Note:
 
 ---
 
+## Step 12 – Backup and Restore
+
+Completed as one full step.
+
+Implemented:
+- JSON backup export
+- JSON backup restore
+- backup includes:
+  - clients
+  - invoices
+  - business profile
+  - app settings
+- restore performs a full local replace of current stored data
+- backup/restore UI added inside Settings
+- restore confirmation dialog added
+- provider refresh after restore so restored data appears immediately in UI
+
+Important fixes and decisions:
+- kept the architecture local-first with Hive
+- kept Riverpod architecture
+- used file_selector for choosing export and restore files
+- used a simple versioned JSON payload
+- restore validates file shape before replacing existing data
+- restore skips invalid entries without IDs instead of crashing
+- settings restore writes business profile and app settings back to the settings box using the existing keys
+- macOS export issue was fixed by adding the required user-selected file entitlements in:
+  - macos/Runner/DebugProfile.entitlements
+  - macos/Runner/Release.entitlements
+- export flow was aligned with the current file_selector save dialog handling so backup export works correctly on macOS
+
+Final accepted result:
+- user can export a full local backup file
+- user can restore a previous backup file
+- clients, invoices, business profile, and settings are restored together
+- restore immediately refreshes the app state
+- UI stays simple and matches the current app style
+- export works correctly on macOS after the entitlement fix
+
+---
+
 ## Current Features
 
 ### Dashboard
@@ -241,6 +293,8 @@ Note:
 - business profile
 - currency selector
 - document numbering settings
+- backup export
+- backup restore
 - local persistence
 
 ---
@@ -252,6 +306,7 @@ Note:
 - PDF working
 - Logo working
 - Numbering working
+- Backup and restore working
 - Ready for next major feature step
 
 ---
@@ -277,22 +332,21 @@ Note:
 
 ## Next Step
 
-## Step 12 – Backup and Restore
+## Step 13 – Edit Existing Clients and Documents
 
 Goal:
-- export local app data
-- import local app data
-- restore:
-  - clients
-  - invoices
-  - settings
-  - business profile
+- edit existing clients
+- edit existing invoices
+- edit existing quotes
+- preserve numbering correctly during edits
+- keep local-first architecture
+- keep UI simple and safe
 
 Preferred approach:
-- JSON export/import
-- simple and safe full local replace on restore
-- keep Hive/local-first architecture
-- keep UI simple
+- add edit actions from list screens
+- reuse current form screens where possible
+- preserve original document number when editing an existing invoice/quote
+- avoid creating duplicate records during edit
 
 ---
 
@@ -300,8 +354,8 @@ Preferred approach:
 
 Repo: https://github.com/Mayyad78/invoiceflow
 Branch: main
-Last completed: Step 11
-Next task: Step 12
+Last completed: Step 12
+Next task: Step 13
 
 Rules:
 - keep Riverpod
@@ -311,14 +365,15 @@ Rules:
 - always provide FULL file path
 - always provide FULL code for any changed file
 - do not provide partial snippets unless explicitly asked
-- after each step, provide:
-  1. files changed
-  2. what to test
-  3. git commands to commit and push
+- do not provide git commit commands until the full step is running correctly and confirmed
+- do not update PROJECT_CONTEXT.md until the full step is running correctly and confirmed
+- do not create new variable names if the project already has existing names for the same purpose
+- after each confirmed step, update PROJECT_CONTEXT.md first, then provide git commit commands
 - continue from the current architecture, do not restart the project
 - if adding a new file, clearly say where it connects
 - prefer safe full-file replacements over partial edits
 - after each successful step, always generate the FULL updated PROJECT_CONTEXT.md file in one block
+- always include the full project structure with all files after each confirmed step
 
 ---
 
@@ -328,4 +383,4 @@ Rules:
 - Continue incrementally
 - Stability is more important than perfection
 - Avoid breaking working features
-- Step 12 should be built as one full step
+- Step 13 should be built as one full step

@@ -273,4 +273,51 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get generatedBy => 'Généré par InvoiceFlow';
+
+  @override
+  String get documentNumbering => 'Numérotation des documents';
+
+  @override
+  String get invoicePrefix => 'Préfixe de facture';
+
+  @override
+  String get quotePrefix => 'Préfixe de devis';
+
+  @override
+  String get nextInvoiceNumber => 'Prochain numéro de facture';
+
+  @override
+  String get nextQuoteNumber => 'Prochain numéro de devis';
+
+  @override
+  String get enterValidNumber => 'Entrez un numéro valide';
+
+  @override
+  String get saveNumberingSettings => 'Enregistrer la numérotation';
+
+  @override
+  String get backupAndRestore => 'Sauvegarde et restauration';
+
+  @override
+  String get backupDescription =>
+      'Exportez vos données locales dans un fichier JSON de sauvegarde, ou restaurez une sauvegarde précédente. La restauration remplacera entièrement les données locales actuelles.';
+
+  @override
+  String get exportBackup => 'Exporter la sauvegarde';
+
+  @override
+  String get restoreBackup => 'Restaurer une sauvegarde';
+
+  @override
+  String get restore => 'Restaurer';
+
+  @override
+  String get restoreBackupWarning =>
+      'La restauration d\'une sauvegarde remplacera les clients, factures, paramètres et le profil d\'entreprise actuellement présents sur cet appareil. Cette action est irréversible.';
+
+  @override
+  String get backupExported => 'Sauvegarde exportée avec succès';
+
+  @override
+  String get backupRestored => 'Sauvegarde restaurée avec succès';
 }

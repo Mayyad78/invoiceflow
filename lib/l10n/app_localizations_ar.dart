@@ -268,4 +268,51 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get generatedBy => 'تم الإنشاء بواسطة InvoiceFlow';
+
+  @override
+  String get documentNumbering => 'ترقيم المستندات';
+
+  @override
+  String get invoicePrefix => 'بادئة الفاتورة';
+
+  @override
+  String get quotePrefix => 'بادئة عرض السعر';
+
+  @override
+  String get nextInvoiceNumber => 'رقم الفاتورة التالي';
+
+  @override
+  String get nextQuoteNumber => 'رقم عرض السعر التالي';
+
+  @override
+  String get enterValidNumber => 'أدخل رقماً صحيحاً';
+
+  @override
+  String get saveNumberingSettings => 'حفظ إعدادات الترقيم';
+
+  @override
+  String get backupAndRestore => 'النسخ الاحتياطي والاستعادة';
+
+  @override
+  String get backupDescription =>
+      'قم بتصدير بيانات التطبيق المحلية إلى ملف JSON احتياطي، أو استعد نسخة احتياطية سابقة. الاستعادة ستستبدل جميع البيانات المحلية الحالية.';
+
+  @override
+  String get exportBackup => 'تصدير نسخة احتياطية';
+
+  @override
+  String get restoreBackup => 'استعادة نسخة احتياطية';
+
+  @override
+  String get restore => 'استعادة';
+
+  @override
+  String get restoreBackupWarning =>
+      'استعادة النسخة الاحتياطية ستستبدل العملاء والفواتير والإعدادات وبيانات النشاط الحالية على هذا الجهاز. لا يمكن التراجع عن هذا الإجراء.';
+
+  @override
+  String get backupExported => 'تم تصدير النسخة الاحتياطية بنجاح';
+
+  @override
+  String get backupRestored => 'تمت استعادة النسخة الاحتياطية بنجاح';
 }
