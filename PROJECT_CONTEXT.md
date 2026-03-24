@@ -6,48 +6,56 @@ This file contains the full working context of the project so development can co
 
 ## Project Overview
 
-InvoiceFlow is a **local-first Flutter invoicing app** designed for small businesses and freelancers.
+InvoiceFlow is a local-first Flutter invoicing app.
 
-Core idea:
-
-* No backend (for now)
-* Everything stored locally
-* Fast and simple workflow
-* Clean UI
-* Multi-language support (EN / AR / FR)
+Core principles:
+- No backend (for now)
+- Local-first (Hive)
+- Clean UI
+- Multi-language (EN / AR / FR)
 
 ---
 
 ## Tech Stack
 
-* Flutter
-* Riverpod
-* Hive (local storage)
-* intl / l10n
-* pdf
-* printing
-* share_plus
-* image_picker
-* file_selector (desktop support)
+- Flutter
+- Riverpod
+- Hive
+- intl / l10n
+- pdf
+- printing
+- share_plus
+- image_picker
+- file_selector
 
 ---
 
-## Architecture Rules (IMPORTANT)
+## Development Rules (CRITICAL)
 
-* Keep Riverpod (DO NOT replace)
-* Keep current folder structure
-* Keep local-first approach
-* No backend for now
-* Preserve current UI style
-* Prefer full file replacements when editing
-* Avoid breaking working features
-* Build step-by-step, not big rewrites
+- Keep Riverpod
+- Keep local-first
+- No backend
+- Preserve UI
+- Use full file replacements
+
+IMPORTANT WORKFLOW RULE:
+- After each completed step:
+  - ALWAYS generate FULL updated PROJECT_CONTEXT.md
+  - Do NOT provide partial updates
+  - Do NOT require manual merging
+  - Must include:
+    - all steps
+    - latest step
+    - bugs
+    - fixes
+    - decisions
+    - current state
+    - next step
 
 ---
 
-## Project Structure
+## Full Project Structure
 
-```text
 lib/
 ├── app/
 │   └── app.dart
@@ -98,257 +106,155 @@ Other important files:
 - pubspec.yaml
 - l10n.yaml
 - PROJECT_CONTEXT.md
-```
+- README.md
+- macos/Runner/DebugProfile.entitlements
+- macos/Runner/Release.entitlements
 
 ---
 
-## Completed Steps
+## Steps 1 → 9
 
-### Step 1
+All core features implemented:
+- clients CRUD
+- invoices & quotes
+- PDF generation
+- dashboard
+- localization
+- settings
+- search
+- UI polish
 
-* Flutter project initialized
-* l10n added (EN / AR / FR)
-* dashboard + settings base
-
-### Step 2
-
-* models created
-* Hive local storage added
-* local storage service implemented
-
-### Step 3
-
-* clients feature completed
-* add / list / delete clients
-* stored locally
-
-### Step 4
-
-* invoice & quote creation
-* items
-* tax & discount
-* save locally
-
-### Step 5
-
-* PDF generation
-* print support
-* share support
-* macOS preview works
-* web fallback implemented
-
-### Step 6
-
-* business profile
-* currency selector
-* settings stored locally
-* PDF uses settings
-
-### Step 7a
-
-* invoice status:
-
-  * draft
-  * paid
-  * unpaid
-
-### Step 7b
-
-* search clients
-* search invoices
-
-### Step 7c
-
-* dashboard stats:
-
-  * total invoices
-  * paid
-  * unpaid
-  * revenue
-  * pending
-
-### Step 8
-
-* delete confirmations
-* empty states
-* UI polish
-
-### Step 9
-
-* localized PDF labels
-* EN / AR / FR support in PDF
-* improved branding layout
+System stable.
 
 ---
 
-## Step 10 Summary
+## Step 10 – PDF + Branding
 
-### Step 10a – Arabic PDF rendering
+### Step 10a – Arabic PDF
+- Arabic font added
+- glyphs render correctly
+- shaping NOT solved
 
-* Added Arabic font: NotoSansArabic
-* English & French stable
-* Arabic readable but:
-  ❌ proper shaping/joining NOT solved
-* Tried arabic_reshaper → caused instability → rolled back
+Decision:
+- defer shaping to later
+- keep stable version
 
-### Step 10b – Business logo
-
-* logo picker added
-* works on web and macOS (after entitlements fix)
-* logo stored locally (base64)
-* preview works
-* logo appears in PDF
-
-### Step 10c – PDF header polishing
-
-* header layout reviewed and improved
-* alignment fixes for logo and business info
-* decision taken:
-  ✅ keep **unified header layout across all languages**
-* Arabic layout improvements partially attempted
-* final decision:
-  ❌ stop further tuning now to avoid time waste
-  🔁 revisit later if needed
+Final:
+- EN / FR correct
+- AR readable but not perfect
 
 ---
 
-## Current Features
+### Step 10b – Logo
+- logo picker added
+- stored locally (base64)
+- preview works
+- appears in PDF
 
-### Clients
+Fix:
+- macOS entitlement issue solved
 
-* CRUD
-* search
-* local storage
-
-### Invoices / Quotes
-
-* create
-* edit
-* items
-* tax / discount
-* status
-* search
-
-### PDF
-
-* generate invoice & quote
-* print
-* share
-* macOS preview
-* web fallback
-* localized labels
-* business profile included
-* currency applied
-* logo included
-
-### Settings
-
-* business profile
-* currency selector
-* local persistence
+Final:
+- logo fully working
 
 ---
 
-## Known Limitations
+### Step 10c – Header
+- layout improvements done
 
-### PDF / Arabic
+Issues:
+- Arabic layout inconsistency
 
-* Arabic letters are NOT properly joined
-* layout is acceptable but not perfect
-* needs future dedicated fix
+Decision:
+- keep unified layout
+- stop further tuning
 
-### Web
-
-* no full PDF preview
-* fallback UI used
-
-### General
-
-* no backend
-* no auth
-* no sync
-* no backup/restore
-* no invoice numbering system
+Final:
+- header stable and usable
 
 ---
 
-## Deferred / Return Later
+## Step 11 – Document Numbering
 
-These are intentionally postponed:
+### Implemented
+- invoice prefix
+- quote prefix
+- next invoice number
+- next quote number
+- auto increment
+- settings UI
+- local persistence
 
-1. Arabic text shaping (CRITICAL but complex)
-2. deeper Arabic PDF layout polish
-3. web PDF preview improvement
-4. backup & restore
-5. invoice numbering system
-6. cloud sync / backend
-7. authentication
-8. advanced branding
+---
+
+### Bugs
+
+1. Crash:
+type 'Null' is not a subtype of type 'int'
+
+Cause:
+- old saved data missing new fields
+
+Fix:
+- safe parsing (_readInt / _readString)
+
+---
+
+2. Layout issue:
+- overlapping fields in sheet
+
+Fix:
+- replaced Wrap → Column + SingleChildScrollView
+
+---
+
+### Final State
+
+- numbering works correctly
+- prefixes saved
+- increment works
+- invoice & quote separated
+- UI fixed
+- no crashes
+- backward compatible
 
 ---
 
 ## Current State
 
-* App is stable
-* Core features working
-* PDF functional
-* Logo feature completed
-* Ready for next feature step
+- App stable
+- Core features working
+- PDF working
+- Logo working
+- Numbering working
+
+---
+
+## Known Issues
+
+- Arabic text shaping not solved
+- Web PDF preview limited
+
+---
+
+## Deferred
+
+1. Arabic shaping
+2. PDF polish
+3. backup/restore
+4. cloud sync
+5. authentication
 
 ---
 
 ## Next Step
 
-### Step 11 – Document Numbering System
+Step 12 – Backup & Restore
 
-Goal:
-
-* invoice prefix (e.g., INV-)
-* quote prefix
-* next invoice number
-* next quote number
-* auto increment
-* stored locally
-* used during invoice creation
-
----
-
-## After Step 11
-
-### Step 12 – Backup & Restore
-
-* export data
-* import data
-* restore clients
-* restore invoices
-* restore settings
-
----
-
-## How to Continue in New Chat
-
-Provide:
-
-Repo: https://github.com/Mayyad78/invoiceflow
-Branch: main
-Last completed: Step 10c
-Next task: Step 11
-
-Rules:
-
-* keep Riverpod
-* keep local-first
-* no backend
-* preserve UI
-* full file replacements
-* provide test steps
-* provide git commands
-
----
-
-## Notes
-
-* Do NOT restart project
-* Continue incrementally
-* Stability > perfection
-* Avoid breaking working features
+- export data (JSON)
+- import data
+- restore:
+  - clients
+  - invoices
+  - settings
+  - business profile
