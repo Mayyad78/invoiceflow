@@ -129,5 +129,6 @@
   "totalDocuments": "Total Documents",
   "noClientDocuments": "No invoices or quotes found for this client yet.",
   "tapToViewDetails": "Tap to view details",
-  "quoteAlreadyConverted": "This quote has already been converted to an invoice"
+  "quoteAlreadyConverted": "This quote has already been converted to an invoice",
+  "duplicate": "Duplicate"
 }

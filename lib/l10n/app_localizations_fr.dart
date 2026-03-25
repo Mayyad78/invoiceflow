@@ -407,4 +407,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get quoteAlreadyConverted => 'Ce devis a déjà été converti en facture';
+
+  @override
+  String get duplicate => 'Dupliquer';
 }

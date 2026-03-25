@@ -404,4 +404,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get quoteAlreadyConverted =>
       'This quote has already been converted to an invoice';
+
+  @override
+  String get duplicate => 'Duplicate';
 }

@@ -5,7 +5,6 @@ This file contains the full working context of the project so development can co
 ---
 
 ## Project Overview
-
 InvoiceFlow is a local-first Flutter invoicing app.
 
 Core principles:
@@ -17,7 +16,6 @@ Core principles:
 ---
 
 ## Tech Stack
-
 - Flutter
 - Riverpod
 - Hive
@@ -31,7 +29,6 @@ Core principles:
 ---
 
 ## Development Rules (CRITICAL)
-
 - Keep Riverpod
 - Keep local-first
 - No backend
@@ -277,6 +274,60 @@ Final result:
 
 ---
 
+## Step 20 – Duplicate Invoice/Quote
+
+Completed as one full step.
+
+Implemented:
+- duplicate existing invoice
+- duplicate existing quote
+- duplicate action added in invoices/quotes list
+- duplicated document opens in form before saving
+- new document number generated through existing numbering system
+- new unique ID generated for duplicated document
+- copied:
+  - client
+  - items
+  - tax
+  - discount
+  - notes
+- duplicated invoice resets payment state:
+  - status = draft
+  - paidAmount = 0
+- duplicated quote remains a quote
+- duplicated quote is NOT marked as converted
+- issue date reset to current date
+- due date recalculated from the original document timing
+- edit flow preserved separately from duplicate flow
+
+### Important fixes/decisions inside Step 20:
+- kept existing project structure and naming
+- preserved `InvoicesScreen(type: ...)` contract
+- preserved real `InvoiceModel` fields:
+  - `invoiceNumber`
+  - `clientId`
+  - `items`
+  - `taxPercent`
+  - `discount`
+  - `notes`
+  - `paidAmount`
+  - `convertedInvoiceId`
+- preserved Step 19 protection for already converted quotes
+- restored provider methods expected by current screens:
+  - `addInvoice`
+  - `updateInvoice`
+  - `deleteInvoice`
+- added duplicate localization label to l10n files
+
+Final result:
+- repeated business cases are faster
+- user can reuse invoices and quotes safely
+- no overwrite of original document
+- quote conversion safety remains intact
+- duplicate workflow is stable and working
+
+---
+
 ## Current Features
 
 ### Dashboard
@@ -291,11 +342,13 @@ Final result:
 - payment tracking
 - search
 - ordering
-- duplication prevention
+- duplicate support
 
 ### Quotes
 - create/edit
 - convert to invoice (safe)
+- duplicate support
+- conversion lock after use
 
 ### PDF
 - branding + localization
@@ -309,42 +362,47 @@ Final result:
 ---
 
 ## Current State
-
 - Stable
 - Business-ready
 - No critical issues
 - Workflow aligned with real usage
+- Step 20 completed and working
 
 ---
 
 ## Known Issues
-
 - Arabic PDF shaping not perfect
 
 ---
 
 ## Next Step
 
-## Step 20 – Duplicate Invoice/Quote
+## Step 21 – Invoice/Quote Templates
 
 Goal:
-- duplicate existing invoice or quote
-- generate new correct number
-- speed up repeated business cases
+- save a document as reusable template
+- create a new invoice or quote from template
+- speed up repeated business workflows even more
 
 ---
 
 ## How to Continue
 
-Repo: https://github.com/Mayyad78/invoiceflow  
-Branch: main  
-Last completed: Step 19  
-Next task: Step 20
+Repo:
+https://github.com/Mayyad78/invoiceflow
+
+Branch:
+main
+
+Last completed:
+Step 20
+
+Next task:
+Step 21
 
 ---
 
 ## Notes
-
 - Do not restart project
 - Continue incrementally
 - Stability > perfection

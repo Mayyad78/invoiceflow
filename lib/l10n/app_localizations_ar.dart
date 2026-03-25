@@ -403,4 +403,7 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get quoteAlreadyConverted =>
       'تم تحويل عرض السعر هذا إلى فاتورة بالفعل';
+
+  @override
+  String get duplicate => 'نسخ';
 }

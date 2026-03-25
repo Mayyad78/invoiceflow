@@ -128,6 +128,18 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
     );
   }
 
+  void _openDuplicateDocument(InvoiceModel invoice) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => CreateInvoiceScreen(
+          type: widget.type,
+          invoice: invoice,
+          isDuplicate: true,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
@@ -292,6 +304,13 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
                                               ),
                                               label: Text(t.convertToInvoice),
                                             ),
+                                          TextButton.icon(
+                                            onPressed: () =>
+                                                _openDuplicateDocument(invoice),
+                                            icon:
+                                                const Icon(Icons.copy_outlined),
+                                            label: Text(t.duplicate),
+                                          ),
                                           TextButton.icon(
                                             onPressed: client == null
                                                 ? null

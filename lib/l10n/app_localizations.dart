@@ -879,6 +879,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This quote has already been converted to an invoice'**
   String get quoteAlreadyConverted;
+
+  /// No description provided for @duplicate.
+  ///
+  /// In en, this message translates to:
+  /// **'Duplicate'**
+  String get duplicate;
 }
 
 class _AppLocalizationsDelegate

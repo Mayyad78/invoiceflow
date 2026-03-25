@@ -3,8 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/invoice_model.dart';
 import 'invoice_service_provider.dart';
 
-final invoicesProvider =
-    StateNotifierProvider<InvoicesNotifier, List<InvoiceModel>>(
+final invoicesProvider = StateNotifierProvider<InvoicesNotifier, List<InvoiceModel>>(
   (ref) {
     final service = ref.watch(invoiceServiceProvider);
     return InvoicesNotifier(service)..loadInvoices();

@@ -17,10 +17,12 @@ class CreateInvoiceScreen extends ConsumerStatefulWidget {
     super.key,
     this.type = 'invoice',
     this.invoice,
+    this.isDuplicate = false,
   });
 
   final String type;
   final InvoiceModel? invoice;
+  final bool isDuplicate;
 
   @override
   ConsumerState<CreateInvoiceScreen> createState() =>
@@ -42,7 +44,9 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
   late String _initialGeneratedNumber;
   String _status = 'draft';
 
-  bool get _isEdit => widget.invoice != null;
+  bool get _isEdit => widget.invoice != null && !widget.isDuplicate;
+  bool get _isDuplicate => widget.invoice != null && widget.isDuplicate;
+  bool get _hasSourceInvoice => widget.invoice != null;
   bool get _isInvoice => widget.type == 'invoice';
 
   @override
@@ -61,12 +65,38 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       _items.addAll(invoice.items.cast<InvoiceItemModel>());
       _initialGeneratedNumber = invoice.invoiceNumber;
       _status = invoice.status;
+    } else if (_isDuplicate) {
+      final invoice = widget.invoice!;
+      final settingsNotifier = ref.read(appSettingsProvider.notifier);
+      final dueDuration = invoice.dueDate.difference(invoice.issueDate);
+
+      _initialGeneratedNumber =
+          settingsNotifier.previewDocumentNumber(widget.type);
+      _invoiceNumberController.text = _initialGeneratedNumber;
+      _taxController.text = invoice.taxPercent.toString();
+      _discountController.text = invoice.discount.toString();
+      _notesController.text = invoice.notes;
+      _paidAmountController.text = '0';
+      _issueDate = DateTime.now();
+      _dueDate = _issueDate.add(
+        dueDuration.isNegative ? Duration.zero : dueDuration,
+      );
+      _items.addAll(
+        invoice.items.map(
+          (item) => InvoiceItemModel(
+            description: item.description,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+          ),
+        ),
+      );
+      _status = 'draft';
     } else {
       final settingsNotifier = ref.read(appSettingsProvider.notifier);
       _initialGeneratedNumber =
           settingsNotifier.previewDocumentNumber(widget.type);
       _invoiceNumberController.text = _initialGeneratedNumber;
-      _status = _isInvoice ? 'draft' : 'draft';
+      _status = 'draft';
     }
   }
 
@@ -74,7 +104,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    if (_selectedClient != null || !_isEdit) return;
+    if (_selectedClient != null || !_hasSourceInvoice) return;
 
     final clients = ref.read(clientsProvider);
 
@@ -241,7 +271,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
     }
 
     final invoice = InvoiceModel(
-      id: widget.invoice?.id ?? const Uuid().v4(),
+      id: _isEdit ? widget.invoice!.id : const Uuid().v4(),
       invoiceNumber: finalDocumentNumber,
       clientId: _selectedClient!.id,
       issueDate: _issueDate,
@@ -251,8 +281,9 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       discount: double.tryParse(_discountController.text.trim()) ?? 0,
       notes: _notesController.text.trim(),
       status: _resolveStatus(),
-      type: widget.invoice?.type ?? widget.type,
+      type: _isEdit ? widget.invoice!.type : widget.type,
       paidAmount: _resolvePaidAmount(),
+      convertedInvoiceId: _isEdit ? widget.invoice?.convertedInvoiceId : null,
     );
 
     if (_isEdit) {
