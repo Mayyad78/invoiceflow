@@ -430,4 +430,25 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get quoteTemplates => 'قوالب عروض السعر';
+
+  @override
+  String get renameTemplate => 'إعادة تسمية القالب';
+
+  @override
+  String get editTemplate => 'تعديل القالب';
+
+  @override
+  String get templateUpdated => 'تم تحديث القالب بنجاح';
+
+  @override
+  String get templateName => 'اسم القالب';
+
+  @override
+  String get deleteTemplateMessage => 'هل أنت متأكد أنك تريد حذف هذا القالب؟';
+
+  @override
+  String get startByCreatingInvoiceTemplate => 'ابدأ بحفظ فاتورة كقالب.';
+
+  @override
+  String get startByCreatingQuoteTemplate => 'ابدأ بحفظ عرض سعر كقالب.';
 }

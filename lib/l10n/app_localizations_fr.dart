@@ -434,4 +434,28 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get quoteTemplates => 'Modèles de devis';
+
+  @override
+  String get renameTemplate => 'Renommer le modèle';
+
+  @override
+  String get editTemplate => 'Modifier le modèle';
+
+  @override
+  String get templateUpdated => 'Modèle mis à jour avec succès';
+
+  @override
+  String get templateName => 'Nom du modèle';
+
+  @override
+  String get deleteTemplateMessage =>
+      'Voulez-vous vraiment supprimer ce modèle ?';
+
+  @override
+  String get startByCreatingInvoiceTemplate =>
+      'Commencez par enregistrer une facture comme modèle.';
+
+  @override
+  String get startByCreatingQuoteTemplate =>
+      'Commencez par enregistrer un devis comme modèle.';
 }

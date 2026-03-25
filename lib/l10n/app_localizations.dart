@@ -933,6 +933,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Quote Templates'**
   String get quoteTemplates;
+
+  /// No description provided for @renameTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename Template'**
+  String get renameTemplate;
+
+  /// No description provided for @editTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Template'**
+  String get editTemplate;
+
+  /// No description provided for @templateUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Template updated successfully'**
+  String get templateUpdated;
+
+  /// No description provided for @templateName.
+  ///
+  /// In en, this message translates to:
+  /// **'Template Name'**
+  String get templateName;
+
+  /// No description provided for @deleteTemplateMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this template?'**
+  String get deleteTemplateMessage;
+
+  /// No description provided for @startByCreatingInvoiceTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Start by saving an invoice as a template.'**
+  String get startByCreatingInvoiceTemplate;
+
+  /// No description provided for @startByCreatingQuoteTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Start by saving a quote as a template.'**
+  String get startByCreatingQuoteTemplate;
 }
 
 class _AppLocalizationsDelegate

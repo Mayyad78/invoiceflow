@@ -19,6 +19,101 @@ class TemplatesScreen extends ConsumerWidget {
 
   final String type;
 
+  Future<String?> _promptTemplateName(
+    BuildContext context,
+    AppLocalizations t, {
+    String? initialValue,
+  }) async {
+    final controller = TextEditingController(text: initialValue ?? '');
+
+    final result = await showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        String? errorText;
+
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: Text(t.renameTemplate),
+              content: TextField(
+                controller: controller,
+                autofocus: true,
+                decoration: InputDecoration(
+                  labelText: t.templateName,
+                  border: const OutlineInputBorder(),
+                  errorText: errorText,
+                ),
+                onChanged: (_) {
+                  if (errorText != null) {
+                    setDialogState(() {
+                      errorText = null;
+                    });
+                  }
+                },
+                onSubmitted: (_) {
+                  final value = controller.text.trim();
+                  if (value.isEmpty) {
+                    setDialogState(() {
+                      errorText = t.requiredField;
+                    });
+                    return;
+                  }
+                  Navigator.of(dialogContext).pop(value);
+                },
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: Text(t.cancel),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    final value = controller.text.trim();
+                    if (value.isEmpty) {
+                      setDialogState(() {
+                        errorText = t.requiredField;
+                      });
+                      return;
+                    }
+                    Navigator.of(dialogContext).pop(value);
+                  },
+                  child: Text(t.save),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    controller.dispose();
+    return result;
+  }
+
+  Future<bool?> _confirmDeleteTemplate(
+    BuildContext context,
+    AppLocalizations t,
+  ) {
+    return showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(t.confirmDelete),
+        content: Text(t.deleteTemplateMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(t.cancel),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(t.delete),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final t = AppLocalizations.of(context)!;
@@ -28,9 +123,11 @@ class TemplatesScreen extends ConsumerWidget {
         .where((invoice) => invoice.type == type && invoice.isTemplate)
         .toList()
       ..sort((a, b) {
-        final dateCompare = b.issueDate.compareTo(a.issueDate);
-        if (dateCompare != 0) return dateCompare;
-        return a.notes.compareTo(b.notes);
+        final nameA = (a.templateName ?? '').toLowerCase();
+        final nameB = (b.templateName ?? '').toLowerCase();
+        final nameCompare = nameA.compareTo(nameB);
+        if (nameCompare != 0) return nameCompare;
+        return b.issueDate.compareTo(a.issueDate);
       });
 
     ClientModel? findClient(String clientId) {
@@ -42,30 +139,29 @@ class TemplatesScreen extends ConsumerWidget {
     }
 
     Future<void> useTemplate(InvoiceModel template) async {
-      final clonedItems = template.items
-          .map(
-            (item) => InvoiceItemModel(
-              description: item.description,
-              quantity: item.quantity,
-              unitPrice: item.unitPrice,
-            ),
-          )
-          .toList();
+      final originalDuration = template.dueDate.difference(template.issueDate);
 
       final reusableDocument = template.copyWith(
         id: const Uuid().v4(),
         invoiceNumber: '',
         issueDate: DateTime.now(),
         dueDate: DateTime.now().add(
-          template.dueDate.difference(template.issueDate).isNegative
-              ? Duration.zero
-              : template.dueDate.difference(template.issueDate),
+          originalDuration.isNegative ? Duration.zero : originalDuration,
         ),
-        items: clonedItems,
+        items: template.items
+            .map(
+              (item) => InvoiceItemModel(
+                description: item.description,
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+              ),
+            )
+            .toList(),
         status: 'draft',
         paidAmount: 0,
         isTemplate: false,
         clearConvertedInvoiceId: true,
+        clearTemplateName: true,
       );
 
       Navigator.of(context).push(
@@ -79,7 +175,34 @@ class TemplatesScreen extends ConsumerWidget {
       );
     }
 
+    Future<void> renameTemplate(InvoiceModel template) async {
+      final newName = await _promptTemplateName(
+        context,
+        t,
+        initialValue: template.templateName,
+      );
+
+      if (!context.mounted) return;
+
+      if (newName == null || newName.trim().isEmpty) {
+        return;
+      }
+
+      await ref.read(invoicesProvider.notifier).updateInvoice(
+            template.copyWith(templateName: newName),
+          );
+
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(t.templateUpdated)),
+      );
+    }
+
     Future<void> deleteTemplate(String id) async {
+      final confirmed = await _confirmDeleteTemplate(context, t);
+      if (confirmed != true) return;
+
       await ref.read(invoicesProvider.notifier).deleteInvoice(id);
     }
 
@@ -90,14 +213,11 @@ class TemplatesScreen extends ConsumerWidget {
         ),
       ),
       body: templates.isEmpty
-          ? Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Text(
-                  t.noTemplatesYet,
-                  textAlign: TextAlign.center,
-                ),
-              ),
+          ? _TemplateEmptyState(
+              title: t.noTemplatesYet,
+              subtitle: type == 'quote'
+                  ? t.startByCreatingQuoteTemplate
+                  : t.startByCreatingInvoiceTemplate,
             )
           : ListView.separated(
               padding: const EdgeInsets.all(16),
@@ -118,21 +238,21 @@ class TemplatesScreen extends ConsumerWidget {
                         ListTile(
                           contentPadding: EdgeInsets.zero,
                           title: Text(
-                            template.notes.trim().isNotEmpty
-                                ? template.notes
+                            (template.templateName != null &&
+                                    template.templateName!.trim().isNotEmpty)
+                                ? template.templateName!
                                 : t.template,
                           ),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const SizedBox(height: 8),
-                              if (client != null) Text('${t.client}: ${client.name}'),
+                              if (client != null)
+                                Text('${t.client}: ${client.name}'),
                               const SizedBox(height: 4),
                               Text('${t.date}: $dateText'),
                               const SizedBox(height: 4),
-                              Text(
-                                '${t.items}: ${template.items.length}',
-                              ),
+                              Text('${t.items}: ${template.items.length}'),
                               const SizedBox(height: 4),
                               Text(
                                 '${t.total}: ${template.total.toStringAsFixed(2)}',
@@ -153,6 +273,26 @@ class TemplatesScreen extends ConsumerWidget {
                                   label: Text(t.useTemplate),
                                 ),
                                 TextButton.icon(
+                                  onPressed: () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) => CreateInvoiceScreen(
+                                          type: template.type,
+                                          invoice: template,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  icon: const Icon(Icons.edit_outlined),
+                                  label: Text(t.editTemplate),
+                                ),
+                                TextButton.icon(
+                                  onPressed: () => renameTemplate(template),
+                                  icon:
+                                      const Icon(Icons.drive_file_rename_outline),
+                                  label: Text(t.renameTemplate),
+                                ),
+                                TextButton.icon(
                                   onPressed: () => deleteTemplate(template.id),
                                   icon: const Icon(Icons.delete_outline),
                                   label: Text(t.delete),
@@ -167,6 +307,42 @@ class TemplatesScreen extends ConsumerWidget {
                 );
               },
             ),
+    );
+  }
+}
+
+class _TemplateEmptyState extends StatelessWidget {
+  const _TemplateEmptyState({
+    required this.title,
+    required this.subtitle,
+  });
+
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.bookmarks_outlined, size: 56),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleLarge,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              subtitle,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -377,6 +377,70 @@ Final result:
 
 ---
 
+## Step 22 – Template Management Improvements
+
+Completed as one full step.
+
+Implemented:
+- save as template from create screen
+- save as template from edit screen
+- save as template from invoice/quote list screen
+- template naming support
+- template rename support
+- template direct edit support
+- improved templates empty state
+- improved template labels and management flow
+- use template still opens form before saving
+- using template still creates a normal document
+- templates remain hidden from normal invoice/quote list screens
+
+### Important fixes/decisions inside Step 22:
+- extended `InvoiceModel` with:
+  - `templateName`
+- preserved existing:
+  - `isTemplate`
+  - `convertedInvoiceId`
+  - numbering flow
+  - duplicate flow
+- added dedicated template management actions:
+  - use template
+  - edit template
+  - rename template
+  - delete template
+- template edit remains inside existing `CreateInvoiceScreen`
+- when editing a template:
+  - no real invoice number is used
+  - payment section is hidden
+  - save updates the template itself instead of creating a normal invoice
+- saving as template from form prompts for template name before storing
+- template usage clears:
+  - `templateName`
+  - `convertedInvoiceId`
+  - paid state
+- added new localization labels for EN / AR / FR:
+  - template name
+  - rename template
+  - edit template
+  - template updated
+  - delete template confirmation
+  - improved empty-state guidance
+- fixed Flutter dialog crash during template save/rename flow
+  - removed fragile `Form + GlobalKey` dialog implementation
+  - replaced with safer `StatefulBuilder` dialog handling
+  - resolved assertion:
+    - `'package:flutter/src/widgets/framework.dart': Failed assertion: line 6268 pos 12: '_dependents.isEmpty': is not true.`
+
+Final result:
+- template management is complete and stable
+- template naming works
+- template rename works
+- template edit works
+- template save from form works
+- no crash in template name dialog flow
+- Step 19, Step 20, and Step 21 behaviors remain intact
+
+---
+
 ## Current Features
 
 ### Dashboard
@@ -393,6 +457,7 @@ Final result:
 - ordering
 - duplicate support
 - template support
+- save as template from form/list
 
 ### Quotes
 - create/edit
@@ -400,12 +465,17 @@ Final result:
 - duplicate support
 - template support
 - conversion lock after use
+- save as template from form/list
 
 ### Templates
 - save invoice as template
 - save quote as template
 - filtered templates by type
 - create new document from template
+- rename template
+- edit template directly
+- delete template
+- improved empty state and labels
 
 ### PDF
 - branding + localization
@@ -423,7 +493,7 @@ Final result:
 - Business-ready
 - No critical issues
 - Workflow aligned with real usage
-- Step 21 completed and working
+- Step 22 completed and working
 
 ---
 
@@ -434,16 +504,16 @@ Final result:
 
 ## Next Step
 
-## Step 22 – Template Management Improvements
+## Step 23 – Export / Share Improvements
 
 Goal:
-- improve template handling and usability
+- improve export and sharing workflow
 
 Suggested scope:
-- rename template
-- edit template directly
-- better empty state / template labels
-- optional “save as template” from create/edit screen too
+- improve PDF naming with invoice/quote number
+- cleaner share flow
+- quick share options
+- optional image export if feasible within current architecture
 
 ---
 
@@ -456,10 +526,10 @@ Branch:
 main
 
 Last completed:
-Step 21
+Step 22
 
 Next task:
-Step 22
+Step 23
 
 ---
 

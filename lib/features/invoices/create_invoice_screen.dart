@@ -48,6 +48,9 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
   bool get _isDuplicate => widget.invoice != null && widget.isDuplicate;
   bool get _hasSourceInvoice => widget.invoice != null;
   bool get _isInvoice => widget.type == 'invoice';
+  bool get _isTemplateEdit =>
+      _isEdit && (widget.invoice?.isTemplate ?? false) == true;
+  bool get _showPaymentSection => _isInvoice && !_isTemplateEdit;
 
   @override
   void initState() {
@@ -184,7 +187,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
   }
 
   double _resolvePaidAmount() {
-    if (!_isInvoice) {
+    if (!_isInvoice || _isTemplateEdit) {
       return 0;
     }
 
@@ -203,7 +206,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
   }
 
   String _resolveStatus() {
-    if (!_isInvoice) {
+    if (!_isInvoice || _isTemplateEdit) {
       return 'draft';
     }
 
@@ -211,7 +214,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
   }
 
   bool _validatePayment(AppLocalizations t) {
-    if (!_isInvoice) {
+    if (!_showPaymentSection) {
       return true;
     }
 
@@ -232,6 +235,147 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
     }
 
     return true;
+  }
+
+  Future<String?> _promptTemplateName({
+    String? initialValue,
+  }) async {
+    final t = AppLocalizations.of(context)!;
+    final controller = TextEditingController(text: initialValue ?? '');
+
+    final result = await showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        String? errorText;
+
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: Text(t.templateName),
+              content: TextField(
+                controller: controller,
+                autofocus: true,
+                decoration: InputDecoration(
+                  labelText: t.templateName,
+                  border: const OutlineInputBorder(),
+                  errorText: errorText,
+                ),
+                onChanged: (_) {
+                  if (errorText != null) {
+                    setDialogState(() {
+                      errorText = null;
+                    });
+                  }
+                },
+                onSubmitted: (_) {
+                  final value = controller.text.trim();
+                  if (value.isEmpty) {
+                    setDialogState(() {
+                      errorText = t.requiredField;
+                    });
+                    return;
+                  }
+                  Navigator.of(dialogContext).pop(value);
+                },
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: Text(t.cancel),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    final value = controller.text.trim();
+                    if (value.isEmpty) {
+                      setDialogState(() {
+                        errorText = t.requiredField;
+                      });
+                      return;
+                    }
+                    Navigator.of(dialogContext).pop(value);
+                  },
+                  child: Text(t.save),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    controller.dispose();
+    return result;
+  }
+
+  bool _validateTemplateInputs(AppLocalizations t) {
+    if (_selectedClient == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(t.clientRequired)),
+      );
+      return false;
+    }
+
+    if (_items.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(t.atLeastOneItem)),
+      );
+      return false;
+    }
+
+    return true;
+  }
+
+  Future<void> _saveAsTemplateFromForm() async {
+    final t = AppLocalizations.of(context)!;
+
+    if (!_validateTemplateInputs(t)) {
+      return;
+    }
+
+    final templateName = await _promptTemplateName(
+      initialValue: widget.invoice?.templateName,
+    );
+
+    if (!mounted) return;
+
+    if (templateName == null || templateName.trim().isEmpty) {
+      return;
+    }
+
+    final template = InvoiceModel(
+      id: const Uuid().v4(),
+      invoiceNumber: '',
+      clientId: _selectedClient!.id,
+      issueDate: _issueDate,
+      dueDate: _dueDate,
+      items: _items
+          .map(
+            (item) => InvoiceItemModel(
+              description: item.description,
+              quantity: item.quantity,
+              unitPrice: item.unitPrice,
+            ),
+          )
+          .toList(),
+      taxPercent: double.tryParse(_taxController.text.trim()) ?? 0,
+      discount: double.tryParse(_discountController.text.trim()) ?? 0,
+      notes: _notesController.text.trim(),
+      status: 'draft',
+      type: _isEdit ? widget.invoice!.type : widget.type,
+      paidAmount: 0,
+      convertedInvoiceId: null,
+      isTemplate: true,
+      templateName: templateName,
+    );
+
+    await ref.read(invoicesProvider.notifier).addInvoice(template);
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(t.templateSaved)),
+    );
   }
 
   Future<void> _saveInvoice() async {
@@ -257,6 +401,44 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       return;
     }
 
+    if (_isTemplateEdit) {
+      final updatedTemplate = InvoiceModel(
+        id: widget.invoice!.id,
+        invoiceNumber: '',
+        clientId: _selectedClient!.id,
+        issueDate: _issueDate,
+        dueDate: _dueDate,
+        items: _items
+            .map(
+              (item) => InvoiceItemModel(
+                description: item.description,
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+              ),
+            )
+            .toList(),
+        taxPercent: double.tryParse(_taxController.text.trim()) ?? 0,
+        discount: double.tryParse(_discountController.text.trim()) ?? 0,
+        notes: _notesController.text.trim(),
+        status: 'draft',
+        type: widget.invoice!.type,
+        paidAmount: 0,
+        convertedInvoiceId: null,
+        isTemplate: true,
+        templateName: widget.invoice!.templateName,
+      );
+
+      await ref.read(invoicesProvider.notifier).updateInvoice(updatedTemplate);
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(t.templateUpdated)),
+      );
+      Navigator.of(context).pop();
+      return;
+    }
+
     String finalDocumentNumber;
 
     if (_isEdit) {
@@ -270,15 +452,21 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
           enteredNumber.isEmpty ? consumedGeneratedNumber : enteredNumber;
     }
 
-    final sourceInvoice = widget.invoice;
-
     final invoice = InvoiceModel(
       id: _isEdit ? widget.invoice!.id : const Uuid().v4(),
       invoiceNumber: finalDocumentNumber,
       clientId: _selectedClient!.id,
       issueDate: _issueDate,
       dueDate: _dueDate,
-      items: List<InvoiceItemModel>.from(_items),
+      items: _items
+          .map(
+            (item) => InvoiceItemModel(
+              description: item.description,
+              quantity: item.quantity,
+              unitPrice: item.unitPrice,
+            ),
+          )
+          .toList(),
       taxPercent: double.tryParse(_taxController.text.trim()) ?? 0,
       discount: double.tryParse(_discountController.text.trim()) ?? 0,
       notes: _notesController.text.trim(),
@@ -286,7 +474,8 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       type: _isEdit ? widget.invoice!.type : widget.type,
       paidAmount: _resolvePaidAmount(),
       convertedInvoiceId: _isEdit ? widget.invoice?.convertedInvoiceId : null,
-      isTemplate: _isEdit ? (sourceInvoice?.isTemplate ?? false) : false,
+      isTemplate: false,
+      templateName: null,
     );
 
     if (_isEdit) {
@@ -321,9 +510,11 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          _isEdit
-              ? (widget.type == 'quote' ? t.editQuote : t.editInvoice)
-              : (widget.type == 'quote' ? t.newQuote : t.createInvoice),
+          _isTemplateEdit
+              ? t.editTemplate
+              : _isEdit
+                  ? (widget.type == 'quote' ? t.editQuote : t.editInvoice)
+                  : (widget.type == 'quote' ? t.newQuote : t.createInvoice),
         ),
       ),
       body: Form(
@@ -331,21 +522,23 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            TextFormField(
-              controller: _invoiceNumberController,
-              readOnly: _isEdit,
-              decoration: InputDecoration(
-                labelText: t.invoiceNumber,
-                border: const OutlineInputBorder(),
+            if (!_isTemplateEdit) ...[
+              TextFormField(
+                controller: _invoiceNumberController,
+                readOnly: _isEdit,
+                decoration: InputDecoration(
+                  labelText: t.invoiceNumber,
+                  border: const OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return t.requiredField;
+                  }
+                  return null;
+                },
               ),
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return t.requiredField;
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
+            ],
             DropdownButtonFormField<ClientModel>(
               value: clients.any((client) => client.id == _selectedClient?.id)
                   ? _selectedClient
@@ -473,7 +666,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
               onChanged: (_) => setState(() {}),
             ),
             const SizedBox(height: 16),
-            if (_isInvoice) ...[
+            if (_showPaymentSection) ...[
               DropdownButtonFormField<String>(
                 value: _status,
                 decoration: InputDecoration(
@@ -549,7 +742,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                       value: _total,
                       isBold: true,
                     ),
-                    if (_isInvoice) ...[
+                    if (_showPaymentSection) ...[
                       const SizedBox(height: 8),
                       _SummaryRow(
                         label: t.paidAmount,
@@ -574,6 +767,14 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
               ),
             ),
             const SizedBox(height: 24),
+            if (!_isTemplateEdit) ...[
+              OutlinedButton.icon(
+                onPressed: _saveAsTemplateFromForm,
+                icon: const Icon(Icons.bookmark_border),
+                label: Text(t.saveAsTemplate),
+              ),
+              const SizedBox(height: 12),
+            ],
             ElevatedButton(
               onPressed: _saveInvoice,
               child: Text(_isEdit ? t.saveChanges : t.save),

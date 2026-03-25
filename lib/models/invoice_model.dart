@@ -15,6 +15,7 @@ class InvoiceModel {
   final double paidAmount;
   final String? convertedInvoiceId;
   final bool isTemplate;
+  final String? templateName;
 
   InvoiceModel({
     required this.id,
@@ -31,6 +32,7 @@ class InvoiceModel {
     required this.paidAmount,
     this.convertedInvoiceId,
     this.isTemplate = false,
+    this.templateName,
   });
 
   double get subtotal {
@@ -71,7 +73,9 @@ class InvoiceModel {
     double? paidAmount,
     String? convertedInvoiceId,
     bool? isTemplate,
+    String? templateName,
     bool clearConvertedInvoiceId = false,
+    bool clearTemplateName = false,
   }) {
     return InvoiceModel(
       id: id ?? this.id,
@@ -90,6 +94,9 @@ class InvoiceModel {
           ? null
           : (convertedInvoiceId ?? this.convertedInvoiceId),
       isTemplate: isTemplate ?? this.isTemplate,
+      templateName: clearTemplateName
+          ? null
+          : (templateName ?? this.templateName),
     );
   }
 
@@ -109,6 +116,7 @@ class InvoiceModel {
       'paidAmount': paidAmount,
       'convertedInvoiceId': convertedInvoiceId,
       'isTemplate': isTemplate,
+      'templateName': templateName,
     };
   }
 
@@ -130,6 +138,7 @@ class InvoiceModel {
       paidAmount: (map['paidAmount'] ?? 0).toDouble(),
       convertedInvoiceId: map['convertedInvoiceId']?.toString(),
       isTemplate: map['isTemplate'] ?? false,
+      templateName: map['templateName']?.toString(),
     );
   }
 }

@@ -76,6 +76,77 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
     );
   }
 
+  Future<String?> _promptTemplateName({
+    required AppLocalizations t,
+    String? initialValue,
+  }) async {
+    final controller = TextEditingController(text: initialValue ?? '');
+
+    final result = await showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        String? errorText;
+
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: Text(t.templateName),
+              content: TextField(
+                controller: controller,
+                autofocus: true,
+                decoration: InputDecoration(
+                  labelText: t.templateName,
+                  border: const OutlineInputBorder(),
+                  errorText: errorText,
+                ),
+                onChanged: (_) {
+                  if (errorText != null) {
+                    setDialogState(() {
+                      errorText = null;
+                    });
+                  }
+                },
+                onSubmitted: (_) {
+                  final value = controller.text.trim();
+                  if (value.isEmpty) {
+                    setDialogState(() {
+                      errorText = t.requiredField;
+                    });
+                    return;
+                  }
+                  Navigator.of(dialogContext).pop(value);
+                },
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: Text(t.cancel),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    final value = controller.text.trim();
+                    if (value.isEmpty) {
+                      setDialogState(() {
+                        errorText = t.requiredField;
+                      });
+                      return;
+                    }
+                    Navigator.of(dialogContext).pop(value);
+                  },
+                  child: Text(t.save),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    controller.dispose();
+    return result;
+  }
+
   Future<void> _convertQuoteToInvoice(
     BuildContext context,
     AppLocalizations t,
@@ -114,6 +185,7 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
       paidAmount: 0,
       convertedInvoiceId: null,
       isTemplate: false,
+      templateName: null,
     );
 
     final updatedQuote = quote.copyWith(
@@ -143,12 +215,24 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
   }
 
   Future<void> _saveAsTemplate(AppLocalizations t, InvoiceModel invoice) async {
+    final templateName = await _promptTemplateName(
+      t: t,
+      initialValue: invoice.templateName,
+    );
+
+    if (!mounted) return;
+
+    if (templateName == null || templateName.trim().isEmpty) {
+      return;
+    }
+
     final template = invoice.copyWith(
       id: const Uuid().v4(),
       invoiceNumber: '',
       status: 'draft',
       paidAmount: 0,
       isTemplate: true,
+      templateName: templateName,
       clearConvertedInvoiceId: true,
     );
 

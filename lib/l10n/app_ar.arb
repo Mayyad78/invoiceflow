@@ -138,5 +138,12 @@
   "useTemplate": "استخدام القالب",
   "noTemplatesYet": "لا توجد قوالب بعد",
   "invoiceTemplates": "قوالب الفواتير",
-  "quoteTemplates": "قوالب عروض السعر"
+  "quoteTemplates": "قوالب عروض السعر",
+  "renameTemplate": "إعادة تسمية القالب",
+  "editTemplate": "تعديل القالب",
+  "templateUpdated": "تم تحديث القالب بنجاح",
+  "templateName": "اسم القالب",
+  "deleteTemplateMessage": "هل أنت متأكد أنك تريد حذف هذا القالب؟",
+  "startByCreatingInvoiceTemplate": "ابدأ بحفظ فاتورة كقالب.",
+  "startByCreatingQuoteTemplate": "ابدأ بحفظ عرض سعر كقالب."
 }

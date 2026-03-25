@@ -431,4 +431,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get quoteTemplates => 'Quote Templates';
+
+  @override
+  String get renameTemplate => 'Rename Template';
+
+  @override
+  String get editTemplate => 'Edit Template';
+
+  @override
+  String get templateUpdated => 'Template updated successfully';
+
+  @override
+  String get templateName => 'Template Name';
+
+  @override
+  String get deleteTemplateMessage =>
+      'Are you sure you want to delete this template?';
+
+  @override
+  String get startByCreatingInvoiceTemplate =>
+      'Start by saving an invoice as a template.';
+
+  @override
+  String get startByCreatingQuoteTemplate =>
+      'Start by saving a quote as a template.';
 }

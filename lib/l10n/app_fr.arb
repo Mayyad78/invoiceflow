@@ -138,5 +138,12 @@
   "useTemplate": "Utiliser le modèle",
   "noTemplatesYet": "Aucun modèle pour le moment",
   "invoiceTemplates": "Modèles de facture",
-  "quoteTemplates": "Modèles de devis"
+  "quoteTemplates": "Modèles de devis",
+  "renameTemplate": "Renommer le modèle",
+  "editTemplate": "Modifier le modèle",
+  "templateUpdated": "Modèle mis à jour avec succès",
+  "templateName": "Nom du modèle",
+  "deleteTemplateMessage": "Voulez-vous vraiment supprimer ce modèle ?",
+  "startByCreatingInvoiceTemplate": "Commencez par enregistrer une facture comme modèle.",
+  "startByCreatingQuoteTemplate": "Commencez par enregistrer un devis comme modèle."
 }
