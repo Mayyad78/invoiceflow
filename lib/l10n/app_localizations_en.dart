@@ -407,4 +407,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get duplicate => 'Duplicate';
+
+  @override
+  String get templates => 'Templates';
+
+  @override
+  String get template => 'Template';
+
+  @override
+  String get saveAsTemplate => 'Save as Template';
+
+  @override
+  String get templateSaved => 'Template saved successfully';
+
+  @override
+  String get useTemplate => 'Use Template';
+
+  @override
+  String get noTemplatesYet => 'No templates yet';
+
+  @override
+  String get invoiceTemplates => 'Invoice Templates';
+
+  @override
+  String get quoteTemplates => 'Quote Templates';
 }

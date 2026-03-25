@@ -130,5 +130,13 @@
   "noClientDocuments": "لا توجد فواتير أو عروض سعر لهذا العميل حتى الآن.",
   "tapToViewDetails": "اضغط لعرض التفاصيل",
   "quoteAlreadyConverted": "تم تحويل عرض السعر هذا إلى فاتورة بالفعل",
-  "duplicate": "نسخ"
+  "duplicate": "نسخ",
+  "templates": "القوالب",
+  "template": "قالب",
+  "saveAsTemplate": "حفظ كقالب",
+  "templateSaved": "تم حفظ القالب بنجاح",
+  "useTemplate": "استخدام القالب",
+  "noTemplatesYet": "لا توجد قوالب بعد",
+  "invoiceTemplates": "قوالب الفواتير",
+  "quoteTemplates": "قوالب عروض السعر"
 }

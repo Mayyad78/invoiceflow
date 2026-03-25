@@ -410,4 +410,28 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get duplicate => 'Dupliquer';
+
+  @override
+  String get templates => 'Modèles';
+
+  @override
+  String get template => 'Modèle';
+
+  @override
+  String get saveAsTemplate => 'Enregistrer comme modèle';
+
+  @override
+  String get templateSaved => 'Modèle enregistré avec succès';
+
+  @override
+  String get useTemplate => 'Utiliser le modèle';
+
+  @override
+  String get noTemplatesYet => 'Aucun modèle pour le moment';
+
+  @override
+  String get invoiceTemplates => 'Modèles de facture';
+
+  @override
+  String get quoteTemplates => 'Modèles de devis';
 }

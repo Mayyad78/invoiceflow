@@ -130,5 +130,13 @@
   "noClientDocuments": "No invoices or quotes found for this client yet.",
   "tapToViewDetails": "Tap to view details",
   "quoteAlreadyConverted": "This quote has already been converted to an invoice",
-  "duplicate": "Duplicate"
+  "duplicate": "Duplicate",
+  "templates": "Templates",
+  "template": "Template",
+  "saveAsTemplate": "Save as Template",
+  "templateSaved": "Template saved successfully",
+  "useTemplate": "Use Template",
+  "noTemplatesYet": "No templates yet",
+  "invoiceTemplates": "Invoice Templates",
+  "quoteTemplates": "Quote Templates"
 }

@@ -406,4 +406,28 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get duplicate => 'نسخ';
+
+  @override
+  String get templates => 'القوالب';
+
+  @override
+  String get template => 'قالب';
+
+  @override
+  String get saveAsTemplate => 'حفظ كقالب';
+
+  @override
+  String get templateSaved => 'تم حفظ القالب بنجاح';
+
+  @override
+  String get useTemplate => 'استخدام القالب';
+
+  @override
+  String get noTemplatesYet => 'لا توجد قوالب بعد';
+
+  @override
+  String get invoiceTemplates => 'قوالب الفواتير';
+
+  @override
+  String get quoteTemplates => 'قوالب عروض السعر';
 }

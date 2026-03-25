@@ -885,6 +885,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Duplicate'**
   String get duplicate;
+
+  /// No description provided for @templates.
+  ///
+  /// In en, this message translates to:
+  /// **'Templates'**
+  String get templates;
+
+  /// No description provided for @template.
+  ///
+  /// In en, this message translates to:
+  /// **'Template'**
+  String get template;
+
+  /// No description provided for @saveAsTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as Template'**
+  String get saveAsTemplate;
+
+  /// No description provided for @templateSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Template saved successfully'**
+  String get templateSaved;
+
+  /// No description provided for @useTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Use Template'**
+  String get useTemplate;
+
+  /// No description provided for @noTemplatesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No templates yet'**
+  String get noTemplatesYet;
+
+  /// No description provided for @invoiceTemplates.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice Templates'**
+  String get invoiceTemplates;
+
+  /// No description provided for @quoteTemplates.
+  ///
+  /// In en, this message translates to:
+  /// **'Quote Templates'**
+  String get quoteTemplates;
 }
 
 class _AppLocalizationsDelegate

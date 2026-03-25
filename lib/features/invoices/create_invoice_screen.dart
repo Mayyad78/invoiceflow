@@ -270,6 +270,8 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
           enteredNumber.isEmpty ? consumedGeneratedNumber : enteredNumber;
     }
 
+    final sourceInvoice = widget.invoice;
+
     final invoice = InvoiceModel(
       id: _isEdit ? widget.invoice!.id : const Uuid().v4(),
       invoiceNumber: finalDocumentNumber,
@@ -284,6 +286,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       type: _isEdit ? widget.invoice!.type : widget.type,
       paidAmount: _resolvePaidAmount(),
       convertedInvoiceId: _isEdit ? widget.invoice?.convertedInvoiceId : null,
+      isTemplate: _isEdit ? (sourceInvoice?.isTemplate ?? false) : false,
     );
 
     if (_isEdit) {

@@ -130,5 +130,13 @@
   "noClientDocuments": "Aucune facture ou devis trouvé pour ce client pour le moment.",
   "tapToViewDetails": "Touchez pour voir les détails",
   "quoteAlreadyConverted": "Ce devis a déjà été converti en facture",
-  "duplicate": "Dupliquer"
+  "duplicate": "Dupliquer",
+  "templates": "Modèles",
+  "template": "Modèle",
+  "saveAsTemplate": "Enregistrer comme modèle",
+  "templateSaved": "Modèle enregistré avec succès",
+  "useTemplate": "Utiliser le modèle",
+  "noTemplatesYet": "Aucun modèle pour le moment",
+  "invoiceTemplates": "Modèles de facture",
+  "quoteTemplates": "Modèles de devis"
 }

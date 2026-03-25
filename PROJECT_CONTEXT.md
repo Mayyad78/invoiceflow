@@ -76,6 +76,7 @@ lib/
 │   │   ├── create_invoice_screen.dart
 │   │   ├── invoice_preview_screen.dart
 │   │   ├── invoices_screen.dart
+│   │   ├── templates_screen.dart
 │   │   └── widgets/
 │   │       └── add_item_dialog.dart
 │   └── settings/
@@ -328,6 +329,54 @@ Final result:
 
 ---
 
+## Step 21 – Templates
+
+Completed as one full step.
+
+Implemented:
+- save invoice as template
+- save quote as template
+- new templates screen added:
+  - `lib/features/invoices/templates_screen.dart`
+- templates accessible from invoices/quotes app bar
+- templates filtered by document type:
+  - invoice templates
+  - quote templates
+- use template opens the create form before saving
+- creating from template generates a normal new document
+- templates are hidden from normal invoice/quote list screens
+- template keeps:
+  - client
+  - items
+  - tax
+  - discount
+  - notes
+- template usage resets:
+  - new unique ID
+  - new document number
+  - status = draft
+  - paidAmount = 0
+- template usage clears quote conversion link when needed
+
+### Important fixes/decisions inside Step 21:
+- reused existing `InvoiceModel` instead of creating a separate template model
+- added `isTemplate` flag to `InvoiceModel`
+- kept storage local and simple by using the existing invoice storage flow
+- preserved duplicate flow from Step 20
+- preserved quote conversion safety from Step 19
+- preserved numbering system from Step 11
+- added new localization labels for templates in EN / AR / FR
+- templates remain editable through the normal “use template → open form → save” flow
+- template items are cloned safely before reuse
+
+Final result:
+- repeated business workflows are much faster
+- invoice and quote templates are now supported
+- no impact on normal invoice/quote lists
+- template workflow is stable and working
+
+---
+
 ## Current Features
 
 ### Dashboard
@@ -343,12 +392,20 @@ Final result:
 - search
 - ordering
 - duplicate support
+- template support
 
 ### Quotes
 - create/edit
 - convert to invoice (safe)
 - duplicate support
+- template support
 - conversion lock after use
+
+### Templates
+- save invoice as template
+- save quote as template
+- filtered templates by type
+- create new document from template
 
 ### PDF
 - branding + localization
@@ -366,7 +423,7 @@ Final result:
 - Business-ready
 - No critical issues
 - Workflow aligned with real usage
-- Step 20 completed and working
+- Step 21 completed and working
 
 ---
 
@@ -377,12 +434,16 @@ Final result:
 
 ## Next Step
 
-## Step 21 – Invoice/Quote Templates
+## Step 22 – Template Management Improvements
 
 Goal:
-- save a document as reusable template
-- create a new invoice or quote from template
-- speed up repeated business workflows even more
+- improve template handling and usability
+
+Suggested scope:
+- rename template
+- edit template directly
+- better empty state / template labels
+- optional “save as template” from create/edit screen too
 
 ---
 
@@ -395,10 +456,10 @@ Branch:
 main
 
 Last completed:
-Step 20
+Step 21
 
 Next task:
-Step 21
+Step 22
 
 ---
 

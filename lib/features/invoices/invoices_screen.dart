@@ -12,6 +12,7 @@ import '../../providers/invoices_provider.dart';
 import '../../utils/invoice_status_localizer.dart';
 import 'create_invoice_screen.dart';
 import 'invoice_preview_screen.dart';
+import 'templates_screen.dart';
 
 class InvoicesScreen extends ConsumerStatefulWidget {
   const InvoicesScreen({super.key, this.type = 'invoice'});
@@ -112,6 +113,7 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
       type: 'invoice',
       paidAmount: 0,
       convertedInvoiceId: null,
+      isTemplate: false,
     );
 
     final updatedQuote = quote.copyWith(
@@ -140,12 +142,34 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
     );
   }
 
+  Future<void> _saveAsTemplate(AppLocalizations t, InvoiceModel invoice) async {
+    final template = invoice.copyWith(
+      id: const Uuid().v4(),
+      invoiceNumber: '',
+      status: 'draft',
+      paidAmount: 0,
+      isTemplate: true,
+      clearConvertedInvoiceId: true,
+    );
+
+    await ref.read(invoicesProvider.notifier).addInvoice(template);
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(t.templateSaved)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
     final invoices = ref
         .watch(invoicesProvider)
-        .where((invoice) => invoice.type == widget.type)
+        .where(
+          (invoice) =>
+              invoice.type == widget.type && invoice.isTemplate == false,
+        )
         .toList();
     final clients = ref.watch(clientsProvider);
     final query = _searchController.text.trim().toLowerCase();
@@ -179,6 +203,19 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
         title: Text(
           widget.type == 'quote' ? t.quotePreviewTitle : t.invoicesTitle,
         ),
+        actions: [
+          IconButton(
+            tooltip: t.templates,
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => TemplatesScreen(type: widget.type),
+                ),
+              );
+            },
+            icon: const Icon(Icons.bookmarks_outlined),
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -289,6 +326,7 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
                                     children: [
                                       Wrap(
                                         spacing: 4,
+                                        runSpacing: 4,
                                         children: [
                                           if (widget.type == 'quote' &&
                                               !invoice.isConvertedQuote)
@@ -310,6 +348,14 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
                                             icon:
                                                 const Icon(Icons.copy_outlined),
                                             label: Text(t.duplicate),
+                                          ),
+                                          TextButton.icon(
+                                            onPressed: () =>
+                                                _saveAsTemplate(t, invoice),
+                                            icon: const Icon(
+                                              Icons.bookmark_border,
+                                            ),
+                                            label: Text(t.saveAsTemplate),
                                           ),
                                           TextButton.icon(
                                             onPressed: client == null
