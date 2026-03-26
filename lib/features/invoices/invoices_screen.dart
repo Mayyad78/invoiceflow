@@ -26,6 +26,10 @@ class InvoicesScreen extends ConsumerStatefulWidget {
 class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
   final TextEditingController _searchController = TextEditingController();
 
+  static const _actionConvert = 'convert';
+  static const _actionSaveTemplate = 'saveTemplate';
+  static const _actionDelete = 'delete';
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -186,6 +190,7 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
       convertedInvoiceId: null,
       isTemplate: false,
       templateName: null,
+      isFavoriteTemplate: false,
     );
 
     final updatedQuote = quote.copyWith(
@@ -233,6 +238,7 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
       paidAmount: 0,
       isTemplate: true,
       templateName: templateName,
+      isFavoriteTemplate: false,
       clearConvertedInvoiceId: true,
     );
 
@@ -243,6 +249,32 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(t.templateSaved)),
     );
+  }
+
+  Future<void> _handleMenuAction({
+    required BuildContext context,
+    required AppLocalizations t,
+    required InvoiceModel invoice,
+    required String action,
+  }) async {
+    switch (action) {
+      case _actionConvert:
+        await _convertQuoteToInvoice(context, t, invoice);
+        break;
+      case _actionSaveTemplate:
+        await _saveAsTemplate(t, invoice);
+        break;
+      case _actionDelete:
+        final confirmed = await _confirmDelete(
+          context,
+          t,
+          t.deleteInvoiceMessage,
+        );
+        if (confirmed == true) {
+          await ref.read(invoicesProvider.notifier).deleteInvoice(invoice.id);
+        }
+        break;
+    }
   }
 
   @override
@@ -354,153 +386,132 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
                             child: Padding(
                               padding: const EdgeInsets.all(12),
                               child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  ListTile(
-                                    contentPadding: EdgeInsets.zero,
-                                    title: Text(invoice.invoiceNumber),
-                                    subtitle: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const SizedBox(height: 8),
-                                        if (client != null)
-                                          Text('${t.client}: ${client.name}'),
-                                        const SizedBox(height: 4),
-                                        Text('${t.date}: $dateText'),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          '${t.total}: ${invoice.total.toStringAsFixed(2)}',
-                                        ),
-                                        if (invoice.type == 'invoice') ...[
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            '${t.paidAmount}: ${invoice.paidAmount.toStringAsFixed(2)}',
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            '${t.remainingAmount}: ${invoice.remainingAmount.toStringAsFixed(2)}',
-                                          ),
-                                        ],
-                                        if (invoice.type == 'quote' &&
-                                            invoice.isConvertedQuote) ...[
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            t.quoteAlreadyConverted,
-                                            style: TextStyle(
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .primary,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ],
-                                        const SizedBox(height: 6),
-                                        _StatusBadge(
-                                          label: localizeInvoiceStatus(
-                                            t,
-                                            invoice.status,
-                                          ),
-                                          color: _statusColor(invoice.status),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
-                                      Wrap(
-                                        spacing: 4,
-                                        runSpacing: 4,
-                                        children: [
+                                      Expanded(
+                                        child: Text(
+                                          invoice.invoiceNumber,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleMedium,
+                                        ),
+                                      ),
+                                      PopupMenuButton<String>(
+                                        onSelected: (value) =>
+                                            _handleMenuAction(
+                                          context: context,
+                                          t: t,
+                                          invoice: invoice,
+                                          action: value,
+                                        ),
+                                        itemBuilder: (context) => [
                                           if (widget.type == 'quote' &&
                                               !invoice.isConvertedQuote)
-                                            TextButton.icon(
-                                              onPressed: () =>
-                                                  _convertQuoteToInvoice(
-                                                context,
-                                                t,
-                                                invoice,
-                                              ),
-                                              icon: const Icon(
-                                                Icons.transform_outlined,
-                                              ),
-                                              label: Text(t.convertToInvoice),
+                                            PopupMenuItem(
+                                              value: _actionConvert,
+                                              child: Text(t.convertToInvoice),
                                             ),
-                                          TextButton.icon(
-                                            onPressed: () =>
-                                                _openDuplicateDocument(invoice),
-                                            icon:
-                                                const Icon(Icons.copy_outlined),
-                                            label: Text(t.duplicate),
+                                          PopupMenuItem(
+                                            value: _actionSaveTemplate,
+                                            child: Text(t.saveAsTemplate),
                                           ),
-                                          TextButton.icon(
-                                            onPressed: () =>
-                                                _saveAsTemplate(t, invoice),
-                                            icon: const Icon(
-                                              Icons.bookmark_border,
-                                            ),
-                                            label: Text(t.saveAsTemplate),
-                                          ),
-                                          TextButton.icon(
-                                            onPressed: client == null
-                                                ? null
-                                                : () {
-                                                    Navigator.of(context).push(
-                                                      MaterialPageRoute(
-                                                        builder: (_) =>
-                                                            CreateInvoiceScreen(
-                                                          type: widget.type,
-                                                          invoice: invoice,
-                                                        ),
-                                                      ),
-                                                    );
-                                                  },
-                                            icon: const Icon(
-                                              Icons.edit_outlined,
-                                            ),
-                                            label: Text(t.edit),
-                                          ),
-                                          TextButton.icon(
-                                            onPressed: client == null
-                                                ? null
-                                                : () {
-                                                    Navigator.of(context).push(
-                                                      MaterialPageRoute(
-                                                        builder: (_) =>
-                                                            InvoicePreviewScreen(
-                                                          invoice: invoice,
-                                                          client: client,
-                                                        ),
-                                                      ),
-                                                    );
-                                                  },
-                                            icon: const Icon(
-                                              Icons.visibility_outlined,
-                                            ),
-                                            label: Text(t.preview),
-                                          ),
-                                          TextButton.icon(
-                                            onPressed: () async {
-                                              final confirmed =
-                                                  await _confirmDelete(
-                                                context,
-                                                t,
-                                                t.deleteInvoiceMessage,
-                                              );
-                                              if (confirmed == true) {
-                                                await ref
-                                                    .read(
-                                                      invoicesProvider.notifier,
-                                                    )
-                                                    .deleteInvoice(invoice.id);
-                                              }
-                                            },
-                                            icon: const Icon(
-                                              Icons.delete_outline,
-                                            ),
-                                            label: Text(t.delete),
+                                          PopupMenuItem(
+                                            value: _actionDelete,
+                                            child: Text(t.delete),
                                           ),
                                         ],
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  if (client != null)
+                                    Text('${t.client}: ${client.name}'),
+                                  const SizedBox(height: 4),
+                                  Text('${t.date}: $dateText'),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '${t.total}: ${invoice.total.toStringAsFixed(2)}',
+                                  ),
+                                  if (invoice.type == 'invoice') ...[
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      '${t.paidAmount}: ${invoice.paidAmount.toStringAsFixed(2)}',
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      '${t.remainingAmount}: ${invoice.remainingAmount.toStringAsFixed(2)}',
+                                    ),
+                                  ],
+                                  if (invoice.type == 'quote' &&
+                                      invoice.isConvertedQuote) ...[
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      t.quoteAlreadyConverted,
+                                      style: TextStyle(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                  const SizedBox(height: 8),
+                                  _StatusBadge(
+                                    label: localizeInvoiceStatus(
+                                      t,
+                                      invoice.status,
+                                    ),
+                                    color: _statusColor(invoice.status),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children: [
+                                      OutlinedButton.icon(
+                                        onPressed: client == null
+                                            ? null
+                                            : () {
+                                                Navigator.of(context).push(
+                                                  MaterialPageRoute(
+                                                    builder: (_) =>
+                                                        InvoicePreviewScreen(
+                                                      invoice: invoice,
+                                                      client: client,
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                        icon: const Icon(
+                                          Icons.visibility_outlined,
+                                        ),
+                                        label: Text(t.preview),
+                                      ),
+                                      OutlinedButton.icon(
+                                        onPressed: client == null
+                                            ? null
+                                            : () {
+                                                Navigator.of(context).push(
+                                                  MaterialPageRoute(
+                                                    builder: (_) =>
+                                                        CreateInvoiceScreen(
+                                                      type: widget.type,
+                                                      invoice: invoice,
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                        icon: const Icon(Icons.edit_outlined),
+                                        label: Text(t.edit),
+                                      ),
+                                      OutlinedButton.icon(
+                                        onPressed: () =>
+                                            _openDuplicateDocument(invoice),
+                                        icon:
+                                            const Icon(Icons.copy_outlined),
+                                        label: Text(t.duplicate),
                                       ),
                                     ],
                                   ),

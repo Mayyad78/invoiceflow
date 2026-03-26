@@ -517,7 +517,7 @@ abstract class AppLocalizations {
   /// No description provided for @downloadPdf.
   ///
   /// In en, this message translates to:
-  /// **'Download PDF'**
+  /// **'PDF File'**
   String get downloadPdf;
 
   /// No description provided for @status.
@@ -1017,6 +1017,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Remove from favorites'**
   String get removeFromFavorites;
+
+  /// No description provided for @sharePdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Share PDF'**
+  String get sharePdf;
+
+  /// No description provided for @exportPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Export PDF'**
+  String get exportPdf;
+
+  /// No description provided for @refreshPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh Preview'**
+  String get refreshPreview;
+
+  /// No description provided for @previewError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load PDF preview'**
+  String get previewError;
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
 }
 
 class _AppLocalizationsDelegate

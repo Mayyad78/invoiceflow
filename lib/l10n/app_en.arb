@@ -69,7 +69,7 @@
   "invoiceDetails": "Invoice Details",
   "businessDetails": "Business Details",
   "invoicePreviewTitle": "Invoice Preview",
-  "downloadPdf": "Download PDF",
+  "downloadPdf": "PDF File",
   "status": "Status",
   "date": "Date",
   "due": "Due",
@@ -152,5 +152,10 @@
   "tryDifferentSearchOrFilter": "Try a different search or turn off the favorites filter.",
   "favorite": "Favorite",
   "addToFavorites": "Add to favorites",
-  "removeFromFavorites": "Remove from favorites"
+  "removeFromFavorites": "Remove from favorites",
+  "sharePdf": "Share PDF",
+  "exportPdf": "Export PDF",
+  "refreshPreview": "Refresh Preview",
+  "previewError": "Could not load PDF preview",
+  "retry": "Retry"
 }

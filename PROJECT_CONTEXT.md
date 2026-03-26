@@ -487,6 +487,77 @@ Final result:
 
 ---
 
+## Step 23 – Export / Share Improvements and Partial Payment Display Fix
+
+Completed as one full step.
+
+Implemented:
+- improved invoice/quote preview screen UX
+- better PDF file naming using document type + invoice/quote number
+- preview header card now shows:
+  - document number
+  - client
+  - total
+  - PDF file name
+- export PDF action kept as dedicated safe action
+- refresh preview action added
+- restored built-in `PdfPreview` print/share controls on supported platforms
+- improved web fallback export section
+- invoice/quote list action overflow fixed by changing action layout:
+  - visible actions:
+    - preview
+    - edit
+    - duplicate
+  - popup menu actions:
+    - save as template
+    - delete
+    - convert to invoice (quotes only)
+- removed yellow/black overflow warning caused by too many action buttons in a single row
+
+### Partial payment display fix:
+- invoice preview now shows:
+  - total
+  - paid amount
+  - remaining amount
+  for invoices
+- web fallback preview also shows:
+  - total
+  - paid amount
+  - remaining amount
+  for invoices
+- PDF totals section now includes:
+  - subtotal
+  - tax
+  - discount
+  - total
+  - paid amount
+  - remaining amount
+  for invoices
+- partial paid invoices now produce accurate preview + PDF output
+- quotes still do not show paid/remaining values
+
+### Important fixes/decisions inside Step 23:
+- kept current PDF generation architecture
+- avoided risky custom print flow after macOS print support issue
+- removed custom share button from preview in favor of built-in supported share inside `PdfPreview`
+- kept explicit export action using `Printing.sharePdf`
+- preserved all earlier flows:
+  - Step 19 quote conversion
+  - Step 20 duplication
+  - Step 21 templates
+  - Step 22 template management
+  - Step 22 UX improvements
+- maintained current model structure and naming
+
+Final result:
+- preview/export flow is cleaner and more stable
+- overflow issue on invoice/quote cards is fixed
+- file naming is improved
+- partially paid invoices now display correct payment details in both preview and PDF
+- business document accuracy is improved
+
+---
+
 ## Current Features
 
 ### Dashboard
@@ -504,6 +575,7 @@ Final result:
 - duplicate support
 - template support
 - save as template from form/list
+- partial payment display in preview and PDF
 
 ### Quotes
 - create/edit
@@ -528,6 +600,15 @@ Final result:
 
 ### PDF
 - branding + localization
+- improved file naming
+- accurate paid/remaining display for invoices
+
+### Preview / Export
+- improved preview header
+- built-in print/share on supported platforms
+- dedicated export PDF action
+- refresh preview action
+- web fallback export card
 
 ### Settings
 - profile
@@ -542,28 +623,30 @@ Final result:
 - Business-ready
 - No critical issues
 - Workflow aligned with real usage
-- Template system is now mature and highly usable
-- Ready to continue with export/share improvements
+- Template system is mature and highly usable
+- Partial payment display is now accurate in preview and PDF
+- Ready for the next functional improvement
 
 ---
 
 ## Known Issues
 - Arabic PDF shaping not perfect
+- macOS direct custom print flow was avoided in favor of built-in preview print/share due to platform behavior
 
 ---
 
 ## Next Step
 
-## Step 23 – Export / Share Improvements
+## Step 24 – Polish and Document Actions
 
 Goal:
-- improve export and sharing workflow
+- improve document-level usability and polish
 
 Suggested scope:
-- improve PDF naming with invoice/quote number
-- cleaner share flow
-- quick share options
-- optional image export if feasible within current architecture
+- better invoice/quote card layout polish
+- more explicit payment summary labels in lists/dashboard if needed
+- cleaner preview/export actions
+- optional share shortcuts or additional export choices if stable
 
 ---
 
@@ -576,10 +659,10 @@ Branch:
 main
 
 Last completed:
-Step 22 UX Improvements
+Step 23
 
 Next task:
-Step 23
+Step 24
 
 ---
 

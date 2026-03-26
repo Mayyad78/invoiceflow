@@ -1,14 +1,14 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import '../models/business_profile_model.dart';
 import '../models/client_model.dart';
+import '../models/invoice_item_model.dart';
 import '../models/invoice_model.dart';
-import '../utils/invoice_status_localizer.dart';
 
 class PdfService {
   Future<Uint8List> generateInvoicePdf({
@@ -19,575 +19,434 @@ class PdfService {
     required String currency,
   }) async {
     final pdf = pw.Document();
-    final strings = _pdfStrings(localeCode, invoice.type);
 
-    final arabicFontData =
-        await rootBundle.load('assets/fonts/NotoSansArabic-Regular.ttf');
-    final arabicFont = pw.Font.ttf(arabicFontData);
-    final baseFont = pw.Font.helvetica();
-    final boldFont = pw.Font.helveticaBold();
+    final regularFont = await _loadRegularFont();
+    final boldFont = await _loadBoldFont();
+    final emojiFont = await _loadEmojiFont();
 
-    final baseTextStyle = pw.TextStyle(
-      font: baseFont,
-      fontFallback: [arabicFont],
-      fontSize: 11,
+    final theme = pw.ThemeData.withFont(
+      base: regularFont,
+      bold: boldFont,
+      icons: emojiFont,
     );
-
-    final boldTextStyle = pw.TextStyle(
-      font: boldFont,
-      fontFallback: [arabicFont],
-      fontSize: 11,
-      fontWeight: pw.FontWeight.bold,
-    );
-
-    final titleTextStyle = pw.TextStyle(
-      font: boldFont,
-      fontFallback: [arabicFont],
-      fontSize: 24,
-      fontWeight: pw.FontWeight.bold,
-    );
-
-    final businessTitleStyle = pw.TextStyle(
-      font: boldFont,
-      fontFallback: [arabicFont],
-      fontSize: 18,
-      fontWeight: pw.FontWeight.bold,
-    );
-
-    final sectionTitleStyle = pw.TextStyle(
-      font: boldFont,
-      fontFallback: [arabicFont],
-      fontSize: 14,
-      fontWeight: pw.FontWeight.bold,
-    );
-
-    final textDirection =
-        localeCode == 'ar' ? pw.TextDirection.rtl : pw.TextDirection.ltr;
-    final crossAlign =
-        localeCode == 'ar' ? pw.CrossAxisAlignment.end : pw.CrossAxisAlignment.start;
-    final textAlign =
-        localeCode == 'ar' ? pw.TextAlign.right : pw.TextAlign.left;
-    final summaryAlign =
-        localeCode == 'ar' ? pw.Alignment.centerLeft : pw.Alignment.centerRight;
-
-    final logoBytes = _decodeLogoBytes(business.logoBase64);
-    final logoProvider = logoBytes != null ? pw.MemoryImage(logoBytes) : null;
 
     pdf.addPage(
       pw.MultiPage(
+        theme: theme,
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(24),
-        textDirection: textDirection,
-        build: (context) {
-          return [
-            pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: localeCode == 'ar'
-                  ? [
-                      pw.Expanded(
-                        child: pw.Column(
-                          crossAxisAlignment: pw.CrossAxisAlignment.end,
-                          children: [
-                            if (logoProvider != null) ...[
-                              pw.Container(
-                                height: 64,
-                                alignment: pw.Alignment.centerRight,
-                                child: pw.Image(
-                                  logoProvider,
-                                  height: 64,
-                                  fit: pw.BoxFit.contain,
-                                ),
-                              ),
-                              pw.SizedBox(height: 12),
-                            ],
-                            pw.Text(
-                              business.name.isEmpty ? 'InvoiceFlow' : business.name,
-                              style: businessTitleStyle,
-                              textAlign: pw.TextAlign.right,
-                            ),
-                            if (business.email.isNotEmpty) ...[
-                              pw.SizedBox(height: 4),
-                              pw.Text(
-                                business.email,
-                                style: baseTextStyle,
-                                textAlign: pw.TextAlign.right,
-                              ),
-                            ],
-                            if (business.phone.isNotEmpty) ...[
-                              pw.SizedBox(height: 4),
-                              pw.Text(
-                                business.phone,
-                                style: baseTextStyle,
-                                textAlign: pw.TextAlign.right,
-                              ),
-                            ],
-                            if (business.address.isNotEmpty) ...[
-                              pw.SizedBox(height: 4),
-                              pw.Text(
-                                business.address,
-                                style: baseTextStyle,
-                                textAlign: pw.TextAlign.right,
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                      pw.SizedBox(width: 24),
-                      pw.Expanded(
-                        child: pw.Column(
-                          crossAxisAlignment: pw.CrossAxisAlignment.start,
-                          children: [
-                            pw.Text(
-                              strings.title,
-                              style: titleTextStyle,
-                              textAlign: pw.TextAlign.left,
-                            ),
-                            pw.SizedBox(height: 16),
-                            _infoLine(
-                              strings.numberLabel,
-                              invoice.invoiceNumber,
-                              baseStyle: baseTextStyle,
-                              boldStyle: boldTextStyle,
-                              localeCode: localeCode,
-                            ),
-                            _infoLine(
-                              strings.dateLabel,
-                              invoice.issueDate.toLocal().toString().split(' ').first,
-                              baseStyle: baseTextStyle,
-                              boldStyle: boldTextStyle,
-                              localeCode: localeCode,
-                            ),
-                            _infoLine(
-                              strings.dueLabel,
-                              invoice.dueDate.toLocal().toString().split(' ').first,
-                              baseStyle: baseTextStyle,
-                              boldStyle: boldTextStyle,
-                              localeCode: localeCode,
-                            ),
-                            _infoLine(
-                              strings.statusLabel,
-                              localizeInvoiceStatusByLocaleCode(
-                                localeCode,
-                                invoice.status,
-                              ),
-                              baseStyle: baseTextStyle,
-                              boldStyle: boldTextStyle,
-                              localeCode: localeCode,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ]
-                  : [
-                      pw.Expanded(
-                        child: pw.Column(
-                          crossAxisAlignment: pw.CrossAxisAlignment.start,
-                          children: [
-                            pw.Text(strings.title, style: titleTextStyle),
-                            pw.SizedBox(height: 16),
-                            _infoLine(
-                              strings.numberLabel,
-                              invoice.invoiceNumber,
-                              baseStyle: baseTextStyle,
-                              boldStyle: boldTextStyle,
-                              localeCode: localeCode,
-                            ),
-                            _infoLine(
-                              strings.dateLabel,
-                              invoice.issueDate.toLocal().toString().split(' ').first,
-                              baseStyle: baseTextStyle,
-                              boldStyle: boldTextStyle,
-                              localeCode: localeCode,
-                            ),
-                            _infoLine(
-                              strings.dueLabel,
-                              invoice.dueDate.toLocal().toString().split(' ').first,
-                              baseStyle: baseTextStyle,
-                              boldStyle: boldTextStyle,
-                              localeCode: localeCode,
-                            ),
-                            _infoLine(
-                              strings.statusLabel,
-                              localizeInvoiceStatusByLocaleCode(
-                                localeCode,
-                                invoice.status,
-                              ),
-                              baseStyle: baseTextStyle,
-                              boldStyle: boldTextStyle,
-                              localeCode: localeCode,
-                            ),
-                          ],
-                        ),
-                      ),
-                      pw.SizedBox(width: 24),
-                      pw.Expanded(
-                        child: pw.Column(
-                          crossAxisAlignment: pw.CrossAxisAlignment.end,
-                          children: [
-                            if (logoProvider != null) ...[
-                              pw.Container(
-                                height: 64,
-                                alignment: pw.Alignment.centerRight,
-                                child: pw.Image(
-                                  logoProvider,
-                                  height: 64,
-                                  fit: pw.BoxFit.contain,
-                                ),
-                              ),
-                              pw.SizedBox(height: 12),
-                            ],
-                            pw.Text(
-                              business.name.isEmpty ? 'InvoiceFlow' : business.name,
-                              style: businessTitleStyle,
-                              textAlign: pw.TextAlign.right,
-                            ),
-                            if (business.email.isNotEmpty) ...[
-                              pw.SizedBox(height: 4),
-                              pw.Text(
-                                business.email,
-                                style: baseTextStyle,
-                                textAlign: pw.TextAlign.right,
-                              ),
-                            ],
-                            if (business.phone.isNotEmpty) ...[
-                              pw.SizedBox(height: 4),
-                              pw.Text(
-                                business.phone,
-                                style: baseTextStyle,
-                                textAlign: pw.TextAlign.right,
-                              ),
-                            ],
-                            if (business.address.isNotEmpty) ...[
-                              pw.SizedBox(height: 4),
-                              pw.Text(
-                                business.address,
-                                style: baseTextStyle,
-                                textAlign: pw.TextAlign.right,
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                    ],
+        textDirection:
+            localeCode == 'ar' ? pw.TextDirection.rtl : pw.TextDirection.ltr,
+        build: (context) => [
+          _buildHeader(
+            invoice: invoice,
+            business: business,
+            localeCode: localeCode,
+          ),
+          pw.SizedBox(height: 20),
+          _buildClientSection(
+            client: client,
+            localeCode: localeCode,
+          ),
+          pw.SizedBox(height: 20),
+          _buildItemsTable(
+            invoice: invoice,
+            localeCode: localeCode,
+            currency: currency,
+          ),
+          pw.SizedBox(height: 20),
+          _buildTotalsSection(
+            invoice: invoice,
+            localeCode: localeCode,
+            currency: currency,
+          ),
+          if (invoice.notes.trim().isNotEmpty) ...[
+            pw.SizedBox(height: 20),
+            _buildNotesSection(
+              notes: invoice.notes,
+              localeCode: localeCode,
             ),
-            pw.SizedBox(height: 28),
-            pw.Container(
-              width: double.infinity,
-              padding: const pw.EdgeInsets.all(12),
-              decoration: pw.BoxDecoration(
-                color: PdfColors.grey100,
-                borderRadius: const pw.BorderRadius.all(
-                  pw.Radius.circular(8),
-                ),
-              ),
-              child: pw.Column(
-                crossAxisAlignment: crossAlign,
-                children: [
-                  pw.Text(
-                    strings.billToLabel,
-                    style: sectionTitleStyle,
-                    textAlign: textAlign,
-                  ),
-                  pw.SizedBox(height: 8),
-                  pw.Text(client.name, style: baseTextStyle, textAlign: textAlign),
-                  if (client.email.isNotEmpty)
-                    pw.Text(client.email, style: baseTextStyle, textAlign: textAlign),
-                  if (client.phone.isNotEmpty)
-                    pw.Text(client.phone, style: baseTextStyle, textAlign: textAlign),
-                  if (client.address.isNotEmpty)
-                    pw.Text(
-                      client.address,
-                      style: baseTextStyle,
-                      textAlign: textAlign,
-                    ),
-                ],
-              ),
-            ),
-            pw.SizedBox(height: 28),
-            pw.TableHelper.fromTextArray(
-              headers: [
-                strings.descriptionLabel,
-                strings.quantityLabel,
-                strings.unitPriceLabel,
-                strings.totalLabel,
-              ],
-              headerStyle: pw.TextStyle(
-                font: boldFont,
-                fontFallback: [arabicFont],
-                fontWeight: pw.FontWeight.bold,
-                color: PdfColors.white,
-              ),
-              headerDecoration: const pw.BoxDecoration(
-                color: PdfColors.blueGrey700,
-              ),
-              cellStyle: pw.TextStyle(
-                font: baseFont,
-                fontFallback: [arabicFont],
-              ),
-              cellAlignment: localeCode == 'ar'
-                  ? pw.Alignment.centerRight
-                  : pw.Alignment.centerLeft,
-              cellPadding: const pw.EdgeInsets.all(8),
-              data: invoice.items
-                  .map(
-                    (item) => [
-                      item.description,
-                      item.quantity.toString(),
-                      '${item.unitPrice.toStringAsFixed(2)} $currency',
-                      '${item.total.toStringAsFixed(2)} $currency',
-                    ],
-                  )
-                  .toList(),
-            ),
-            pw.SizedBox(height: 24),
-            pw.Align(
-              alignment: summaryAlign,
-              child: pw.Container(
-                width: 240,
-                padding: const pw.EdgeInsets.all(12),
-                decoration: pw.BoxDecoration(
-                  border: pw.Border.all(color: PdfColors.grey300),
-                  borderRadius: const pw.BorderRadius.all(
-                    pw.Radius.circular(8),
-                  ),
-                ),
-                child: pw.Column(
-                  children: [
-                    _summaryRow(
-                      strings.subtotalLabel,
-                      '${invoice.subtotal.toStringAsFixed(2)} $currency',
-                      baseStyle: baseTextStyle,
-                      boldStyle: boldTextStyle,
-                      localeCode: localeCode,
-                    ),
-                    _summaryRow(
-                      strings.taxLabel,
-                      '${invoice.taxAmount.toStringAsFixed(2)} $currency',
-                      baseStyle: baseTextStyle,
-                      boldStyle: boldTextStyle,
-                      localeCode: localeCode,
-                    ),
-                    _summaryRow(
-                      strings.discountLabel,
-                      '${invoice.discount.toStringAsFixed(2)} $currency',
-                      baseStyle: baseTextStyle,
-                      boldStyle: boldTextStyle,
-                      localeCode: localeCode,
-                    ),
-                    pw.Divider(),
-                    _summaryRow(
-                      strings.totalLabel,
-                      '${invoice.total.toStringAsFixed(2)} $currency',
-                      baseStyle: baseTextStyle,
-                      boldStyle: boldTextStyle,
-                      localeCode: localeCode,
-                      isBold: true,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            if (invoice.notes.isNotEmpty) ...[
-              pw.SizedBox(height: 24),
-              pw.Text(
-                strings.notesLabel,
-                style: sectionTitleStyle,
-                textAlign: textAlign,
-              ),
-              pw.SizedBox(height: 8),
-              pw.Text(
-                invoice.notes,
-                style: baseTextStyle,
-                textAlign: textAlign,
-              ),
-            ],
-          ];
-        },
+          ],
+          pw.SizedBox(height: 24),
+          _buildFooter(localeCode),
+        ],
       ),
     );
 
     return pdf.save();
   }
 
-  Uint8List? _decodeLogoBytes(String? logoBase64) {
-    if (logoBase64 == null || logoBase64.isEmpty) {
-      return null;
-    }
-
+  Future<pw.Font> _loadRegularFont() async {
     try {
-      return base64Decode(logoBase64);
+      final data = await rootBundle.load('assets/fonts/NotoSans-Regular.ttf');
+      return pw.Font.ttf(data);
     } catch (_) {
-      return null;
+      return pw.Font.helvetica();
     }
   }
 
-  pw.Widget _infoLine(
-    String label,
-    String value, {
-    required pw.TextStyle baseStyle,
-    required pw.TextStyle boldStyle,
+  Future<pw.Font> _loadBoldFont() async {
+    try {
+      final data = await rootBundle.load('assets/fonts/NotoSans-Bold.ttf');
+      return pw.Font.ttf(data);
+    } catch (_) {
+      return pw.Font.helveticaBold();
+    }
+  }
+
+  Future<pw.Font> _loadEmojiFont() async {
+    try {
+      final data = await rootBundle.load('assets/fonts/NotoColorEmoji.ttf');
+      return pw.Font.ttf(data);
+    } catch (_) {
+      return pw.Font.helvetica();
+    }
+  }
+
+  String _tr(String localeCode, String key) {
+    const map = {
+      'en': {
+        'invoice': 'Invoice',
+        'quote': 'Quote',
+        'invoiceNumber': 'Invoice Number',
+        'quoteNumber': 'Quote Number',
+        'issueDate': 'Issue Date',
+        'dueDate': 'Due Date',
+        'billTo': 'Bill To',
+        'description': 'Description',
+        'qty': 'Qty',
+        'unitPrice': 'Unit Price',
+        'total': 'Total',
+        'subtotal': 'Subtotal',
+        'tax': 'Tax',
+        'discount': 'Discount',
+        'paidAmount': 'Paid Amount',
+        'remainingAmount': 'Remaining Amount',
+        'notes': 'Notes',
+        'thankYou': 'Thank you for your business',
+        'statusDraft': 'Draft',
+        'statusPaid': 'Paid',
+        'statusUnpaid': 'Unpaid',
+        'statusPartial': 'Partially Paid',
+      },
+      'ar': {
+        'invoice': 'فاتورة',
+        'quote': 'عرض سعر',
+        'invoiceNumber': 'رقم الفاتورة',
+        'quoteNumber': 'رقم عرض السعر',
+        'issueDate': 'تاريخ الإصدار',
+        'dueDate': 'تاريخ الاستحقاق',
+        'billTo': 'العميل',
+        'description': 'الوصف',
+        'qty': 'الكمية',
+        'unitPrice': 'سعر الوحدة',
+        'total': 'الإجمالي',
+        'subtotal': 'الإجمالي الفرعي',
+        'tax': 'الضريبة',
+        'discount': 'الخصم',
+        'paidAmount': 'المبلغ المدفوع',
+        'remainingAmount': 'المبلغ المتبقي',
+        'notes': 'ملاحظات',
+        'thankYou': 'شكراً لتعاملكم معنا',
+        'statusDraft': 'مسودة',
+        'statusPaid': 'مدفوع',
+        'statusUnpaid': 'غير مدفوع',
+        'statusPartial': 'مدفوع جزئياً',
+      },
+      'fr': {
+        'invoice': 'Facture',
+        'quote': 'Devis',
+        'invoiceNumber': 'Numéro de facture',
+        'quoteNumber': 'Numéro de devis',
+        'issueDate': "Date d'émission",
+        'dueDate': "Date d'échéance",
+        'billTo': 'Client',
+        'description': 'Description',
+        'qty': 'Qté',
+        'unitPrice': 'Prix unitaire',
+        'total': 'Total',
+        'subtotal': 'Sous-total',
+        'tax': 'Taxe',
+        'discount': 'Remise',
+        'paidAmount': 'Montant payé',
+        'remainingAmount': 'Montant restant',
+        'notes': 'Notes',
+        'thankYou': 'Merci pour votre confiance',
+        'statusDraft': 'Brouillon',
+        'statusPaid': 'Payée',
+        'statusUnpaid': 'Impayée',
+        'statusPartial': 'Partiellement payée',
+      },
+    };
+
+    return map[localeCode]?[key] ?? map['en']![key]!;
+  }
+
+  String _localizedStatus(String localeCode, String status) {
+    switch (status) {
+      case 'paid':
+        return _tr(localeCode, 'statusPaid');
+      case 'unpaid':
+        return _tr(localeCode, 'statusUnpaid');
+      case 'partial':
+        return _tr(localeCode, 'statusPartial');
+      default:
+        return _tr(localeCode, 'statusDraft');
+    }
+  }
+
+  String _formatCurrency(double value, String currency) {
+    return '${value.toStringAsFixed(2)} $currency';
+  }
+
+  pw.Widget _buildHeader({
+    required InvoiceModel invoice,
+    required BusinessProfileModel business,
     required String localeCode,
   }) {
-    if (localeCode == 'ar') {
-      return pw.Padding(
-        padding: const pw.EdgeInsets.only(bottom: 4),
-        child: pw.Row(
-          mainAxisAlignment: pw.MainAxisAlignment.start,
+    final title =
+        invoice.type == 'quote' ? _tr(localeCode, 'quote') : _tr(localeCode, 'invoice');
+    final numberLabel = invoice.type == 'quote'
+        ? _tr(localeCode, 'quoteNumber')
+        : _tr(localeCode, 'invoiceNumber');
+
+    return pw.Row(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+      children: [
+        pw.Expanded(
+          child: pw.Column(
+            crossAxisAlignment: localeCode == 'ar'
+                ? pw.CrossAxisAlignment.end
+                : pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text(
+                business.name.trim().isEmpty ? 'InvoiceFlow' : business.name,
+                style: pw.TextStyle(
+                  fontSize: 20,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+              if (business.phone.trim().isNotEmpty) ...[
+                pw.SizedBox(height: 4),
+                pw.Text(business.phone),
+              ],
+              if (business.email.trim().isNotEmpty) ...[
+                pw.SizedBox(height: 4),
+                pw.Text(business.email),
+              ],
+              if (business.address.trim().isNotEmpty) ...[
+                pw.SizedBox(height: 4),
+                pw.Text(business.address),
+              ],
+            ],
+          ),
+        ),
+        pw.SizedBox(width: 16),
+        pw.Column(
+          crossAxisAlignment: localeCode == 'ar'
+              ? pw.CrossAxisAlignment.start
+              : pw.CrossAxisAlignment.end,
           children: [
-            pw.Expanded(
-              child: pw.Text(
-                value,
-                style: baseStyle,
-                textAlign: pw.TextAlign.right,
+            pw.Text(
+              title,
+              style: pw.TextStyle(
+                fontSize: 24,
+                fontWeight: pw.FontWeight.bold,
               ),
             ),
-            pw.Text(
-              ' :$label',
-              style: boldStyle,
-              textAlign: pw.TextAlign.right,
-            ),
+            pw.SizedBox(height: 8),
+            pw.Text('$numberLabel: ${invoice.invoiceNumber}'),
+            pw.SizedBox(height: 4),
+            pw.Text('${_tr(localeCode, 'issueDate')}: ${DateFormat('yyyy-MM-dd').format(invoice.issueDate)}'),
+            pw.SizedBox(height: 4),
+            pw.Text('${_tr(localeCode, 'dueDate')}: ${DateFormat('yyyy-MM-dd').format(invoice.dueDate)}'),
+            pw.SizedBox(height: 4),
+            pw.Text('${_tr(localeCode, 'statusPaid').replaceAll('Paid', _localizedStatus(localeCode, invoice.status))}'
+                .replaceAll('مدفوع', _localizedStatus(localeCode, invoice.status))
+                .replaceAll('Payée', _localizedStatus(localeCode, invoice.status))),
           ],
         ),
-      );
-    }
-
-    return pw.Padding(
-      padding: const pw.EdgeInsets.only(bottom: 4),
-      child: pw.Row(
-        children: [
-          pw.Text('$label: ', style: boldStyle),
-          pw.Expanded(
-            child: pw.Text(value, style: baseStyle),
-          ),
-        ],
-      ),
+      ],
     );
   }
 
-  pw.Widget _summaryRow(
-    String label,
-    String value, {
-    required pw.TextStyle baseStyle,
-    required pw.TextStyle boldStyle,
+  pw.Widget _buildClientSection({
+    required ClientModel client,
     required String localeCode,
-    bool isBold = false,
   }) {
-    final labelStyle = isBold ? boldStyle : baseStyle;
-    final valueStyle = isBold ? boldStyle : baseStyle;
-
-    if (localeCode == 'ar') {
-      return pw.Padding(
-        padding: const pw.EdgeInsets.symmetric(vertical: 4),
-        child: pw.Row(
-          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-          children: [
-            pw.Text(value, style: valueStyle),
-            pw.Text(label, style: labelStyle),
-          ],
-        ),
-      );
-    }
-
-    return pw.Padding(
-      padding: const pw.EdgeInsets.symmetric(vertical: 4),
-      child: pw.Row(
-        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+    return pw.Container(
+      width: double.infinity,
+      padding: const pw.EdgeInsets.all(12),
+      decoration: pw.BoxDecoration(
+        border: pw.Border.all(color: PdfColors.grey400),
+        borderRadius: pw.BorderRadius.circular(8),
+      ),
+      child: pw.Column(
+        crossAxisAlignment: localeCode == 'ar'
+            ? pw.CrossAxisAlignment.end
+            : pw.CrossAxisAlignment.start,
         children: [
-          pw.Text(label, style: labelStyle),
-          pw.Text(value, style: valueStyle),
+          pw.Text(
+            _tr(localeCode, 'billTo'),
+            style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+          ),
+          pw.SizedBox(height: 8),
+          pw.Text(client.name),
+          if (client.phone.trim().isNotEmpty) ...[
+            pw.SizedBox(height: 4),
+            pw.Text(client.phone),
+          ],
+          if (client.email.trim().isNotEmpty) ...[
+            pw.SizedBox(height: 4),
+            pw.Text(client.email),
+          ],
+          if (client.address.trim().isNotEmpty) ...[
+            pw.SizedBox(height: 4),
+            pw.Text(client.address),
+          ],
         ],
       ),
     );
   }
 
-  _PdfStrings _pdfStrings(String localeCode, String type) {
-    switch (localeCode) {
-      case 'ar':
-        return _PdfStrings(
-          title: type == 'quote' ? 'عرض سعر' : 'فاتورة',
-          numberLabel: 'الرقم',
-          dateLabel: 'التاريخ',
-          dueLabel: 'الاستحقاق',
-          statusLabel: 'الحالة',
-          billToLabel: 'إلى',
-          descriptionLabel: 'الوصف',
-          quantityLabel: 'الكمية',
-          unitPriceLabel: 'سعر الوحدة',
-          subtotalLabel: 'الإجمالي الفرعي',
-          taxLabel: 'الضريبة',
-          discountLabel: 'الخصم',
-          totalLabel: 'الإجمالي',
-          notesLabel: 'ملاحظات',
-        );
-      case 'fr':
-        return _PdfStrings(
-          title: type == 'quote' ? 'Devis' : 'Facture',
-          numberLabel: 'Numéro',
-          dateLabel: 'Date',
-          dueLabel: 'Échéance',
-          statusLabel: 'Statut',
-          billToLabel: 'Facturé à',
-          descriptionLabel: 'Description',
-          quantityLabel: 'Qté',
-          unitPriceLabel: 'Prix unitaire',
-          subtotalLabel: 'Sous-total',
-          taxLabel: 'Taxe',
-          discountLabel: 'Remise',
-          totalLabel: 'Total',
-          notesLabel: 'Notes',
-        );
-      default:
-        return _PdfStrings(
-          title: type == 'quote' ? 'Quote' : 'Invoice',
-          numberLabel: 'Number',
-          dateLabel: 'Date',
-          dueLabel: 'Due',
-          statusLabel: 'Status',
-          billToLabel: 'Bill To',
-          descriptionLabel: 'Description',
-          quantityLabel: 'Qty',
-          unitPriceLabel: 'Unit Price',
-          subtotalLabel: 'Subtotal',
-          taxLabel: 'Tax',
-          discountLabel: 'Discount',
-          totalLabel: 'Total',
-          notesLabel: 'Notes',
-        );
-    }
+  pw.Widget _buildItemsTable({
+    required InvoiceModel invoice,
+    required String localeCode,
+    required String currency,
+  }) {
+    final headers = [
+      _tr(localeCode, 'description'),
+      _tr(localeCode, 'qty'),
+      _tr(localeCode, 'unitPrice'),
+      _tr(localeCode, 'total'),
+    ];
+
+    final data = invoice.items.map((InvoiceItemModel item) {
+      return [
+        item.description,
+        item.quantity.toStringAsFixed(item.quantity % 1 == 0 ? 0 : 2),
+        _formatCurrency(item.unitPrice, currency),
+        _formatCurrency(item.total, currency),
+      ];
+    }).toList();
+
+    return pw.TableHelper.fromTextArray(
+      headers: headers,
+      data: data,
+      border: pw.TableBorder.all(color: PdfColors.grey400),
+      headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+      headerDecoration: const pw.BoxDecoration(color: PdfColors.grey200),
+      cellAlignment: pw.Alignment.centerLeft,
+      headerAlignment: pw.Alignment.centerLeft,
+      cellPadding: const pw.EdgeInsets.all(8),
+      headerPadding: const pw.EdgeInsets.all(8),
+    );
   }
-}
 
-class _PdfStrings {
-  final String title;
-  final String numberLabel;
-  final String dateLabel;
-  final String dueLabel;
-  final String statusLabel;
-  final String billToLabel;
-  final String descriptionLabel;
-  final String quantityLabel;
-  final String unitPriceLabel;
-  final String subtotalLabel;
-  final String taxLabel;
-  final String discountLabel;
-  final String totalLabel;
-  final String notesLabel;
+  pw.Widget _buildTotalsSection({
+    required InvoiceModel invoice,
+    required String localeCode,
+    required String currency,
+  }) {
+    final rows = <List<String>>[
+      [_tr(localeCode, 'subtotal'), _formatCurrency(invoice.subtotal, currency)],
+      [_tr(localeCode, 'tax'), _formatCurrency(invoice.taxAmount, currency)],
+      [_tr(localeCode, 'discount'), _formatCurrency(invoice.discount, currency)],
+      [_tr(localeCode, 'total'), _formatCurrency(invoice.total, currency)],
+    ];
 
-  _PdfStrings({
-    required this.title,
-    required this.numberLabel,
-    required this.dateLabel,
-    required this.dueLabel,
-    required this.statusLabel,
-    required this.billToLabel,
-    required this.descriptionLabel,
-    required this.quantityLabel,
-    required this.unitPriceLabel,
-    required this.subtotalLabel,
-    required this.taxLabel,
-    required this.discountLabel,
-    required this.totalLabel,
-    required this.notesLabel,
-  });
+    if (invoice.type == 'invoice') {
+      rows.add([
+        _tr(localeCode, 'paidAmount'),
+        _formatCurrency(invoice.paidAmount, currency),
+      ]);
+      rows.add([
+        _tr(localeCode, 'remainingAmount'),
+        _formatCurrency(invoice.remainingAmount, currency),
+      ]);
+    }
+
+    return pw.Align(
+      alignment:
+          localeCode == 'ar' ? pw.Alignment.centerLeft : pw.Alignment.centerRight,
+      child: pw.Container(
+        width: 230,
+        child: pw.Column(
+          children: rows.map((row) {
+            final isTotal = row[0] == _tr(localeCode, 'total');
+            final isRemaining = row[0] == _tr(localeCode, 'remainingAmount');
+
+            return pw.Container(
+              padding: const pw.EdgeInsets.symmetric(vertical: 6),
+              decoration: const pw.BoxDecoration(
+                border: pw.Border(
+                  bottom: pw.BorderSide(color: PdfColors.grey300),
+                ),
+              ),
+              child: pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text(
+                    row[0],
+                    style: pw.TextStyle(
+                      fontWeight: (isTotal || isRemaining)
+                          ? pw.FontWeight.bold
+                          : pw.FontWeight.normal,
+                    ),
+                  ),
+                  pw.Text(
+                    row[1],
+                    style: pw.TextStyle(
+                      fontWeight: (isTotal || isRemaining)
+                          ? pw.FontWeight.bold
+                          : pw.FontWeight.normal,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
+  pw.Widget _buildNotesSection({
+    required String notes,
+    required String localeCode,
+  }) {
+    return pw.Container(
+      width: double.infinity,
+      padding: const pw.EdgeInsets.all(12),
+      decoration: pw.BoxDecoration(
+        border: pw.Border.all(color: PdfColors.grey400),
+        borderRadius: pw.BorderRadius.circular(8),
+      ),
+      child: pw.Column(
+        crossAxisAlignment: localeCode == 'ar'
+            ? pw.CrossAxisAlignment.end
+            : pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(
+            _tr(localeCode, 'notes'),
+            style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+          ),
+          pw.SizedBox(height: 8),
+          pw.Text(notes),
+        ],
+      ),
+    );
+  }
+
+  pw.Widget _buildFooter(String localeCode) {
+    return pw.Center(
+      child: pw.Text(
+        _tr(localeCode, 'thankYou'),
+        style: const pw.TextStyle(
+          color: PdfColors.grey700,
+        ),
+      ),
+    );
+  }
 }

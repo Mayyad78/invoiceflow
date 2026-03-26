@@ -216,7 +216,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get invoicePreviewTitle => 'Invoice Preview';
 
   @override
-  String get downloadPdf => 'Download PDF';
+  String get downloadPdf => 'PDF File';
 
   @override
   String get status => 'Status';
@@ -477,4 +477,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get removeFromFavorites => 'Remove from favorites';
+
+  @override
+  String get sharePdf => 'Share PDF';
+
+  @override
+  String get exportPdf => 'Export PDF';
+
+  @override
+  String get refreshPreview => 'Refresh Preview';
+
+  @override
+  String get previewError => 'Could not load PDF preview';
+
+  @override
+  String get retry => 'Retry';
 }

@@ -218,7 +218,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get invoicePreviewTitle => 'Aperçu de la facture';
 
   @override
-  String get downloadPdf => 'Télécharger le PDF';
+  String get downloadPdf => 'Fichier PDF';
 
   @override
   String get status => 'Statut';
@@ -480,4 +480,19 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get removeFromFavorites => 'Retirer des favoris';
+
+  @override
+  String get sharePdf => 'Partager le PDF';
+
+  @override
+  String get exportPdf => 'Exporter le PDF';
+
+  @override
+  String get refreshPreview => 'Actualiser l’aperçu';
+
+  @override
+  String get previewError => 'Impossible de charger l’aperçu PDF';
+
+  @override
+  String get retry => 'Réessayer';
 }

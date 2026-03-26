@@ -217,7 +217,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get invoicePreviewTitle => 'معاينة الفاتورة';
 
   @override
-  String get downloadPdf => 'تنزيل PDF';
+  String get downloadPdf => 'ملف PDF';
 
   @override
   String get status => 'الحالة';
@@ -473,4 +473,19 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get removeFromFavorites => 'إزالة من المفضلة';
+
+  @override
+  String get sharePdf => 'مشاركة PDF';
+
+  @override
+  String get exportPdf => 'تصدير PDF';
+
+  @override
+  String get refreshPreview => 'تحديث المعاينة';
+
+  @override
+  String get previewError => 'تعذر تحميل معاينة PDF';
+
+  @override
+  String get retry => 'إعادة المحاولة';
 }

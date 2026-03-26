@@ -69,7 +69,7 @@
   "invoiceDetails": "تفاصيل الفاتورة",
   "businessDetails": "بيانات النشاط",
   "invoicePreviewTitle": "معاينة الفاتورة",
-  "downloadPdf": "تنزيل PDF",
+  "downloadPdf": "ملف PDF",
   "status": "الحالة",
   "date": "التاريخ",
   "due": "الاستحقاق",
@@ -152,5 +152,10 @@
   "tryDifferentSearchOrFilter": "جرّب بحثاً مختلفاً أو قم بإلغاء فلتر المفضلة.",
   "favorite": "مفضل",
   "addToFavorites": "إضافة إلى المفضلة",
-  "removeFromFavorites": "إزالة من المفضلة"
+  "removeFromFavorites": "إزالة من المفضلة",
+  "sharePdf": "مشاركة PDF",
+  "exportPdf": "تصدير PDF",
+  "refreshPreview": "تحديث المعاينة",
+  "previewError": "تعذر تحميل معاينة PDF",
+  "retry": "إعادة المحاولة"
 }

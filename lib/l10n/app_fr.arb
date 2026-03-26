@@ -69,7 +69,7 @@
   "invoiceDetails": "Détails de la facture",
   "businessDetails": "Informations de l'entreprise",
   "invoicePreviewTitle": "Aperçu de la facture",
-  "downloadPdf": "Télécharger le PDF",
+  "downloadPdf": "Fichier PDF",
   "status": "Statut",
   "date": "Date",
   "due": "Échéance",
@@ -152,5 +152,10 @@
   "tryDifferentSearchOrFilter": "Essayez une autre recherche ou désactivez le filtre des favoris.",
   "favorite": "Favori",
   "addToFavorites": "Ajouter aux favoris",
-  "removeFromFavorites": "Retirer des favoris"
+  "removeFromFavorites": "Retirer des favoris",
+  "sharePdf": "Partager le PDF",
+  "exportPdf": "Exporter le PDF",
+  "refreshPreview": "Actualiser l’aperçu",
+  "previewError": "Impossible de charger l’aperçu PDF",
+  "retry": "Réessayer"
 }
