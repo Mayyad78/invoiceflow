@@ -21,28 +21,24 @@ class DashboardScreen extends ConsumerWidget {
     final appSettings = ref.watch(appSettingsProvider);
     final currency = appSettings.currency;
 
-    final invoices = allDocuments
-        .where((invoice) => invoice.type == 'invoice')
-        .toList();
-    final quotes = allDocuments
-        .where((invoice) => invoice.type == 'quote')
-        .toList();
+    final invoices = allDocuments.where((invoice) => invoice.type == 'invoice').toList();
+
+    final quotes = allDocuments.where((invoice) => invoice.type == 'quote').toList();
 
     final totalInvoices = invoices.length;
     final totalQuotes = quotes.length;
 
-    final paidInvoices = invoices
-        .where((invoice) => normalizeInvoiceStatus(invoice.status) == 'paid')
-        .toList();
-    final unpaidInvoices = invoices
-        .where((invoice) => normalizeInvoiceStatus(invoice.status) == 'unpaid')
-        .toList();
-    final partialInvoices = invoices
-        .where((invoice) => normalizeInvoiceStatus(invoice.status) == 'partial')
-        .toList();
-    final draftInvoices = invoices
-        .where((invoice) => normalizeInvoiceStatus(invoice.status) == 'draft')
-        .toList();
+    final paidInvoices =
+        invoices.where((invoice) => normalizeInvoiceStatus(invoice.status) == 'paid').toList();
+
+    final unpaidInvoices =
+        invoices.where((invoice) => normalizeInvoiceStatus(invoice.status) == 'unpaid').toList();
+
+    final partialInvoices =
+        invoices.where((invoice) => normalizeInvoiceStatus(invoice.status) == 'partial').toList();
+
+    final draftInvoices =
+        invoices.where((invoice) => normalizeInvoiceStatus(invoice.status) == 'draft').toList();
 
     final totalRevenue = invoices.fold<double>(
       0,
@@ -58,6 +54,9 @@ class DashboardScreen extends ConsumerWidget {
       0,
       (sum, invoice) => sum + invoice.remainingAmount,
     );
+
+    final collectedRatio =
+        totalRevenue <= 0 ? 0.0 : (collectedAmount / totalRevenue).clamp(0.0, 1.0);
 
     return Scaffold(
       appBar: AppBar(
@@ -100,6 +99,7 @@ class DashboardScreen extends ConsumerWidget {
                 title: t.totalRevenue,
                 value: '${totalRevenue.toStringAsFixed(2)} $currency',
                 icon: Icons.receipt_long,
+                emphasize: true,
               ),
               _SummaryCard(
                 title: t.collectedAmount,
@@ -110,6 +110,7 @@ class DashboardScreen extends ConsumerWidget {
                 title: t.outstandingBalance,
                 value: '${outstandingBalance.toStringAsFixed(2)} $currency',
                 icon: Icons.account_balance_wallet_outlined,
+                emphasize: outstandingBalance > 0,
               ),
               _SummaryCard(
                 title: t.totalClients,
@@ -127,6 +128,14 @@ class DashboardScreen extends ConsumerWidget {
                 icon: Icons.request_quote_outlined,
               ),
             ],
+          ),
+          const SizedBox(height: 24),
+          _CashFlowCard(
+            collectedLabel: t.collectedAmount,
+            pendingLabel: t.pendingAmount,
+            collectedValue: '${collectedAmount.toStringAsFixed(2)} $currency',
+            pendingValue: '${outstandingBalance.toStringAsFixed(2)} $currency',
+            progress: collectedRatio,
           ),
           const SizedBox(height: 24),
           Text(
@@ -235,19 +244,123 @@ class DashboardScreen extends ConsumerWidget {
   }
 }
 
-class _SummaryCard extends StatelessWidget {
-  const _SummaryCard({
-    required this.title,
+class _CashFlowCard extends StatelessWidget {
+  const _CashFlowCard({
+    required this.collectedLabel,
+    required this.pendingLabel,
+    required this.collectedValue,
+    required this.pendingValue,
+    required this.progress,
+  });
+
+  final String collectedLabel;
+  final String pendingLabel;
+  final String collectedValue;
+  final String pendingValue;
+  final double progress;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: _FlowMetric(
+                    label: collectedLabel,
+                    value: collectedValue,
+                    icon: Icons.south_west,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _FlowMetric(
+                    label: pendingLabel,
+                    value: pendingValue,
+                    icon: Icons.north_east,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(999),
+              child: LinearProgressIndicator(
+                value: progress,
+                minHeight: 10,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FlowMetric extends StatelessWidget {
+  const _FlowMetric({
+    required this.label,
     required this.value,
     required this.icon,
   });
 
-  final String title;
+  final String label;
   final String value;
   final IconData icon;
 
   @override
   Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Icon(icon),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SummaryCard extends StatelessWidget {
+  const _SummaryCard({
+    required this.title,
+    required this.value,
+    required this.icon,
+    this.emphasize = false,
+  });
+
+  final String title;
+  final String value;
+  final IconData icon;
+  final bool emphasize;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -258,7 +371,10 @@ class _SummaryCard extends StatelessWidget {
             const Spacer(),
             Text(
               value,
-              style: Theme.of(context).textTheme.titleLarge,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: emphasize ? colorScheme.primary : null,
+                  ),
             ),
             const SizedBox(height: 4),
             Text(title),
@@ -292,7 +408,9 @@ class _StatusCard extends StatelessWidget {
             const Spacer(),
             Text(
               value,
-              style: Theme.of(context).textTheme.titleLarge,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
             ),
             const SizedBox(height: 4),
             Text(title),
@@ -322,7 +440,9 @@ class _WideSummaryCard extends StatelessWidget {
         title: Text(title),
         subtitle: Text(
           value,
-          style: Theme.of(context).textTheme.titleMedium,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
         ),
       ),
     );

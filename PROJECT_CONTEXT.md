@@ -558,10 +558,52 @@ Final result:
 
 ---
 
+## Step 24 – UX & Business Flow Polish
+
+Completed as one full step.
+
+Implemented:
+- improved invoice and quote card readability
+- better spacing inside document cards
+- clearer grouping for:
+  - total
+  - paid
+  - remaining
+- highlighted important values to improve quick reading
+- improved card action layout while preserving existing flows
+- improved dashboard clarity for financial summary
+- clearer distinction between:
+  - collected amount
+  - pending amount
+- improved preview screen hierarchy and summary layout
+- cleaner preview header and amount grouping
+- fixed missing company logo in PDF
+- improved PDF header separation between business information and document information
+
+### Important fixes/decisions inside Step 24:
+- preserved existing project naming and structure
+- corrected provider usage to keep existing `appSettingsProvider`
+- did not introduce risky changes to working Step 19–23 flows
+- kept current PDF logic stable
+- restored company logo rendering in PDF without changing the rest of the PDF workflow
+- kept Arabic PDF full shaping/layout work postponed to a later isolated step to avoid breaking stable output
+- kept preview/export flow stable on macOS
+- preserved template system, duplicate flow, conversion flow, and partial payment flow
+
+Final result:
+- invoice and quote lists are easier to read
+- dashboard financial summary is clearer
+- preview screen is cleaner and easier to understand
+- PDF branding is restored with company logo
+- application remains stable and working after the UX polish step
+
+---
+
 ## Current Features
 
 ### Dashboard
 - full business metrics
+- clearer collected vs pending display
 
 ### Clients
 - CRUD + history + summary
@@ -576,6 +618,7 @@ Final result:
 - template support
 - save as template from form/list
 - partial payment display in preview and PDF
+- improved card readability for total / paid / remaining
 
 ### Quotes
 - create/edit
@@ -584,6 +627,7 @@ Final result:
 - template support
 - conversion lock after use
 - save as template from form/list
+- improved list/readability layout
 
 ### Templates
 - save invoice as template
@@ -602,6 +646,7 @@ Final result:
 - branding + localization
 - improved file naming
 - accurate paid/remaining display for invoices
+- company logo restored
 
 ### Preview / Export
 - improved preview header
@@ -609,6 +654,7 @@ Final result:
 - dedicated export PDF action
 - refresh preview action
 - web fallback export card
+- cleaner summary layout
 
 ### Settings
 - profile
@@ -625,28 +671,34 @@ Final result:
 - Workflow aligned with real usage
 - Template system is mature and highly usable
 - Partial payment display is now accurate in preview and PDF
-- Ready for the next functional improvement
+- Document readability improved
+- Dashboard clarity improved
+- PDF logo restored
+- Ready for the next focused improvement
 
 ---
 
 ## Known Issues
 - Arabic PDF shaping not perfect
+- Arabic PDF layout still needs dedicated RTL polish
 - macOS direct custom print flow was avoided in favor of built-in preview print/share due to platform behavior
 
 ---
 
 ## Next Step
 
-## Step 24 – Polish and Document Actions
+## Step 25 – Arabic PDF Fix and RTL Layout Polish
 
 Goal:
-- improve document-level usability and polish
+- improve Arabic text shaping
+- improve RTL layout consistency
+- fix Arabic invoice layout issues
+- keep English/French PDF behavior stable
 
 Suggested scope:
-- better invoice/quote card layout polish
-- more explicit payment summary labels in lists/dashboard if needed
-- cleaner preview/export actions
-- optional share shortcuts or additional export choices if stable
+- proper Arabic shaping support
+- safer Arabic layout alignment
+- keep current PDF architecture stable
 
 ---
 
@@ -659,10 +711,10 @@ Branch:
 main
 
 Last completed:
-Step 23
+Step 24
 
 Next task:
-Step 24
+Step 25
 
 ---
 
@@ -670,3 +722,5 @@ Step 24
 - Do not restart project
 - Continue incrementally
 - Stability > perfection
+- Keep current naming and structure
+- Do not break Steps 19–24

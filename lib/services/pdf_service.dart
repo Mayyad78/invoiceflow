@@ -112,6 +112,7 @@ class PdfService {
         'quoteNumber': 'Quote Number',
         'issueDate': 'Issue Date',
         'dueDate': 'Due Date',
+        'status': 'Status',
         'billTo': 'Bill To',
         'description': 'Description',
         'qty': 'Qty',
@@ -136,6 +137,7 @@ class PdfService {
         'quoteNumber': 'رقم عرض السعر',
         'issueDate': 'تاريخ الإصدار',
         'dueDate': 'تاريخ الاستحقاق',
+        'status': 'الحالة',
         'billTo': 'العميل',
         'description': 'الوصف',
         'qty': 'الكمية',
@@ -160,6 +162,7 @@ class PdfService {
         'quoteNumber': 'Numéro de devis',
         'issueDate': "Date d'émission",
         'dueDate': "Date d'échéance",
+        'status': 'Statut',
         'billTo': 'Client',
         'description': 'Description',
         'qty': 'Qté',
@@ -210,64 +213,200 @@ class PdfService {
         ? _tr(localeCode, 'quoteNumber')
         : _tr(localeCode, 'invoiceNumber');
 
-    return pw.Row(
-      crossAxisAlignment: pw.CrossAxisAlignment.start,
-      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-      children: [
-        pw.Expanded(
-          child: pw.Column(
-            crossAxisAlignment: localeCode == 'ar'
-                ? pw.CrossAxisAlignment.end
-                : pw.CrossAxisAlignment.start,
-            children: [
-              pw.Text(
-                business.name.trim().isEmpty ? 'InvoiceFlow' : business.name,
-                style: pw.TextStyle(
-                  fontSize: 20,
-                  fontWeight: pw.FontWeight.bold,
+    final logoBytes = business.logoBytes;
+    final isArabic = localeCode == 'ar';
+
+    return pw.Container(
+      padding: const pw.EdgeInsets.all(14),
+      decoration: pw.BoxDecoration(
+        border: pw.Border.all(color: PdfColors.grey300),
+        borderRadius: pw.BorderRadius.circular(10),
+      ),
+      child: pw.Row(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: isArabic
+            ? [
+                pw.Expanded(
+                  child: _buildDocumentHeaderColumn(
+                    invoice: invoice,
+                    localeCode: localeCode,
+                    title: title,
+                    numberLabel: numberLabel,
+                    alignEnd: false,
+                  ),
                 ),
-              ),
-              if (business.phone.trim().isNotEmpty) ...[
-                pw.SizedBox(height: 4),
-                pw.Text(business.phone),
+                pw.SizedBox(width: 16),
+                pw.Expanded(
+                  child: _buildBusinessHeaderColumn(
+                    business: business,
+                    logoBytes: logoBytes,
+                    alignEnd: true,
+                  ),
+                ),
+              ]
+            : [
+                pw.Expanded(
+                  child: _buildBusinessHeaderColumn(
+                    business: business,
+                    logoBytes: logoBytes,
+                    alignEnd: false,
+                  ),
+                ),
+                pw.SizedBox(width: 16),
+                pw.Expanded(
+                  child: _buildDocumentHeaderColumn(
+                    invoice: invoice,
+                    localeCode: localeCode,
+                    title: title,
+                    numberLabel: numberLabel,
+                    alignEnd: true,
+                  ),
+                ),
               ],
-              if (business.email.trim().isNotEmpty) ...[
-                pw.SizedBox(height: 4),
-                pw.Text(business.email),
-              ],
-              if (business.address.trim().isNotEmpty) ...[
-                pw.SizedBox(height: 4),
-                pw.Text(business.address),
-              ],
-            ],
+      ),
+    );
+  }
+
+  pw.Widget _buildBusinessHeaderColumn({
+    required BusinessProfileModel business,
+    required Uint8List? logoBytes,
+    required bool alignEnd,
+  }) {
+    return pw.Column(
+      crossAxisAlignment:
+          alignEnd ? pw.CrossAxisAlignment.end : pw.CrossAxisAlignment.start,
+      children: [
+        if (logoBytes != null) ...[
+          pw.Container(
+            width: 72,
+            height: 72,
+            padding: const pw.EdgeInsets.all(6),
+            decoration: pw.BoxDecoration(
+              border: pw.Border.all(color: PdfColors.grey300),
+              borderRadius: pw.BorderRadius.circular(8),
+            ),
+            child: pw.Image(
+              pw.MemoryImage(logoBytes),
+              fit: pw.BoxFit.contain,
+            ),
+          ),
+          pw.SizedBox(height: 10),
+        ],
+        pw.Text(
+          business.name.trim().isEmpty ? 'InvoiceFlow' : business.name,
+          textAlign: alignEnd ? pw.TextAlign.right : pw.TextAlign.left,
+          style: pw.TextStyle(
+            fontSize: 18,
+            fontWeight: pw.FontWeight.bold,
           ),
         ),
-        pw.SizedBox(width: 16),
-        pw.Column(
-          crossAxisAlignment: localeCode == 'ar'
-              ? pw.CrossAxisAlignment.start
-              : pw.CrossAxisAlignment.end,
-          children: [
-            pw.Text(
-              title,
-              style: pw.TextStyle(
-                fontSize: 24,
-                fontWeight: pw.FontWeight.bold,
-              ),
-            ),
-            pw.SizedBox(height: 8),
-            pw.Text('$numberLabel: ${invoice.invoiceNumber}'),
-            pw.SizedBox(height: 4),
-            pw.Text('${_tr(localeCode, 'issueDate')}: ${DateFormat('yyyy-MM-dd').format(invoice.issueDate)}'),
-            pw.SizedBox(height: 4),
-            pw.Text('${_tr(localeCode, 'dueDate')}: ${DateFormat('yyyy-MM-dd').format(invoice.dueDate)}'),
-            pw.SizedBox(height: 4),
-            pw.Text('${_tr(localeCode, 'statusPaid').replaceAll('Paid', _localizedStatus(localeCode, invoice.status))}'
-                .replaceAll('مدفوع', _localizedStatus(localeCode, invoice.status))
-                .replaceAll('Payée', _localizedStatus(localeCode, invoice.status))),
-          ],
+        if (business.phone.trim().isNotEmpty) ...[
+          pw.SizedBox(height: 4),
+          pw.Text(
+            business.phone,
+            textAlign: alignEnd ? pw.TextAlign.right : pw.TextAlign.left,
+          ),
+        ],
+        if (business.email.trim().isNotEmpty) ...[
+          pw.SizedBox(height: 4),
+          pw.Text(
+            business.email,
+            textAlign: alignEnd ? pw.TextAlign.right : pw.TextAlign.left,
+          ),
+        ],
+        if (business.address.trim().isNotEmpty) ...[
+          pw.SizedBox(height: 4),
+          pw.Text(
+            business.address,
+            textAlign: alignEnd ? pw.TextAlign.right : pw.TextAlign.left,
+          ),
+        ],
+      ],
+    );
+  }
+
+  pw.Widget _buildDocumentHeaderColumn({
+    required InvoiceModel invoice,
+    required String localeCode,
+    required String title,
+    required String numberLabel,
+    required bool alignEnd,
+  }) {
+    return pw.Column(
+      crossAxisAlignment:
+          alignEnd ? pw.CrossAxisAlignment.end : pw.CrossAxisAlignment.start,
+      children: [
+        pw.Text(
+          title,
+          textAlign: alignEnd ? pw.TextAlign.right : pw.TextAlign.left,
+          style: pw.TextStyle(
+            fontSize: 24,
+            fontWeight: pw.FontWeight.bold,
+          ),
+        ),
+        pw.SizedBox(height: 10),
+        _headerInfoLine(
+          label: numberLabel,
+          value: invoice.invoiceNumber,
+          alignEnd: alignEnd,
+        ),
+        pw.SizedBox(height: 6),
+        _headerInfoLine(
+          label: _tr(localeCode, 'issueDate'),
+          value: DateFormat('yyyy-MM-dd').format(invoice.issueDate),
+          alignEnd: alignEnd,
+        ),
+        pw.SizedBox(height: 6),
+        _headerInfoLine(
+          label: _tr(localeCode, 'dueDate'),
+          value: DateFormat('yyyy-MM-dd').format(invoice.dueDate),
+          alignEnd: alignEnd,
+        ),
+        pw.SizedBox(height: 6),
+        _headerInfoLine(
+          label: _tr(localeCode, 'status'),
+          value: _localizedStatus(localeCode, invoice.status),
+          alignEnd: alignEnd,
         ),
       ],
+    );
+  }
+
+  pw.Widget _headerInfoLine({
+    required String label,
+    required String value,
+    required bool alignEnd,
+  }) {
+    return pw.Row(
+      mainAxisAlignment:
+          alignEnd ? pw.MainAxisAlignment.end : pw.MainAxisAlignment.start,
+      children: alignEnd
+          ? [
+              pw.Flexible(
+                child: pw.Text(
+                  value,
+                  textAlign: pw.TextAlign.right,
+                ),
+              ),
+              pw.SizedBox(width: 6),
+              pw.Text(
+                '$label:',
+                style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+              ),
+            ]
+          : [
+              pw.Text(
+                '$label:',
+                style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+              ),
+              pw.SizedBox(width: 6),
+              pw.Flexible(
+                child: pw.Text(
+                  value,
+                  textAlign: pw.TextAlign.left,
+                ),
+              ),
+            ],
     );
   }
 
@@ -371,7 +510,12 @@ class PdfService {
       alignment:
           localeCode == 'ar' ? pw.Alignment.centerLeft : pw.Alignment.centerRight,
       child: pw.Container(
-        width: 230,
+        width: 260,
+        padding: const pw.EdgeInsets.all(10),
+        decoration: pw.BoxDecoration(
+          border: pw.Border.all(color: PdfColors.grey300),
+          borderRadius: pw.BorderRadius.circular(8),
+        ),
         child: pw.Column(
           children: rows.map((row) {
             final isTotal = row[0] == _tr(localeCode, 'total');

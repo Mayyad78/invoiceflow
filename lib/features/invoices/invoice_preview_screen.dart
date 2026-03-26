@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:printing/printing.dart';
 
 import '../../l10n/app_localizations.dart';
@@ -23,8 +24,7 @@ class InvoicePreviewScreen extends ConsumerStatefulWidget {
   final ClientModel client;
 
   @override
-  ConsumerState<InvoicePreviewScreen> createState() =>
-      _InvoicePreviewScreenState();
+  ConsumerState createState() => _InvoicePreviewScreenState();
 }
 
 class _InvoicePreviewScreenState extends ConsumerState<InvoicePreviewScreen> {
@@ -52,17 +52,14 @@ class _InvoicePreviewScreenState extends ConsumerState<InvoicePreviewScreen> {
 
   String _buildPdfFileName() {
     final typePrefix = widget.invoice.type == 'quote' ? 'quote' : 'invoice';
-    final rawNumber = widget.invoice.invoiceNumber.trim().isEmpty
-        ? typePrefix
-        : widget.invoice.invoiceNumber;
+    final rawNumber =
+        widget.invoice.invoiceNumber.trim().isEmpty ? typePrefix : widget.invoice.invoiceNumber;
     final safeNumber = _sanitizeFileNamePart(rawNumber);
     return '$typePrefix-$safeNumber.pdf';
   }
 
   String _documentLabel(AppLocalizations t) {
-    return widget.invoice.type == 'quote'
-        ? t.quotePreviewTitle
-        : t.invoicePreviewTitle;
+    return widget.invoice.type == 'quote' ? t.quotePreviewTitle : t.invoicePreviewTitle;
   }
 
   String _statusLabel(AppLocalizations t) {
@@ -108,14 +105,12 @@ class _InvoicePreviewScreenState extends ConsumerState<InvoicePreviewScreen> {
       });
     } catch (e) {
       if (!mounted) return;
-
       setState(() {
         _error = e.toString();
         _pdfBytes = null;
       });
     } finally {
       if (!mounted) return;
-
       setState(() {
         _isLoading = false;
       });
@@ -142,7 +137,15 @@ class _InvoicePreviewScreenState extends ConsumerState<InvoicePreviewScreen> {
     }
   }
 
-  Widget _buildHeaderCard(AppLocalizations t) {
+  String _formatAmount(double value, String currency) {
+    return '${value.toStringAsFixed(2)} $currency';
+  }
+
+  Widget _buildHeaderCard(AppLocalizations t, String currency) {
+    final locale = Localizations.localeOf(context).languageCode;
+    final issueDate = DateFormat.yMMMd(locale).format(widget.invoice.issueDate);
+    final dueDate = DateFormat.yMMMd(locale).format(widget.invoice.dueDate);
+
     return Card(
       margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Padding(
@@ -150,21 +153,34 @@ class _InvoicePreviewScreenState extends ConsumerState<InvoicePreviewScreen> {
         child: Column(
           children: [
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  child: Text(
-                    widget.invoice.invoiceNumber,
-                    style: Theme.of(context).textTheme.titleLarge,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.invoice.invoiceNumber,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        widget.client.name,
+                        style: Theme.of(context).textTheme.bodyLarge,
+                      ),
+                    ],
                   ),
                 ),
+                const SizedBox(width: 12),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .primary
-                        .withValues(alpha: 0.12),
+                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
@@ -177,46 +193,65 @@ class _InvoicePreviewScreenState extends ConsumerState<InvoicePreviewScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            Row(
+            const SizedBox(height: 14),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
               children: [
-                Expanded(
-                  child: _InfoLine(
-                    label: t.client,
-                    value: widget.client.name,
-                  ),
+                _PreviewMetaChip(
+                  icon: Icons.calendar_today_outlined,
+                  label: '${t.date}: $issueDate',
                 ),
-                Expanded(
-                  child: _InfoLine(
-                    label: t.total,
-                    value: widget.invoice.total.toStringAsFixed(2),
-                  ),
+                _PreviewMetaChip(
+                  icon: Icons.event_outlined,
+                  label: '${t.dueDate}: $dueDate',
+                ),
+                _PreviewMetaChip(
+                  icon: Icons.picture_as_pdf_outlined,
+                  label: _buildPdfFileName(),
                 ),
               ],
             ),
-            if (widget.invoice.type == 'invoice') ...[
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: _InfoLine(
-                      label: t.paidAmount,
-                      value: widget.invoice.paidAmount.toStringAsFixed(2),
-                    ),
-                  ),
-                  Expanded(
-                    child: _InfoLine(
-                      label: t.remainingAmount,
-                      value: widget.invoice.remainingAmount.toStringAsFixed(2),
-                    ),
-                  ),
-                ],
+            const SizedBox(height: 14),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(12),
               ),
-            ],
-            const SizedBox(height: 8),
-            _InfoLine(
-              label: t.downloadPdf,
-              value: _buildPdfFileName(),
+              child: widget.invoice.type == 'invoice'
+                  ? Row(
+                      children: [
+                        Expanded(
+                          child: _PreviewAmountTile(
+                            label: t.total,
+                            value: _formatAmount(widget.invoice.total, currency),
+                            emphasize: true,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _PreviewAmountTile(
+                            label: t.paidAmount,
+                            value: _formatAmount(widget.invoice.paidAmount, currency),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _PreviewAmountTile(
+                            label: t.remainingAmount,
+                            value: _formatAmount(widget.invoice.remainingAmount, currency),
+                            emphasize: widget.invoice.remainingAmount > 0,
+                          ),
+                        ),
+                      ],
+                    )
+                  : _PreviewAmountTile(
+                      label: t.total,
+                      value: _formatAmount(widget.invoice.total, currency),
+                      emphasize: true,
+                    ),
             ),
           ],
         ),
@@ -252,12 +287,12 @@ class _InvoicePreviewScreenState extends ConsumerState<InvoicePreviewScreen> {
     );
   }
 
-  Widget _buildWebFallback(AppLocalizations t) {
+  Widget _buildWebFallback(AppLocalizations t, String currency) {
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 560),
+          constraints: const BoxConstraints(maxWidth: 620),
           child: Card(
             child: Padding(
               padding: const EdgeInsets.all(24),
@@ -276,30 +311,52 @@ class _InvoicePreviewScreenState extends ConsumerState<InvoicePreviewScreen> {
                     _buildPdfFileName(),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '${t.total}: ${widget.invoice.total.toStringAsFixed(2)}',
-                    textAlign: TextAlign.center,
+                  const SizedBox(height: 16),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: widget.invoice.type == 'invoice'
+                        ? Row(
+                            children: [
+                              Expanded(
+                                child: _PreviewAmountTile(
+                                  label: t.total,
+                                  value: _formatAmount(widget.invoice.total, currency),
+                                  emphasize: true,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: _PreviewAmountTile(
+                                  label: t.paidAmount,
+                                  value: _formatAmount(widget.invoice.paidAmount, currency),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: _PreviewAmountTile(
+                                  label: t.remainingAmount,
+                                  value: _formatAmount(widget.invoice.remainingAmount, currency),
+                                  emphasize: widget.invoice.remainingAmount > 0,
+                                ),
+                              ),
+                            ],
+                          )
+                        : _PreviewAmountTile(
+                            label: t.total,
+                            value: _formatAmount(widget.invoice.total, currency),
+                            emphasize: true,
+                          ),
                   ),
-                  if (widget.invoice.type == 'invoice') ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      '${t.paidAmount}: ${widget.invoice.paidAmount.toStringAsFixed(2)}',
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '${t.remainingAmount}: ${widget.invoice.remainingAmount.toStringAsFixed(2)}',
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
                   const SizedBox(height: 24),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: _pdfBytes == null || _isExporting
-                          ? null
-                          : _exportPdf,
+                      onPressed: _pdfBytes == null || _isExporting ? null : _exportPdf,
                       icon: const Icon(Icons.download),
                       label: Text(t.exportPdf),
                     ),
@@ -313,7 +370,7 @@ class _InvoicePreviewScreenState extends ConsumerState<InvoicePreviewScreen> {
     );
   }
 
-  Widget _buildBody(AppLocalizations t) {
+  Widget _buildBody(AppLocalizations t, String currency) {
     if (_error != null) {
       return Center(
         child: Padding(
@@ -358,7 +415,7 @@ class _InvoicePreviewScreenState extends ConsumerState<InvoicePreviewScreen> {
     }
 
     if (kIsWeb) {
-      return _buildWebFallback(t);
+      return _buildWebFallback(t, currency);
     }
 
     return PdfPreview(
@@ -374,6 +431,8 @@ class _InvoicePreviewScreenState extends ConsumerState<InvoicePreviewScreen> {
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
+    final appSettings = ref.watch(appSettingsProvider);
+    final currency = appSettings.currency;
 
     return Scaffold(
       appBar: AppBar(
@@ -381,30 +440,87 @@ class _InvoicePreviewScreenState extends ConsumerState<InvoicePreviewScreen> {
       ),
       body: Column(
         children: [
-          _buildHeaderCard(t),
+          _buildHeaderCard(t, currency),
           _buildActionButtons(t),
-          Expanded(child: _buildBody(t)),
+          Expanded(
+            child: _buildBody(t, currency),
+          ),
         ],
       ),
     );
   }
 }
 
-class _InfoLine extends StatelessWidget {
-  const _InfoLine({
+class _PreviewMetaChip extends StatelessWidget {
+  const _PreviewMetaChip({
+    required this.icon,
+    required this.label,
+  });
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: Theme.of(context).dividerColor,
+        ),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              label,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PreviewAmountTile extends StatelessWidget {
+  const _PreviewAmountTile({
     required this.label,
     required this.value,
+    this.emphasize = false,
   });
 
   final String label;
   final String value;
+  final bool emphasize;
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      '$label: $value',
-      maxLines: 2,
-      overflow: TextOverflow.ellipsis,
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: textTheme.bodySmall,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: emphasize ? colorScheme.primary : null,
+          ),
+        ),
+      ],
     );
   }
 }

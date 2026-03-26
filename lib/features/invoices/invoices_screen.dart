@@ -201,7 +201,6 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
     await ref.read(invoicesProvider.notifier).updateInvoice(updatedQuote);
 
     if (!mounted) return;
-
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(t.quoteConverted)),
     );
@@ -245,7 +244,6 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
     await ref.read(invoicesProvider.notifier).addInvoice(template);
 
     if (!mounted) return;
-
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(t.templateSaved)),
     );
@@ -277,16 +275,23 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
     }
   }
 
+  String _formatAmount(double value, String currency) {
+    return '${value.toStringAsFixed(2)} $currency';
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
+    final appSettings = ref.watch(appSettingsProvider);
+    final currency = appSettings.currency;
+
     final invoices = ref
         .watch(invoicesProvider)
         .where(
-          (invoice) =>
-              invoice.type == widget.type && invoice.isTemplate == false,
+          (invoice) => invoice.type == widget.type && invoice.isTemplate == false,
         )
         .toList();
+
     final clients = ref.watch(clientsProvider);
     final query = _searchController.text.trim().toLowerCase();
 
@@ -377,147 +382,69 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
                         itemBuilder: (context, index) {
                           final invoice = filteredInvoices[index];
                           final client = findClient(invoice.clientId);
-
                           final dateText = DateFormat.yMMMd(
                             Localizations.localeOf(context).languageCode,
                           ).format(invoice.issueDate);
 
-                          return Card(
-                            child: Padding(
-                              padding: const EdgeInsets.all(12),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          invoice.invoiceNumber,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .titleMedium,
-                                        ),
-                                      ),
-                                      PopupMenuButton<String>(
-                                        onSelected: (value) =>
-                                            _handleMenuAction(
-                                          context: context,
-                                          t: t,
-                                          invoice: invoice,
-                                          action: value,
-                                        ),
-                                        itemBuilder: (context) => [
-                                          if (widget.type == 'quote' &&
-                                              !invoice.isConvertedQuote)
-                                            PopupMenuItem(
-                                              value: _actionConvert,
-                                              child: Text(t.convertToInvoice),
-                                            ),
-                                          PopupMenuItem(
-                                            value: _actionSaveTemplate,
-                                            child: Text(t.saveAsTemplate),
-                                          ),
-                                          PopupMenuItem(
-                                            value: _actionDelete,
-                                            child: Text(t.delete),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 12),
-                                  if (client != null)
-                                    Text('${t.client}: ${client.name}'),
-                                  const SizedBox(height: 4),
-                                  Text('${t.date}: $dateText'),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    '${t.total}: ${invoice.total.toStringAsFixed(2)}',
-                                  ),
-                                  if (invoice.type == 'invoice') ...[
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      '${t.paidAmount}: ${invoice.paidAmount.toStringAsFixed(2)}',
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      '${t.remainingAmount}: ${invoice.remainingAmount.toStringAsFixed(2)}',
-                                    ),
-                                  ],
-                                  if (invoice.type == 'quote' &&
-                                      invoice.isConvertedQuote) ...[
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      t.quoteAlreadyConverted,
-                                      style: TextStyle(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .primary,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                  const SizedBox(height: 8),
-                                  _StatusBadge(
-                                    label: localizeInvoiceStatus(
-                                      t,
-                                      invoice.status,
-                                    ),
-                                    color: _statusColor(invoice.status),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Wrap(
-                                    spacing: 8,
-                                    runSpacing: 8,
-                                    children: [
-                                      OutlinedButton.icon(
-                                        onPressed: client == null
-                                            ? null
-                                            : () {
-                                                Navigator.of(context).push(
-                                                  MaterialPageRoute(
-                                                    builder: (_) =>
-                                                        InvoicePreviewScreen(
-                                                      invoice: invoice,
-                                                      client: client,
-                                                    ),
-                                                  ),
-                                                );
-                                              },
-                                        icon: const Icon(
-                                          Icons.visibility_outlined,
-                                        ),
-                                        label: Text(t.preview),
-                                      ),
-                                      OutlinedButton.icon(
-                                        onPressed: client == null
-                                            ? null
-                                            : () {
-                                                Navigator.of(context).push(
-                                                  MaterialPageRoute(
-                                                    builder: (_) =>
-                                                        CreateInvoiceScreen(
-                                                      type: widget.type,
-                                                      invoice: invoice,
-                                                    ),
-                                                  ),
-                                                );
-                                              },
-                                        icon: const Icon(Icons.edit_outlined),
-                                        label: Text(t.edit),
-                                      ),
-                                      OutlinedButton.icon(
-                                        onPressed: () =>
-                                            _openDuplicateDocument(invoice),
-                                        icon:
-                                            const Icon(Icons.copy_outlined),
-                                        label: Text(t.duplicate),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
+                          return _DocumentCard(
+                            invoice: invoice,
+                            client: client,
+                            dateText: dateText,
+                            currency: currency,
+                            documentLabel: widget.type == 'quote'
+                                ? t.quotePreviewTitle
+                                : t.invoicesTitle,
+                            statusLabel: localizeInvoiceStatus(t, invoice.status),
+                            statusColor: _statusColor(invoice.status),
+                            totalLabel: t.total,
+                            paidLabel: t.paidAmount,
+                            remainingLabel: t.remainingAmount,
+                            clientLabel: t.client,
+                            dateLabel: t.date,
+                            convertedLabel: t.quoteAlreadyConverted,
+                            onMenuSelected: (value) => _handleMenuAction(
+                              context: context,
+                              t: t,
+                              invoice: invoice,
+                              action: value,
                             ),
+                            showConvertAction:
+                                widget.type == 'quote' && !invoice.isConvertedQuote,
+                            convertLabel: t.convertToInvoice,
+                            saveTemplateLabel: t.saveAsTemplate,
+                            deleteLabel: t.delete,
+                            onPreview: client == null
+                                ? null
+                                : () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) => InvoicePreviewScreen(
+                                          invoice: invoice,
+                                          client: client,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                            onEdit: client == null
+                                ? null
+                                : () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) => CreateInvoiceScreen(
+                                          type: widget.type,
+                                          invoice: invoice,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                            onDuplicate: () => _openDuplicateDocument(invoice),
+                            previewLabel: t.preview,
+                            editLabel: t.edit,
+                            duplicateLabel: t.duplicate,
+                            actionConvert: _actionConvert,
+                            actionSaveTemplate: _actionSaveTemplate,
+                            actionDelete: _actionDelete,
+                            formatAmount: _formatAmount,
                           );
                         },
                       ),
@@ -551,6 +478,294 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
       default:
         return Colors.blueGrey;
     }
+  }
+}
+
+class _DocumentCard extends StatelessWidget {
+  const _DocumentCard({
+    required this.invoice,
+    required this.client,
+    required this.dateText,
+    required this.currency,
+    required this.documentLabel,
+    required this.statusLabel,
+    required this.statusColor,
+    required this.totalLabel,
+    required this.paidLabel,
+    required this.remainingLabel,
+    required this.clientLabel,
+    required this.dateLabel,
+    required this.convertedLabel,
+    required this.onMenuSelected,
+    required this.showConvertAction,
+    required this.convertLabel,
+    required this.saveTemplateLabel,
+    required this.deleteLabel,
+    required this.onPreview,
+    required this.onEdit,
+    required this.onDuplicate,
+    required this.previewLabel,
+    required this.editLabel,
+    required this.duplicateLabel,
+    required this.actionConvert,
+    required this.actionSaveTemplate,
+    required this.actionDelete,
+    required this.formatAmount,
+  });
+
+  final InvoiceModel invoice;
+  final ClientModel? client;
+  final String dateText;
+  final String currency;
+  final String documentLabel;
+  final String statusLabel;
+  final Color statusColor;
+  final String totalLabel;
+  final String paidLabel;
+  final String remainingLabel;
+  final String clientLabel;
+  final String dateLabel;
+  final String convertedLabel;
+  final ValueChanged<String> onMenuSelected;
+  final bool showConvertAction;
+  final String convertLabel;
+  final String saveTemplateLabel;
+  final String deleteLabel;
+  final VoidCallback? onPreview;
+  final VoidCallback? onEdit;
+  final VoidCallback onDuplicate;
+  final String previewLabel;
+  final String editLabel;
+  final String duplicateLabel;
+  final String actionConvert;
+  final String actionSaveTemplate;
+  final String actionDelete;
+  final String Function(double value, String currency) formatAmount;
+
+  @override
+  Widget build(BuildContext context) {
+    final isInvoice = invoice.type == 'invoice';
+
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        invoice.invoiceNumber,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                      ),
+                      const SizedBox(height: 6),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          _MetaChip(
+                            icon: Icons.calendar_today_outlined,
+                            label: '$dateLabel: $dateText',
+                          ),
+                          if (client != null)
+                            _MetaChip(
+                              icon: Icons.person_outline,
+                              label: '$clientLabel: ${client!.name}',
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    _StatusBadge(
+                      label: statusLabel,
+                      color: statusColor,
+                    ),
+                    PopupMenuButton<String>(
+                      onSelected: onMenuSelected,
+                      itemBuilder: (context) => [
+                        if (showConvertAction)
+                          PopupMenuItem(
+                            value: actionConvert,
+                            child: Text(convertLabel),
+                          ),
+                        PopupMenuItem(
+                          value: actionSaveTemplate,
+                          child: Text(saveTemplateLabel),
+                        ),
+                        PopupMenuItem(
+                          value: actionDelete,
+                          child: Text(deleteLabel),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: isInvoice
+                  ? Row(
+                      children: [
+                        Expanded(
+                          child: _AmountTile(
+                            label: totalLabel,
+                            value: formatAmount(invoice.total, currency),
+                            emphasize: true,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _AmountTile(
+                            label: paidLabel,
+                            value: formatAmount(invoice.paidAmount, currency),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _AmountTile(
+                            label: remainingLabel,
+                            value: formatAmount(invoice.remainingAmount, currency),
+                            emphasize: invoice.remainingAmount > 0,
+                          ),
+                        ),
+                      ],
+                    )
+                  : _AmountTile(
+                      label: totalLabel,
+                      value: formatAmount(invoice.total, currency),
+                      emphasize: true,
+                    ),
+            ),
+            if (invoice.type == 'quote' && invoice.isConvertedQuote) ...[
+              const SizedBox(height: 10),
+              Text(
+                convertedLabel,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+            const SizedBox(height: 14),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                OutlinedButton.icon(
+                  onPressed: onPreview,
+                  icon: const Icon(Icons.visibility_outlined),
+                  label: Text(previewLabel),
+                ),
+                OutlinedButton.icon(
+                  onPressed: onEdit,
+                  icon: const Icon(Icons.edit_outlined),
+                  label: Text(editLabel),
+                ),
+                OutlinedButton.icon(
+                  onPressed: onDuplicate,
+                  icon: const Icon(Icons.copy_outlined),
+                  label: Text(duplicateLabel),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AmountTile extends StatelessWidget {
+  const _AmountTile({
+    required this.label,
+    required this.value,
+    this.emphasize = false,
+  });
+
+  final String label;
+  final String value;
+  final bool emphasize;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: textTheme.bodySmall,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: emphasize ? colorScheme.primary : null,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _MetaChip extends StatelessWidget {
+  const _MetaChip({
+    required this.icon,
+    required this.label,
+  });
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: Theme.of(context).dividerColor,
+        ),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              label,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
