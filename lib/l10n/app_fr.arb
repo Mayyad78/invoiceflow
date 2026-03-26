@@ -145,5 +145,12 @@
   "templateName": "Nom du modèle",
   "deleteTemplateMessage": "Voulez-vous vraiment supprimer ce modèle ?",
   "startByCreatingInvoiceTemplate": "Commencez par enregistrer une facture comme modèle.",
-  "startByCreatingQuoteTemplate": "Commencez par enregistrer un devis comme modèle."
+  "startByCreatingQuoteTemplate": "Commencez par enregistrer un devis comme modèle.",
+  "searchTemplates": "Rechercher des modèles",
+  "favoritesOnly": "Favoris uniquement",
+  "noTemplatesFound": "Aucun modèle trouvé",
+  "tryDifferentSearchOrFilter": "Essayez une autre recherche ou désactivez le filtre des favoris.",
+  "favorite": "Favori",
+  "addToFavorites": "Ajouter aux favoris",
+  "removeFromFavorites": "Retirer des favoris"
 }

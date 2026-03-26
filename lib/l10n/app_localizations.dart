@@ -975,6 +975,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Start by saving a quote as a template.'**
   String get startByCreatingQuoteTemplate;
+
+  /// No description provided for @searchTemplates.
+  ///
+  /// In en, this message translates to:
+  /// **'Search templates'**
+  String get searchTemplates;
+
+  /// No description provided for @favoritesOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorites only'**
+  String get favoritesOnly;
+
+  /// No description provided for @noTemplatesFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No templates found'**
+  String get noTemplatesFound;
+
+  /// No description provided for @tryDifferentSearchOrFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Try a different search or turn off the favorites filter.'**
+  String get tryDifferentSearchOrFilter;
+
+  /// No description provided for @favorite.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorite'**
+  String get favorite;
+
+  /// No description provided for @addToFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to favorites'**
+  String get addToFavorites;
+
+  /// No description provided for @removeFromFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from favorites'**
+  String get removeFromFavorites;
 }
 
 class _AppLocalizationsDelegate

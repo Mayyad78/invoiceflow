@@ -455,4 +455,26 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get startByCreatingQuoteTemplate =>
       'Start by saving a quote as a template.';
+
+  @override
+  String get searchTemplates => 'Search templates';
+
+  @override
+  String get favoritesOnly => 'Favorites only';
+
+  @override
+  String get noTemplatesFound => 'No templates found';
+
+  @override
+  String get tryDifferentSearchOrFilter =>
+      'Try a different search or turn off the favorites filter.';
+
+  @override
+  String get favorite => 'Favorite';
+
+  @override
+  String get addToFavorites => 'Add to favorites';
+
+  @override
+  String get removeFromFavorites => 'Remove from favorites';
 }

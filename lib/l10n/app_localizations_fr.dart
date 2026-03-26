@@ -458,4 +458,26 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get startByCreatingQuoteTemplate =>
       'Commencez par enregistrer un devis comme modèle.';
+
+  @override
+  String get searchTemplates => 'Rechercher des modèles';
+
+  @override
+  String get favoritesOnly => 'Favoris uniquement';
+
+  @override
+  String get noTemplatesFound => 'Aucun modèle trouvé';
+
+  @override
+  String get tryDifferentSearchOrFilter =>
+      'Essayez une autre recherche ou désactivez le filtre des favoris.';
+
+  @override
+  String get favorite => 'Favori';
+
+  @override
+  String get addToFavorites => 'Ajouter aux favoris';
+
+  @override
+  String get removeFromFavorites => 'Retirer des favoris';
 }

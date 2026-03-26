@@ -367,6 +367,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       convertedInvoiceId: null,
       isTemplate: true,
       templateName: templateName,
+      isFavoriteTemplate: false,
     );
 
     await ref.read(invoicesProvider.notifier).addInvoice(template);
@@ -426,6 +427,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
         convertedInvoiceId: null,
         isTemplate: true,
         templateName: widget.invoice!.templateName,
+        isFavoriteTemplate: widget.invoice!.isFavoriteTemplate,
       );
 
       await ref.read(invoicesProvider.notifier).updateInvoice(updatedTemplate);
@@ -476,6 +478,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       convertedInvoiceId: _isEdit ? widget.invoice?.convertedInvoiceId : null,
       isTemplate: false,
       templateName: null,
+      isFavoriteTemplate: false,
     );
 
     if (_isEdit) {

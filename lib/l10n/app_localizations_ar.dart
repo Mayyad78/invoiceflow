@@ -451,4 +451,26 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get startByCreatingQuoteTemplate => 'ابدأ بحفظ عرض سعر كقالب.';
+
+  @override
+  String get searchTemplates => 'ابحث في القوالب';
+
+  @override
+  String get favoritesOnly => 'المفضلة فقط';
+
+  @override
+  String get noTemplatesFound => 'لم يتم العثور على قوالب';
+
+  @override
+  String get tryDifferentSearchOrFilter =>
+      'جرّب بحثاً مختلفاً أو قم بإلغاء فلتر المفضلة.';
+
+  @override
+  String get favorite => 'مفضل';
+
+  @override
+  String get addToFavorites => 'إضافة إلى المفضلة';
+
+  @override
+  String get removeFromFavorites => 'إزالة من المفضلة';
 }

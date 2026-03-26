@@ -11,13 +11,27 @@ import '../../providers/clients_provider.dart';
 import '../../providers/invoices_provider.dart';
 import 'create_invoice_screen.dart';
 
-class TemplatesScreen extends ConsumerWidget {
+class TemplatesScreen extends ConsumerStatefulWidget {
   const TemplatesScreen({
     super.key,
     required this.type,
   });
 
   final String type;
+
+  @override
+  ConsumerState<TemplatesScreen> createState() => _TemplatesScreenState();
+}
+
+class _TemplatesScreenState extends ConsumerState<TemplatesScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  bool _showFavoritesOnly = false;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   Future<String?> _promptTemplateName(
     BuildContext context,
@@ -115,20 +129,10 @@ class TemplatesScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
     final clients = ref.watch(clientsProvider);
-    final templates = ref
-        .watch(invoicesProvider)
-        .where((invoice) => invoice.type == type && invoice.isTemplate)
-        .toList()
-      ..sort((a, b) {
-        final nameA = (a.templateName ?? '').toLowerCase();
-        final nameB = (b.templateName ?? '').toLowerCase();
-        final nameCompare = nameA.compareTo(nameB);
-        if (nameCompare != 0) return nameCompare;
-        return b.issueDate.compareTo(a.issueDate);
-      });
+    final query = _searchController.text.trim().toLowerCase();
 
     ClientModel? findClient(String clientId) {
       try {
@@ -137,6 +141,41 @@ class TemplatesScreen extends ConsumerWidget {
         return null;
       }
     }
+
+    final allTemplates = ref
+        .watch(invoicesProvider)
+        .where((invoice) => invoice.type == widget.type && invoice.isTemplate)
+        .toList();
+
+    final filteredTemplates = allTemplates.where((template) {
+      if (_showFavoritesOnly && !template.isFavoriteTemplate) {
+        return false;
+      }
+
+      if (query.isEmpty) {
+        return true;
+      }
+
+      final clientName = findClient(template.clientId)?.name.toLowerCase() ?? '';
+      final templateName = (template.templateName ?? '').toLowerCase();
+      final notes = template.notes.toLowerCase();
+
+      return templateName.contains(query) ||
+          clientName.contains(query) ||
+          notes.contains(query);
+    }).toList()
+      ..sort((a, b) {
+        if (a.isFavoriteTemplate != b.isFavoriteTemplate) {
+          return a.isFavoriteTemplate ? -1 : 1;
+        }
+
+        final nameA = (a.templateName ?? '').toLowerCase();
+        final nameB = (b.templateName ?? '').toLowerCase();
+        final nameCompare = nameA.compareTo(nameB);
+        if (nameCompare != 0) return nameCompare;
+
+        return b.issueDate.compareTo(a.issueDate);
+      });
 
     Future<void> useTemplate(InvoiceModel template) async {
       final originalDuration = template.dueDate.difference(template.issueDate);
@@ -162,6 +201,7 @@ class TemplatesScreen extends ConsumerWidget {
         isTemplate: false,
         clearConvertedInvoiceId: true,
         clearTemplateName: true,
+        isFavoriteTemplate: false,
       );
 
       Navigator.of(context).push(
@@ -199,6 +239,14 @@ class TemplatesScreen extends ConsumerWidget {
       );
     }
 
+    Future<void> toggleFavorite(InvoiceModel template) async {
+      await ref.read(invoicesProvider.notifier).updateInvoice(
+            template.copyWith(
+              isFavoriteTemplate: !template.isFavoriteTemplate,
+            ),
+          );
+    }
+
     Future<void> deleteTemplate(String id) async {
       final confirmed = await _confirmDeleteTemplate(context, t);
       if (confirmed != true) return;
@@ -209,104 +257,196 @@ class TemplatesScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          type == 'quote' ? t.quoteTemplates : t.invoiceTemplates,
+          widget.type == 'quote' ? t.quoteTemplates : t.invoiceTemplates,
         ),
       ),
-      body: templates.isEmpty
-          ? _TemplateEmptyState(
-              title: t.noTemplatesYet,
-              subtitle: type == 'quote'
-                  ? t.startByCreatingQuoteTemplate
-                  : t.startByCreatingInvoiceTemplate,
-            )
-          : ListView.separated(
-              padding: const EdgeInsets.all(16),
-              itemCount: templates.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                final template = templates[index];
-                final client = findClient(template.clientId);
-                final dateText = DateFormat.yMMMd(
-                  Localizations.localeOf(context).languageCode,
-                ).format(template.issueDate);
-
-                return Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      children: [
-                        ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: Text(
-                            (template.templateName != null &&
-                                    template.templateName!.trim().isNotEmpty)
-                                ? template.templateName!
-                                : t.template,
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const SizedBox(height: 8),
-                              if (client != null)
-                                Text('${t.client}: ${client.name}'),
-                              const SizedBox(height: 4),
-                              Text('${t.date}: $dateText'),
-                              const SizedBox(height: 4),
-                              Text('${t.items}: ${template.items.length}'),
-                              const SizedBox(height: 4),
-                              Text(
-                                '${t.total}: ${template.total.toStringAsFixed(2)}',
-                              ),
-                            ],
-                          ),
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Wrap(
-                              spacing: 4,
-                              runSpacing: 4,
-                              children: [
-                                TextButton.icon(
-                                  onPressed: () => useTemplate(template),
-                                  icon: const Icon(Icons.play_arrow_outlined),
-                                  label: Text(t.useTemplate),
-                                ),
-                                TextButton.icon(
-                                  onPressed: () {
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (_) => CreateInvoiceScreen(
-                                          type: template.type,
-                                          invoice: template,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  icon: const Icon(Icons.edit_outlined),
-                                  label: Text(t.editTemplate),
-                                ),
-                                TextButton.icon(
-                                  onPressed: () => renameTemplate(template),
-                                  icon:
-                                      const Icon(Icons.drive_file_rename_outline),
-                                  label: Text(t.renameTemplate),
-                                ),
-                                TextButton.icon(
-                                  onPressed: () => deleteTemplate(template.id),
-                                  icon: const Icon(Icons.delete_outline),
-                                  label: Text(t.delete),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: t.searchTemplates,
+                prefixIcon: const Icon(Icons.search),
+                border: const OutlineInputBorder(),
+                suffixIcon: _searchController.text.isEmpty
+                    ? null
+                    : IconButton(
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() {});
+                        },
+                        icon: const Icon(Icons.clear),
+                        tooltip: t.clearSearch,
+                      ),
+              ),
+              onChanged: (_) => setState(() {}),
             ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: FilterChip(
+                selected: _showFavoritesOnly,
+                onSelected: (value) {
+                  setState(() {
+                    _showFavoritesOnly = value;
+                  });
+                },
+                label: Text(t.favoritesOnly),
+              ),
+            ),
+          ),
+          Expanded(
+            child: allTemplates.isEmpty
+                ? _TemplateEmptyState(
+                    title: t.noTemplatesYet,
+                    subtitle: widget.type == 'quote'
+                        ? t.startByCreatingQuoteTemplate
+                        : t.startByCreatingInvoiceTemplate,
+                  )
+                : filteredTemplates.isEmpty
+                    ? _TemplateEmptyState(
+                        title: t.noTemplatesFound,
+                        subtitle: t.tryDifferentSearchOrFilter,
+                      )
+                    : ListView.separated(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: filteredTemplates.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 12),
+                        itemBuilder: (context, index) {
+                          final template = filteredTemplates[index];
+                          final client = findClient(template.clientId);
+                          final dateText = DateFormat.yMMMd(
+                            Localizations.localeOf(context).languageCode,
+                          ).format(template.issueDate);
+
+                          return Card(
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Column(
+                                children: [
+                                  ListTile(
+                                    contentPadding: EdgeInsets.zero,
+                                    leading: IconButton(
+                                      onPressed: () => toggleFavorite(template),
+                                      tooltip: template.isFavoriteTemplate
+                                          ? t.removeFromFavorites
+                                          : t.addToFavorites,
+                                      icon: Icon(
+                                        template.isFavoriteTemplate
+                                            ? Icons.star
+                                            : Icons.star_border,
+                                      ),
+                                    ),
+                                    title: Text(
+                                      (template.templateName != null &&
+                                              template.templateName!
+                                                  .trim()
+                                                  .isNotEmpty)
+                                          ? template.templateName!
+                                          : t.template,
+                                    ),
+                                    subtitle: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const SizedBox(height: 8),
+                                        if (client != null)
+                                          Text('${t.client}: ${client.name}'),
+                                        const SizedBox(height: 4),
+                                        Text('${t.date}: $dateText'),
+                                        const SizedBox(height: 4),
+                                        Text('${t.items}: ${template.items.length}'),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          '${t.total}: ${template.total.toStringAsFixed(2)}',
+                                        ),
+                                        if (template.isFavoriteTemplate) ...[
+                                          const SizedBox(height: 6),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 10,
+                                              vertical: 6,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary
+                                                  .withValues(alpha: 0.12),
+                                              borderRadius:
+                                                  BorderRadius.circular(999),
+                                            ),
+                                            child: Text(
+                                              t.favorite,
+                                              style: TextStyle(
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                  ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      Wrap(
+                                        spacing: 4,
+                                        runSpacing: 4,
+                                        children: [
+                                          TextButton.icon(
+                                            onPressed: () => useTemplate(template),
+                                            icon: const Icon(
+                                              Icons.play_arrow_outlined,
+                                            ),
+                                            label: Text(t.useTemplate),
+                                          ),
+                                          TextButton.icon(
+                                            onPressed: () {
+                                              Navigator.of(context).push(
+                                                MaterialPageRoute(
+                                                  builder: (_) =>
+                                                      CreateInvoiceScreen(
+                                                    type: template.type,
+                                                    invoice: template,
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                            icon: const Icon(Icons.edit_outlined),
+                                            label: Text(t.editTemplate),
+                                          ),
+                                          TextButton.icon(
+                                            onPressed: () => renameTemplate(template),
+                                            icon: const Icon(
+                                              Icons.drive_file_rename_outline,
+                                            ),
+                                            label: Text(t.renameTemplate),
+                                          ),
+                                          TextButton.icon(
+                                            onPressed: () => deleteTemplate(template.id),
+                                            icon: const Icon(Icons.delete_outline),
+                                            label: Text(t.delete),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+          ),
+        ],
+      ),
     );
   }
 }

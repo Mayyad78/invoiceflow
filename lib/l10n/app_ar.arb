@@ -145,5 +145,12 @@
   "templateName": "اسم القالب",
   "deleteTemplateMessage": "هل أنت متأكد أنك تريد حذف هذا القالب؟",
   "startByCreatingInvoiceTemplate": "ابدأ بحفظ فاتورة كقالب.",
-  "startByCreatingQuoteTemplate": "ابدأ بحفظ عرض سعر كقالب."
+  "startByCreatingQuoteTemplate": "ابدأ بحفظ عرض سعر كقالب.",
+  "searchTemplates": "ابحث في القوالب",
+  "favoritesOnly": "المفضلة فقط",
+  "noTemplatesFound": "لم يتم العثور على قوالب",
+  "tryDifferentSearchOrFilter": "جرّب بحثاً مختلفاً أو قم بإلغاء فلتر المفضلة.",
+  "favorite": "مفضل",
+  "addToFavorites": "إضافة إلى المفضلة",
+  "removeFromFavorites": "إزالة من المفضلة"
 }

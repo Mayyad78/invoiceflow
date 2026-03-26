@@ -441,6 +441,52 @@ Final result:
 
 ---
 
+## Step 22 UX Improvements – Template Search and Favorites
+
+Completed as one full step.
+
+Implemented:
+- template search bar
+- search by:
+  - template name
+  - client name
+  - notes
+- favorite / pin template support
+- favorites-only filter chip
+- favorites displayed first in template list
+- better no-results state when search/filter returns nothing
+- favorite badge shown on favorited templates
+
+### Important fixes/decisions inside this UX step:
+- extended `InvoiceModel` with:
+  - `isFavoriteTemplate`
+- kept template data inside existing storage model
+- preserved:
+  - template naming
+  - template edit
+  - template rename
+  - template use flow
+- favorite status persists in storage
+- using a template resets favorite state on the created real document
+- search and filter logic only affects templates screen
+- normal invoices and quotes remain unchanged
+- added new localization labels in EN / AR / FR:
+  - search templates
+  - favorites only
+  - no templates found
+  - try different search or filter
+  - favorite
+  - add to favorites
+  - remove from favorites
+
+Final result:
+- template UX is much better
+- users can find templates faster
+- important templates can be pinned and reused quickly
+- all previous template functionality remains stable
+
+---
+
 ## Current Features
 
 ### Dashboard
@@ -475,6 +521,9 @@ Final result:
 - rename template
 - edit template directly
 - delete template
+- search templates
+- favorite / pin templates
+- favorites-only filter
 - improved empty state and labels
 
 ### PDF
@@ -493,7 +542,8 @@ Final result:
 - Business-ready
 - No critical issues
 - Workflow aligned with real usage
-- Step 22 completed and working
+- Template system is now mature and highly usable
+- Ready to continue with export/share improvements
 
 ---
 
@@ -526,7 +576,7 @@ Branch:
 main
 
 Last completed:
-Step 22
+Step 22 UX Improvements
 
 Next task:
 Step 23

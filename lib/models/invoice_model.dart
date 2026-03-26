@@ -16,6 +16,7 @@ class InvoiceModel {
   final String? convertedInvoiceId;
   final bool isTemplate;
   final String? templateName;
+  final bool isFavoriteTemplate;
 
   InvoiceModel({
     required this.id,
@@ -33,6 +34,7 @@ class InvoiceModel {
     this.convertedInvoiceId,
     this.isTemplate = false,
     this.templateName,
+    this.isFavoriteTemplate = false,
   });
 
   double get subtotal {
@@ -74,6 +76,7 @@ class InvoiceModel {
     String? convertedInvoiceId,
     bool? isTemplate,
     String? templateName,
+    bool? isFavoriteTemplate,
     bool clearConvertedInvoiceId = false,
     bool clearTemplateName = false,
   }) {
@@ -97,6 +100,7 @@ class InvoiceModel {
       templateName: clearTemplateName
           ? null
           : (templateName ?? this.templateName),
+      isFavoriteTemplate: isFavoriteTemplate ?? this.isFavoriteTemplate,
     );
   }
 
@@ -117,6 +121,7 @@ class InvoiceModel {
       'convertedInvoiceId': convertedInvoiceId,
       'isTemplate': isTemplate,
       'templateName': templateName,
+      'isFavoriteTemplate': isFavoriteTemplate,
     };
   }
 
@@ -139,6 +144,7 @@ class InvoiceModel {
       convertedInvoiceId: map['convertedInvoiceId']?.toString(),
       isTemplate: map['isTemplate'] ?? false,
       templateName: map['templateName']?.toString(),
+      isFavoriteTemplate: map['isFavoriteTemplate'] ?? false,
     );
   }
 }
