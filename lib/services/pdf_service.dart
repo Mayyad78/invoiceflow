@@ -207,8 +207,10 @@ class PdfService {
     required BusinessProfileModel business,
     required String localeCode,
   }) {
-    final title =
-        invoice.type == 'quote' ? _tr(localeCode, 'quote') : _tr(localeCode, 'invoice');
+    final title = invoice.type == 'quote'
+        ? _tr(localeCode, 'quote')
+        : _tr(localeCode, 'invoice');
+
     final numberLabel = invoice.type == 'quote'
         ? _tr(localeCode, 'quoteNumber')
         : _tr(localeCode, 'invoiceNumber');
@@ -332,6 +334,8 @@ class PdfService {
     required String numberLabel,
     required bool alignEnd,
   }) {
+    final isArabic = localeCode == 'ar';
+
     return pw.Column(
       crossAxisAlignment:
           alignEnd ? pw.CrossAxisAlignment.end : pw.CrossAxisAlignment.start,
@@ -349,24 +353,28 @@ class PdfService {
           label: numberLabel,
           value: invoice.invoiceNumber,
           alignEnd: alignEnd,
+          isArabic: isArabic,
         ),
         pw.SizedBox(height: 6),
         _headerInfoLine(
           label: _tr(localeCode, 'issueDate'),
           value: DateFormat('yyyy-MM-dd').format(invoice.issueDate),
           alignEnd: alignEnd,
+          isArabic: isArabic,
         ),
         pw.SizedBox(height: 6),
         _headerInfoLine(
           label: _tr(localeCode, 'dueDate'),
           value: DateFormat('yyyy-MM-dd').format(invoice.dueDate),
           alignEnd: alignEnd,
+          isArabic: isArabic,
         ),
         pw.SizedBox(height: 6),
         _headerInfoLine(
           label: _tr(localeCode, 'status'),
           value: _localizedStatus(localeCode, invoice.status),
           alignEnd: alignEnd,
+          isArabic: isArabic,
         ),
       ],
     );
@@ -376,37 +384,53 @@ class PdfService {
     required String label,
     required String value,
     required bool alignEnd,
+    required bool isArabic,
   }) {
-    return pw.Row(
-      mainAxisAlignment:
-          alignEnd ? pw.MainAxisAlignment.end : pw.MainAxisAlignment.start,
-      children: alignEnd
-          ? [
-              pw.Flexible(
-                child: pw.Text(
-                  value,
-                  textAlign: pw.TextAlign.right,
+    if (isArabic) {
+      return pw.Row(
+        mainAxisAlignment:
+            alignEnd ? pw.MainAxisAlignment.end : pw.MainAxisAlignment.start,
+        children: alignEnd
+            ? [
+                pw.Flexible(
+                  child: pw.Text(
+                    value,
+                    textAlign: pw.TextAlign.right,
+                  ),
                 ),
-              ),
-              pw.SizedBox(width: 6),
-              pw.Text(
-                '$label:',
-                style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-              ),
-            ]
-          : [
-              pw.Text(
-                '$label:',
-                style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-              ),
-              pw.SizedBox(width: 6),
-              pw.Flexible(
-                child: pw.Text(
-                  value,
-                  textAlign: pw.TextAlign.left,
+                pw.SizedBox(width: 6),
+                pw.Text(
+                  '$label:',
+                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
                 ),
-              ),
-            ],
+              ]
+            : [
+                pw.Text(
+                  '$label:',
+                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                ),
+                pw.SizedBox(width: 6),
+                pw.Flexible(
+                  child: pw.Text(
+                    value,
+                    textAlign: pw.TextAlign.left,
+                  ),
+                ),
+              ],
+      );
+    }
+
+    return pw.RichText(
+      textAlign: alignEnd ? pw.TextAlign.right : pw.TextAlign.left,
+      text: pw.TextSpan(
+        children: [
+          pw.TextSpan(
+            text: '$label: ',
+            style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+          ),
+          pw.TextSpan(text: value),
+        ],
+      ),
     );
   }
 
@@ -507,8 +531,9 @@ class PdfService {
     }
 
     return pw.Align(
-      alignment:
-          localeCode == 'ar' ? pw.Alignment.centerLeft : pw.Alignment.centerRight,
+      alignment: localeCode == 'ar'
+          ? pw.Alignment.centerLeft
+          : pw.Alignment.centerRight,
       child: pw.Container(
         width: 260,
         padding: const pw.EdgeInsets.all(10),

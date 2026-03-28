@@ -599,6 +599,47 @@ Final result:
 
 ---
 
+## Step 25 – Mobile Preview UX Polish
+
+Completed as one full step.
+
+Implemented:
+- reduced invoice preview header height on mobile
+- increased PDF preview area on mobile screens
+- improved spacing in the preview screen for smaller screens
+- kept preview actions clean and usable
+- replaced unstable preview action behavior with controlled export/print actions
+- export now uses the correct PDF file name instead of a random temp file name
+- print flow from the preview screen was fixed
+- kept PDF generation logic unchanged for this step
+- kept Arabic PDF untouched in this step
+
+### Important fixes/decisions inside Step 25:
+- preserved stable Step 24 behavior as the base
+- did not reuse discarded Arabic PDF attempts
+- did not change English/French PDF business logic
+- fixed preview export naming to use document-based file names
+- fixed print action behavior from the preview screen
+- corrected invoice details header block in English/French so the label appears first and the value appears to the right
+- preserved:
+  - partial payment preview
+  - partial payment PDF output
+  - company logo in PDF
+  - templates flow
+  - duplicate flow
+  - quote conversion protection
+- kept changes focused on preview UX and safe PDF header alignment correction only
+
+Final result:
+- invoice preview is better on mobile
+- preview area is larger and cleaner
+- export file naming is correct
+- print works correctly from preview
+- English/French invoice details block now reads correctly
+- Step 19–24 flows remain stable
+
+---
+
 ## Current Features
 
 ### Dashboard
@@ -647,14 +688,17 @@ Final result:
 - improved file naming
 - accurate paid/remaining display for invoices
 - company logo restored
+- English/French header details block corrected
 
 ### Preview / Export
 - improved preview header
-- built-in print/share on supported platforms
 - dedicated export PDF action
 - refresh preview action
-- web fallback export card
 - cleaner summary layout
+- improved mobile preview spacing
+- larger mobile PDF preview area
+- corrected export filename behavior
+- corrected preview print flow
 
 ### Settings
 - profile
@@ -670,10 +714,11 @@ Final result:
 - No critical issues
 - Workflow aligned with real usage
 - Template system is mature and highly usable
-- Partial payment display is now accurate in preview and PDF
+- Partial payment display is accurate in preview and PDF
 - Document readability improved
 - Dashboard clarity improved
 - PDF logo restored
+- Mobile preview UX improved
 - Ready for the next focused improvement
 
 ---
@@ -681,24 +726,28 @@ Final result:
 ## Known Issues
 - Arabic PDF shaping not perfect
 - Arabic PDF layout still needs dedicated RTL polish
-- macOS direct custom print flow was avoided in favor of built-in preview print/share due to platform behavior
+- Arabic PDF formatting remains postponed to a later isolated step
 
 ---
 
-## Next Step
-
-## Step 25 – Arabic PDF Fix and RTL Layout Polish
+## Step 26 – Application Cards Polish
 
 Goal:
-- improve Arabic text shaping
-- improve RTL layout consistency
-- fix Arabic invoice layout issues
-- keep English/French PDF behavior stable
+- improve application cards for mobile and tablet usability
+- reduce card sizes so more content fits on screen
+- make important financial information easier to scan quickly
 
 Suggested scope:
-- proper Arabic shaping support
-- safer Arabic layout alignment
-- keep current PDF architecture stable
+- dashboard cards:
+  - total invoices
+  - total amount
+  - paid
+  - remaining
+- invoice and quote summary cards where needed
+- spacing and padding optimization
+- font size adjustments for compact layout
+- keep current UI style without redesign
+- keep calculations and business logic unchanged
 
 ---
 
@@ -711,10 +760,10 @@ Branch:
 main
 
 Last completed:
-Step 24
+Step 25
 
 Next task:
-Step 25
+Step 26
 
 ---
 
@@ -723,4 +772,4 @@ Step 25
 - Continue incrementally
 - Stability > perfection
 - Keep current naming and structure
-- Do not break Steps 19–24
+- Do not break Steps 19–25

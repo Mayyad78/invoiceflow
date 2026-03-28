@@ -24,7 +24,8 @@ class InvoicePreviewScreen extends ConsumerStatefulWidget {
   final ClientModel client;
 
   @override
-  ConsumerState createState() => _InvoicePreviewScreenState();
+  ConsumerState<InvoicePreviewScreen> createState() =>
+      _InvoicePreviewScreenState();
 }
 
 class _InvoicePreviewScreenState extends ConsumerState<InvoicePreviewScreen> {
@@ -32,6 +33,7 @@ class _InvoicePreviewScreenState extends ConsumerState<InvoicePreviewScreen> {
   String? _error;
   bool _isLoading = false;
   bool _isExporting = false;
+  bool _isPrinting = false;
 
   @override
   void initState() {
@@ -52,14 +54,17 @@ class _InvoicePreviewScreenState extends ConsumerState<InvoicePreviewScreen> {
 
   String _buildPdfFileName() {
     final typePrefix = widget.invoice.type == 'quote' ? 'quote' : 'invoice';
-    final rawNumber =
-        widget.invoice.invoiceNumber.trim().isEmpty ? typePrefix : widget.invoice.invoiceNumber;
+    final rawNumber = widget.invoice.invoiceNumber.trim().isEmpty
+        ? typePrefix
+        : widget.invoice.invoiceNumber;
     final safeNumber = _sanitizeFileNamePart(rawNumber);
     return '$typePrefix-$safeNumber.pdf';
   }
 
   String _documentLabel(AppLocalizations t) {
-    return widget.invoice.type == 'quote' ? t.quotePreviewTitle : t.invoicePreviewTitle;
+    return widget.invoice.type == 'quote'
+        ? t.quotePreviewTitle
+        : t.invoicePreviewTitle;
   }
 
   String _statusLabel(AppLocalizations t) {
@@ -72,6 +77,18 @@ class _InvoicePreviewScreenState extends ConsumerState<InvoicePreviewScreen> {
         return t.statusPartial;
       default:
         return t.statusDraft;
+    }
+  }
+
+  String _printLabel(BuildContext context) {
+    final languageCode = Localizations.localeOf(context).languageCode;
+    switch (languageCode) {
+      case 'fr':
+        return 'Imprimer';
+      case 'ar':
+        return 'طباعة';
+      default:
+        return 'Print';
     }
   }
 
@@ -105,12 +122,14 @@ class _InvoicePreviewScreenState extends ConsumerState<InvoicePreviewScreen> {
       });
     } catch (e) {
       if (!mounted) return;
+
       setState(() {
         _error = e.toString();
         _pdfBytes = null;
       });
     } finally {
       if (!mounted) return;
+
       setState(() {
         _isLoading = false;
       });
@@ -131,8 +150,30 @@ class _InvoicePreviewScreenState extends ConsumerState<InvoicePreviewScreen> {
       );
     } finally {
       if (!mounted) return;
+
       setState(() {
         _isExporting = false;
+      });
+    }
+  }
+
+  Future<void> _printPdf() async {
+    if (_pdfBytes == null || _isPrinting) return;
+
+    setState(() {
+      _isPrinting = true;
+    });
+
+    try {
+      await Printing.layoutPdf(
+        name: _buildPdfFileName(),
+        onLayout: (_) async => _pdfBytes!,
+      );
+    } finally {
+      if (!mounted) return;
+
+      setState(() {
+        _isPrinting = false;
       });
     }
   }
@@ -147,9 +188,9 @@ class _InvoicePreviewScreenState extends ConsumerState<InvoicePreviewScreen> {
     final dueDate = DateFormat.yMMMd(locale).format(widget.invoice.dueDate);
 
     return Card(
-      margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      margin: const EdgeInsets.fromLTRB(12, 10, 12, 6),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         child: Column(
           children: [
             Row(
@@ -161,26 +202,31 @@ class _InvoicePreviewScreenState extends ConsumerState<InvoicePreviewScreen> {
                     children: [
                       Text(
                         widget.invoice.invoiceNumber,
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.w700,
                             ),
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 4),
                       Text(
                         widget.client.name,
-                        style: Theme.of(context).textTheme.bodyLarge,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 10,
-                    vertical: 6,
+                    vertical: 5,
                   ),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .primary
+                        .withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
@@ -188,15 +234,16 @@ class _InvoicePreviewScreenState extends ConsumerState<InvoicePreviewScreen> {
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.primary,
                       fontWeight: FontWeight.w600,
+                      fontSize: 12,
                     ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 10),
             Wrap(
-              spacing: 8,
-              runSpacing: 8,
+              spacing: 6,
+              runSpacing: 6,
               children: [
                 _PreviewMetaChip(
                   icon: Icons.calendar_today_outlined,
@@ -212,10 +259,10 @@ class _InvoicePreviewScreenState extends ConsumerState<InvoicePreviewScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 10),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(12),
@@ -230,18 +277,24 @@ class _InvoicePreviewScreenState extends ConsumerState<InvoicePreviewScreen> {
                             emphasize: true,
                           ),
                         ),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: 8),
                         Expanded(
                           child: _PreviewAmountTile(
                             label: t.paidAmount,
-                            value: _formatAmount(widget.invoice.paidAmount, currency),
+                            value: _formatAmount(
+                              widget.invoice.paidAmount,
+                              currency,
+                            ),
                           ),
                         ),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: 8),
                         Expanded(
                           child: _PreviewAmountTile(
                             label: t.remainingAmount,
-                            value: _formatAmount(widget.invoice.remainingAmount, currency),
+                            value: _formatAmount(
+                              widget.invoice.remainingAmount,
+                              currency,
+                            ),
                             emphasize: widget.invoice.remainingAmount > 0,
                           ),
                         ),
@@ -261,7 +314,7 @@ class _InvoicePreviewScreenState extends ConsumerState<InvoicePreviewScreen> {
 
   Widget _buildActionButtons(AppLocalizations t) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      padding: const EdgeInsets.fromLTRB(12, 0, 12, 6),
       child: Wrap(
         spacing: 8,
         runSpacing: 8,
@@ -276,6 +329,17 @@ class _InvoicePreviewScreenState extends ConsumerState<InvoicePreviewScreen> {
                   )
                 : const Icon(Icons.download),
             label: Text(t.exportPdf),
+          ),
+          OutlinedButton.icon(
+            onPressed: (_pdfBytes == null || _isPrinting) ? null : _printPdf,
+            icon: _isPrinting
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.print),
+            label: Text(_printLabel(context)),
           ),
           OutlinedButton.icon(
             onPressed: _isLoading ? null : _loadPdf,
@@ -325,7 +389,10 @@ class _InvoicePreviewScreenState extends ConsumerState<InvoicePreviewScreen> {
                               Expanded(
                                 child: _PreviewAmountTile(
                                   label: t.total,
-                                  value: _formatAmount(widget.invoice.total, currency),
+                                  value: _formatAmount(
+                                    widget.invoice.total,
+                                    currency,
+                                  ),
                                   emphasize: true,
                                 ),
                               ),
@@ -333,14 +400,20 @@ class _InvoicePreviewScreenState extends ConsumerState<InvoicePreviewScreen> {
                               Expanded(
                                 child: _PreviewAmountTile(
                                   label: t.paidAmount,
-                                  value: _formatAmount(widget.invoice.paidAmount, currency),
+                                  value: _formatAmount(
+                                    widget.invoice.paidAmount,
+                                    currency,
+                                  ),
                                 ),
                               ),
                               const SizedBox(width: 10),
                               Expanded(
                                 child: _PreviewAmountTile(
                                   label: t.remainingAmount,
-                                  value: _formatAmount(widget.invoice.remainingAmount, currency),
+                                  value: _formatAmount(
+                                    widget.invoice.remainingAmount,
+                                    currency,
+                                  ),
                                   emphasize: widget.invoice.remainingAmount > 0,
                                 ),
                               ),
@@ -356,7 +429,9 @@ class _InvoicePreviewScreenState extends ConsumerState<InvoicePreviewScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: _pdfBytes == null || _isExporting ? null : _exportPdf,
+                      onPressed: _pdfBytes == null || _isExporting
+                          ? null
+                          : _exportPdf,
                       icon: const Icon(Icons.download),
                       label: Text(t.exportPdf),
                     ),
@@ -418,13 +493,29 @@ class _InvoicePreviewScreenState extends ConsumerState<InvoicePreviewScreen> {
       return _buildWebFallback(t, currency);
     }
 
-    return PdfPreview(
-      build: (format) async => _pdfBytes!,
-      allowPrinting: true,
-      allowSharing: true,
-      canChangePageFormat: false,
-      canDebug: false,
-      pdfFileName: _buildPdfFileName(),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: Theme.of(context).dividerColor.withValues(alpha: 0.35),
+            ),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: PdfPreview(
+            build: (format) async => _pdfBytes!,
+            allowPrinting: false,
+            allowSharing: false,
+            canChangePageFormat: false,
+            canDebug: false,
+            useActions: false,
+            padding: const EdgeInsets.all(8),
+            maxPageWidth: 700,
+          ),
+        ),
+      ),
     );
   }
 
@@ -436,7 +527,12 @@ class _InvoicePreviewScreenState extends ConsumerState<InvoicePreviewScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_documentLabel(t)),
+        toolbarHeight: 52,
+        titleSpacing: 12,
+        title: Text(
+          _documentLabel(t),
+          style: const TextStyle(fontSize: 18),
+        ),
       ),
       body: Column(
         children: [
