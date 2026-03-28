@@ -21,24 +21,29 @@ class DashboardScreen extends ConsumerWidget {
     final appSettings = ref.watch(appSettingsProvider);
     final currency = appSettings.currency;
 
-    final invoices = allDocuments.where((invoice) => invoice.type == 'invoice').toList();
-
-    final quotes = allDocuments.where((invoice) => invoice.type == 'quote').toList();
+    final invoices =
+        allDocuments.where((invoice) => invoice.type == 'invoice').toList();
+    final quotes =
+        allDocuments.where((invoice) => invoice.type == 'quote').toList();
 
     final totalInvoices = invoices.length;
     final totalQuotes = quotes.length;
 
-    final paidInvoices =
-        invoices.where((invoice) => normalizeInvoiceStatus(invoice.status) == 'paid').toList();
+    final paidInvoices = invoices
+        .where((invoice) => normalizeInvoiceStatus(invoice.status) == 'paid')
+        .toList();
 
-    final unpaidInvoices =
-        invoices.where((invoice) => normalizeInvoiceStatus(invoice.status) == 'unpaid').toList();
+    final unpaidInvoices = invoices
+        .where((invoice) => normalizeInvoiceStatus(invoice.status) == 'unpaid')
+        .toList();
 
-    final partialInvoices =
-        invoices.where((invoice) => normalizeInvoiceStatus(invoice.status) == 'partial').toList();
+    final partialInvoices = invoices
+        .where((invoice) => normalizeInvoiceStatus(invoice.status) == 'partial')
+        .toList();
 
-    final draftInvoices =
-        invoices.where((invoice) => normalizeInvoiceStatus(invoice.status) == 'draft').toList();
+    final draftInvoices = invoices
+        .where((invoice) => normalizeInvoiceStatus(invoice.status) == 'draft')
+        .toList();
 
     final totalRevenue = invoices.fold<double>(
       0,
@@ -55,8 +60,9 @@ class DashboardScreen extends ConsumerWidget {
       (sum, invoice) => sum + invoice.remainingAmount,
     );
 
-    final collectedRatio =
-        totalRevenue <= 0 ? 0.0 : (collectedAmount / totalRevenue).clamp(0.0, 1.0);
+    final collectedRatio = totalRevenue <= 0
+        ? 0.0
+        : (collectedAmount / totalRevenue).clamp(0.0, 1.0);
 
     return Scaffold(
       appBar: AppBar(
@@ -75,25 +81,25 @@ class DashboardScreen extends ConsumerWidget {
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         children: [
           Text(
             t.welcome,
             style: Theme.of(context).textTheme.headlineSmall,
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
           Text(
             t.dashboard,
             style: Theme.of(context).textTheme.titleLarge,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           GridView.count(
             crossAxisCount: 2,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            childAspectRatio: 1.1,
+            childAspectRatio: 1.45,
             children: [
               _SummaryCard(
                 title: t.totalRevenue,
@@ -129,7 +135,7 @@ class DashboardScreen extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 18),
           _CashFlowCard(
             collectedLabel: t.collectedAmount,
             pendingLabel: t.pendingAmount,
@@ -137,19 +143,19 @@ class DashboardScreen extends ConsumerWidget {
             pendingValue: '${outstandingBalance.toStringAsFixed(2)} $currency',
             progress: collectedRatio,
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 18),
           Text(
             t.invoiceStatusBreakdown,
             style: Theme.of(context).textTheme.titleLarge,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           GridView.count(
             crossAxisCount: 2,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            childAspectRatio: 1.25,
+            childAspectRatio: 1.55,
             children: [
               _StatusCard(
                 title: t.statusPaid,
@@ -173,24 +179,25 @@ class DashboardScreen extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 18),
           _WideSummaryCard(
             title: t.pendingAmount,
             value: '${outstandingBalance.toStringAsFixed(2)} $currency',
             icon: Icons.trending_down_outlined,
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 18),
           Text(
             t.quickActions,
             style: Theme.of(context).textTheme.titleLarge,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           GridView.count(
             crossAxisCount: 2,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
+            childAspectRatio: 1.35,
             children: [
               _DashboardCard(
                 icon: Icons.receipt_long,
@@ -263,7 +270,7 @@ class _CashFlowCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         child: Column(
           children: [
             Row(
@@ -275,7 +282,7 @@ class _CashFlowCard extends StatelessWidget {
                     icon: Icons.south_west,
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
                 Expanded(
                   child: _FlowMetric(
                     label: pendingLabel,
@@ -285,12 +292,12 @@ class _CashFlowCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             ClipRRect(
               borderRadius: BorderRadius.circular(999),
               child: LinearProgressIndicator(
                 value: progress,
-                minHeight: 10,
+                minHeight: 8,
               ),
             ),
           ],
@@ -314,26 +321,33 @@ class _FlowMetric extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
         children: [
-          Icon(icon),
-          const SizedBox(width: 10),
+          Icon(icon, size: 18),
+          const SizedBox(width: 8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label),
-                const SizedBox(height: 4),
+                Text(
+                  label,
+                  style: Theme.of(context).textTheme.bodySmall,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 3),
                 Text(
                   value,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -363,21 +377,28 @@ class _SummaryCard extends StatelessWidget {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, size: 28),
+            Icon(icon, size: 22),
             const Spacer(),
             Text(
               value,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
                     color: emphasize ? colorScheme.primary : null,
                   ),
             ),
-            const SizedBox(height: 4),
-            Text(title),
+            const SizedBox(height: 3),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.bodySmall,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
           ],
         ),
       ),
@@ -400,20 +421,25 @@ class _StatusCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, size: 26),
+            Icon(icon, size: 20),
             const Spacer(),
             Text(
               value,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
             ),
-            const SizedBox(height: 4),
-            Text(title),
+            const SizedBox(height: 3),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.bodySmall,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
           ],
         ),
       ),
@@ -436,11 +462,18 @@ class _WideSummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: ListTile(
-        leading: Icon(icon, size: 28),
-        title: Text(title),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 4,
+        ),
+        leading: Icon(icon, size: 22),
+        title: Text(
+          title,
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
         subtitle: Text(
           value,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.w700,
               ),
         ),
@@ -467,15 +500,18 @@ class _DashboardCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 36),
-              const SizedBox(height: 12),
+              Icon(icon, size: 28),
+              const SizedBox(height: 8),
               Text(
                 title,
                 textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
