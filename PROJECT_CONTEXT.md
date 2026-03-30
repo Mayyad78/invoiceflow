@@ -246,10 +246,32 @@ Final result:
 
 Completed as one full step.
 
+Implemented:
+- convert quote → invoice
+- new invoice number generated
+- quote preserved
+- copied:
+  - client
+  - items
+  - tax
+  - discount
+  - notes
+- reset payment:
+  - draft
+  - paid = 0
+- confirmation dialog
+
+### Fix (critical improvement):
+- added `convertedInvoiceId` to quote
+- quote can only be converted once
+- conversion button hidden after conversion
+- visual indicator shown for converted quotes
+- duplicate invoice creation prevented
+
 Final result:
 - safe real-world workflow
-- no duplicate invoices
-- conversion stable
+- no duplicate invoices from same quote
+- conversion fully controlled and stable
 
 ---
 
@@ -257,9 +279,53 @@ Final result:
 
 Completed as one full step.
 
+Implemented:
+- duplicate existing invoice
+- duplicate existing quote
+- duplicate action added in invoices/quotes list
+- duplicated document opens in form before saving
+- new document number generated through existing numbering system
+- new unique ID generated for duplicated document
+- copied:
+  - client
+  - items
+  - tax
+  - discount
+  - notes
+- duplicated invoice resets payment state:
+  - status = draft
+  - paidAmount = 0
+- duplicated quote remains a quote
+- duplicated quote is NOT marked as converted
+- issue date reset to current date
+- due date recalculated from the original document timing
+- edit flow preserved separately from duplicate flow
+
+### Important fixes/decisions inside Step 20:
+- kept existing project structure and naming
+- preserved `InvoicesScreen(type: ...)` contract
+- preserved real `InvoiceModel` fields:
+  - `invoiceNumber`
+  - `clientId`
+  - `items`
+  - `taxPercent`
+  - `discount`
+  - `notes`
+  - `paidAmount`
+  - `convertedInvoiceId`
+- preserved Step 19 protection for already converted quotes
+- restored provider methods expected by current screens:
+  - `addInvoice`
+  - `updateInvoice`
+  - `deleteInvoice`
+- added duplicate localization label to l10n files
+
 Final result:
-- duplication safe
-- workflow stable
+- repeated business cases are faster
+- user can reuse invoices and quotes safely
+- no overwrite of original document
+- quote conversion safety remains intact
+- duplicate workflow is stable and working
 
 ---
 
@@ -267,9 +333,47 @@ Final result:
 
 Completed as one full step.
 
+Implemented:
+- save invoice as template
+- save quote as template
+- new templates screen added:
+  - `lib/features/invoices/templates_screen.dart`
+- templates accessible from invoices/quotes app bar
+- templates filtered by document type:
+  - invoice templates
+  - quote templates
+- use template opens the create form before saving
+- creating from template generates a normal new document
+- templates are hidden from normal invoice/quote list screens
+- template keeps:
+  - client
+  - items
+  - tax
+  - discount
+  - notes
+- template usage resets:
+  - new unique ID
+  - new document number
+  - status = draft
+  - paidAmount = 0
+- template usage clears quote conversion link when needed
+
+### Important fixes/decisions inside Step 21:
+- reused existing `InvoiceModel` instead of creating a separate template model
+- added `isTemplate` flag to `InvoiceModel`
+- kept storage local and simple by using the existing invoice storage flow
+- preserved duplicate flow from Step 20
+- preserved quote conversion safety from Step 19
+- preserved numbering system from Step 11
+- added new localization labels for templates in EN / AR / FR
+- templates remain editable through the normal “use template → open form → save” flow
+- template items are cloned safely before reuse
+
 Final result:
-- templates working
-- reusable flows stable
+- repeated business workflows are much faster
+- invoice and quote templates are now supported
+- no impact on normal invoice/quote lists
+- template workflow is stable and working
 
 ---
 
@@ -277,8 +381,63 @@ Final result:
 
 Completed as one full step.
 
+Implemented:
+- save as template from create screen
+- save as template from edit screen
+- save as template from invoice/quote list screen
+- template naming support
+- template rename support
+- template direct edit support
+- improved templates empty state
+- improved template labels and management flow
+- use template still opens form before saving
+- using template still creates a normal document
+- templates remain hidden from normal invoice/quote list screens
+
+### Important fixes/decisions inside Step 22:
+- extended `InvoiceModel` with:
+  - `templateName`
+- preserved existing:
+  - `isTemplate`
+  - `convertedInvoiceId`
+  - numbering flow
+  - duplicate flow
+- added dedicated template management actions:
+  - use template
+  - edit template
+  - rename template
+  - delete template
+- template edit remains inside existing `CreateInvoiceScreen`
+- when editing a template:
+  - no real invoice number is used
+  - payment section is hidden
+  - save updates the template itself instead of creating a normal invoice
+- saving as template from form prompts for template name before storing
+- template usage clears:
+  - `templateName`
+  - `convertedInvoiceId`
+  - paid state
+- added new localization labels for EN / AR / FR:
+  - template name
+  - rename template
+  - edit template
+  - template updated
+  - delete template confirmation
+  - improved empty-state guidance
+- fixed Flutter dialog crash during template save/rename flow
+  - removed fragile `Form + GlobalKey` dialog implementation
+  - replaced with safer `StatefulBuilder` dialog handling
+  - resolved assertion:
+    - `'package:flutter/src/widgets/framework.dart': Failed assertion: line 6268 pos 12: '_dependents.isEmpty': is not true.`
+
 Final result:
-- template system stable
+- template management is complete and stable
+- template naming works
+- template rename works
+- template edit works
+- template save from form works
+- no crash in template name dialog flow
+- Step 19, Step 20, and Step 21 behaviors remain intact
 
 ---
 
@@ -286,8 +445,45 @@ Final result:
 
 Completed as one full step.
 
+Implemented:
+- template search bar
+- search by:
+  - template name
+  - client name
+  - notes
+- favorite / pin template support
+- favorites-only filter chip
+- favorites displayed first in template list
+- better no-results state when search/filter returns nothing
+- favorite badge shown on favorited templates
+
+### Important fixes/decisions inside this UX step:
+- extended `InvoiceModel` with:
+  - `isFavoriteTemplate`
+- kept template data inside existing storage model
+- preserved:
+  - template naming
+  - template edit
+  - template rename
+  - template use flow
+- favorite status persists in storage
+- using a template resets favorite state on the created real document
+- search and filter logic only affects templates screen
+- normal invoices and quotes remain unchanged
+- added new localization labels in EN / AR / FR:
+  - search templates
+  - favorites only
+  - no templates found
+  - try different search or filter
+  - favorite
+  - add to favorites
+  - remove from favorites
+
 Final result:
-- template UX improved
+- template UX is much better
+- users can find templates faster
+- important templates can be pinned and reused quickly
+- all previous template functionality remains stable
 
 ---
 
@@ -295,9 +491,70 @@ Final result:
 
 Completed as one full step.
 
+Implemented:
+- improved invoice/quote preview screen UX
+- better PDF file naming using document type + invoice/quote number
+- preview header card now shows:
+  - document number
+  - client
+  - total
+  - PDF file name
+- export PDF action kept as dedicated safe action
+- refresh preview action added
+- restored built-in `PdfPreview` print/share controls on supported platforms
+- improved web fallback export section
+- invoice/quote list action overflow fixed by changing action layout:
+  - visible actions:
+    - preview
+    - edit
+    - duplicate
+  - popup menu actions:
+    - save as template
+    - delete
+    - convert to invoice (quotes only)
+- removed yellow/black overflow warning caused by too many action buttons in a single row
+
+### Partial payment display fix:
+- invoice preview now shows:
+  - total
+  - paid amount
+  - remaining amount
+  for invoices
+- web fallback preview also shows:
+  - total
+  - paid amount
+  - remaining amount
+  for invoices
+- PDF totals section now includes:
+  - subtotal
+  - tax
+  - discount
+  - total
+  - paid amount
+  - remaining amount
+  for invoices
+- partial paid invoices now produce accurate preview + PDF output
+- quotes still do not show paid/remaining values
+
+### Important fixes/decisions inside Step 23:
+- kept current PDF generation architecture
+- avoided risky custom print flow after macOS print support issue
+- removed custom share button from preview in favor of built-in supported share inside `PdfPreview`
+- kept explicit export action using `Printing.sharePdf`
+- preserved all earlier flows:
+  - Step 19 quote conversion
+  - Step 20 duplication
+  - Step 21 templates
+  - Step 22 template management
+  - Step 22 UX improvements
+- maintained current model structure and naming
+
 Final result:
-- preview/export stable
-- partial payment accurate
+- preview/export flow is cleaner and more stable
+- overflow issue on invoice/quote cards is fixed
+- file naming is improved
+- partially paid invoices now display correct payment details in both preview and PDF
+- business document accuracy is improved
 
 ---
 
@@ -305,10 +562,40 @@ Final result:
 
 Completed as one full step.
 
+Implemented:
+- improved invoice and quote card readability
+- better spacing inside document cards
+- clearer grouping for:
+  - total
+  - paid
+  - remaining
+- highlighted important values to improve quick reading
+- improved card action layout while preserving existing flows
+- improved dashboard clarity for financial summary
+- clearer distinction between:
+  - collected amount
+  - pending amount
+- improved preview screen hierarchy and summary layout
+- cleaner preview header and amount grouping
+- fixed missing company logo in PDF
+- improved PDF header separation between business information and document information
+
+### Important fixes/decisions inside Step 24:
+- preserved existing project naming and structure
+- corrected provider usage to keep existing `appSettingsProvider`
+- did not introduce risky changes to working Step 19–23 flows
+- kept current PDF logic stable
+- restored company logo rendering in PDF without changing the rest of the PDF workflow
+- kept Arabic PDF full shaping/layout work postponed to a later isolated step to avoid breaking stable output
+- kept preview/export flow stable on macOS
+- preserved template system, duplicate flow, conversion flow, and partial payment flow
+
 Final result:
-- readability improved
-- dashboard clearer
-- PDF logo restored
+- invoice and quote lists are easier to read
+- dashboard financial summary is clearer
+- preview screen is cleaner and easier to understand
+- PDF branding is restored with company logo
+- application remains stable and working after the UX polish step
 
 ---
 
@@ -316,10 +603,40 @@ Final result:
 
 Completed as one full step.
 
+Implemented:
+- reduced invoice preview header height on mobile
+- increased PDF preview area on mobile screens
+- improved spacing in the preview screen for smaller screens
+- kept preview actions clean and usable
+- replaced unstable preview action behavior with controlled export/print actions
+- export now uses the correct PDF file name instead of a random temp file name
+- print flow from the preview screen was fixed
+- kept PDF generation logic unchanged for this step
+- kept Arabic PDF untouched in this step
+
+### Important fixes/decisions inside Step 25:
+- preserved stable Step 24 behavior as the base
+- did not reuse discarded Arabic PDF attempts
+- did not change English/French PDF business logic
+- fixed preview export naming to use document-based file names
+- fixed print action behavior from the preview screen
+- corrected invoice details header block in English/French so the label appears first and the value appears to the right
+- preserved:
+  - partial payment preview
+  - partial payment PDF output
+  - company logo in PDF
+  - templates flow
+  - duplicate flow
+  - quote conversion protection
+- kept changes focused on preview UX and safe PDF header alignment correction only
+
 Final result:
-- mobile preview improved
-- export/print fixed
-- naming fixed
+- invoice preview is better on mobile
+- preview area is larger and cleaner
+- export file naming is correct
+- print works correctly from preview
+- English/French invoice details block now reads correctly
+- Step 19–24 flows remain stable
 
 ---
 
@@ -352,6 +669,33 @@ Final result:
 
 ---
 
+## Step 27 – Application Functionality Enhancements
+
+Completed as one full step.
+
+Implemented:
+- creating invoice from client details now preselects the client
+- improved invoice and quote screen logic
+- status filter chips now appear only on invoices
+- quote screen simplified since quotes are always drafts
+- improved search behavior across invoice and quote screens
+- kept quote conversion, duplication, preview, edit, and template actions working
+
+### Important fixes/decisions inside Step 27:
+- quotes remain draft-only documents
+- status filtering applies only to invoices
+- removed references to non-existing localization keys
+- preserved all existing architecture and providers
+- no changes to PDF generation, numbering, templates, backup/restore, or payment logic
+- kept the client details → new invoice workflow aligned with real use by opening invoice creation with the current client preselected
+
+Final result:
+- cleaner quote interface
+- improved client → invoice workflow
+- application functionality improved without regressions
+
+---
+
 ## Current Features
 
 ### Dashboard
@@ -361,34 +705,66 @@ Final result:
 
 ### Clients
 - CRUD + history + summary
+- client details screen
+- create new invoice from client details with that client preselected
 
 ### Invoices
-- full functionality
-- templates
-- duplication
-- conversion
-- partial payments
+- create/edit
+- numbering
+- payment tracking
+- search
+- ordering
+- status filter chips
+- duplicate support
+- template support
+- save as template from form/list
+- partial payment display in preview and PDF
+- improved card readability for total / paid / remaining
 
 ### Quotes
-- full functionality
-- safe conversion
+- create/edit
+- convert to invoice (safe)
+- duplicate support
+- template support
+- conversion lock after use
+- save as template from form/list
+- simplified list/readability layout
+- no invoice-only status chips shown
 
 ### Templates
-- full system
-- search + favorites
+- save invoice as template
+- save quote as template
+- filtered templates by type
+- create new document from template
+- rename template
+- edit template directly
+- delete template
+- search templates
+- favorite / pin templates
+- favorites-only filter
+- improved empty state and labels
 
 ### PDF
-- working
-- accurate
-- logo restored
+- branding + localization
+- improved file naming
+- accurate paid/remaining display for invoices
+- company logo restored
+- English/French header details block corrected
 
 ### Preview / Export
-- stable
-- improved UX
+- improved preview header
+- dedicated export PDF action
+- refresh preview action
+- cleaner summary layout
+- improved mobile preview spacing
+- larger mobile PDF preview area
+- corrected export filename behavior
+- corrected preview print flow
 
 ### Settings
 - profile
 - currency
+- numbering
 - backup/restore
 
 ---
@@ -397,24 +773,38 @@ Final result:
 - Stable
 - Business-ready
 - No critical issues
-- Mobile UX improved
-- Dashboard optimized
+- Workflow aligned with real usage
+- Template system is mature and highly usable
+- Partial payment display is accurate in preview and PDF
+- Document readability improved
+- Dashboard clarity improved
+- PDF logo restored
+- Mobile preview UX improved
+- Application functionality improved
+- Ready for the next focused improvement
 
 ---
 
 ## Known Issues
-- Arabic PDF not polished yet (intentionally postponed)
+- Arabic PDF shaping not perfect
+- Arabic PDF layout still needs dedicated RTL polish
+- Arabic PDF formatting remains postponed to a later isolated step
 
 ---
 
-## Next Step
-
-## Step 27 – Application Functionality Enhancements
+## Step 28 – Invoice Creation Speed Improvements
 
 Goal:
-- improve core workflows
-- enhance usability of invoice and client interactions
-- reduce friction in daily usage
+- make invoice creation faster for real usage
+- reduce repeated manual input during invoice creation
+- improve speed of daily document workflow
+
+Suggested scope:
+- remember last used client where appropriate
+- remember last used tax percentage where appropriate
+- improve quick add item flow
+- improve template usage speed inside invoice creation
+- keep current architecture and business logic stable
 
 ---
 
@@ -427,15 +817,17 @@ Branch:
 main
 
 Last completed:
-Step 26
+Step 27
 
 Next task:
-Step 27
+Step 28
 
 ---
 
 ## Notes
+- Do not restart project
 - Continue incrementally
-- Focus on functionality first
-- Arabic postponed intentionally
-- Do not break Steps 19–26
+- Stability > perfection
+- Keep current naming and structure
+- Focus on application functionality before Arabic PDF polish
+- Do not break Steps 19–27

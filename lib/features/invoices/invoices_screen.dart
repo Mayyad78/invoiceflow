@@ -30,6 +30,8 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
   static const _actionSaveTemplate = 'saveTemplate';
   static const _actionDelete = 'delete';
 
+  String? _statusFilter;
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -279,6 +281,12 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
     return '${value.toStringAsFixed(2)} $currency';
   }
 
+  void _toggleStatusFilter(String status) {
+    setState(() {
+      _statusFilter = _statusFilter == status ? null : status;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
@@ -294,6 +302,7 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
 
     final clients = ref.watch(clientsProvider);
     final query = _searchController.text.trim().toLowerCase();
+    final showStatusFilters = widget.type == 'invoice';
 
     ClientModel? findClient(String clientId) {
       try {
@@ -306,12 +315,18 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
     final filteredInvoices = invoices.where((invoice) {
       final client = findClient(invoice.clientId);
       final clientName = client?.name.toLowerCase() ?? '';
+      final normalizedStatus = normalizeInvoiceStatus(invoice.status);
 
-      if (query.isEmpty) return true;
-
-      return invoice.invoiceNumber.toLowerCase().contains(query) ||
+      final matchesQuery = query.isEmpty ||
+          invoice.invoiceNumber.toLowerCase().contains(query) ||
           clientName.contains(query) ||
-          normalizeInvoiceStatus(invoice.status).contains(query);
+          normalizedStatus.contains(query);
+
+      final matchesStatus = !showStatusFilters ||
+          _statusFilter == null ||
+          normalizedStatus == _statusFilter;
+
+      return matchesQuery && matchesStatus;
     }).toList()
       ..sort((a, b) {
         final dateCompare = b.issueDate.compareTo(a.issueDate);
@@ -319,11 +334,42 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
         return b.invoiceNumber.compareTo(a.invoiceNumber);
       });
 
+    final visibleTotal = filteredInvoices.fold<double>(
+      0,
+      (sum, invoice) => sum + invoice.total,
+    );
+
+    final statusChips = <_StatusFilterChipData>[
+      _StatusFilterChipData(
+        status: 'paid',
+        label: t.statusPaid,
+        color: _statusColor('paid'),
+      ),
+      _StatusFilterChipData(
+        status: 'unpaid',
+        label: t.statusUnpaid,
+        color: _statusColor('unpaid'),
+      ),
+      _StatusFilterChipData(
+        status: 'partial',
+        label: t.statusPartial,
+        color: _statusColor('partial'),
+      ),
+      _StatusFilterChipData(
+        status: 'draft',
+        label: t.statusDraft,
+        color: _statusColor('draft'),
+      ),
+    ];
+
+    final documentTitle =
+        widget.type == 'quote' ? t.quotePreviewTitle : t.invoicesTitle;
+    final createLabel = widget.type == 'quote' ? t.newQuote : t.newInvoice;
+    final searchHint = t.searchInvoices;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          widget.type == 'quote' ? t.quotePreviewTitle : t.invoicesTitle,
-        ),
+        title: Text(documentTitle),
         actions: [
           IconButton(
             tooltip: t.templates,
@@ -345,7 +391,7 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: t.searchInvoices,
+                hintText: searchHint,
                 prefixIcon: const Icon(Icons.search),
                 border: const OutlineInputBorder(),
                 suffixIcon: _searchController.text.isEmpty
@@ -356,10 +402,60 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
                           setState(() {});
                         },
                         icon: const Icon(Icons.clear),
-                        tooltip: t.clearSearch,
+                        tooltip: t.cancel,
                       ),
               ),
               onChanged: (_) => setState(() {}),
+            ),
+          ),
+          if (showStatusFilters)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: statusChips
+                      .map(
+                        (chip) => FilterChip(
+                          selected: _statusFilter == chip.status,
+                          label: Text(chip.label),
+                          selectedColor: chip.color.withValues(alpha: 0.16),
+                          checkmarkColor: chip.color,
+                          side: BorderSide(
+                            color: _statusFilter == chip.status
+                                ? chip.color
+                                : Theme.of(context).dividerColor,
+                          ),
+                          labelStyle: TextStyle(
+                            color: _statusFilter == chip.status ? chip.color : null,
+                            fontWeight: _statusFilter == chip.status
+                                ? FontWeight.w600
+                                : FontWeight.w500,
+                          ),
+                          onSelected: (_) => _toggleStatusFilter(chip.status),
+                        ),
+                      )
+                      .toList(),
+                ),
+              ),
+            ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: _ListSummaryCard(
+              title: documentTitle,
+              countValue: filteredInvoices.length.toString(),
+              amountLabel: t.total,
+              amountValue: _formatAmount(visibleTotal, currency),
+              actionLabel: createLabel,
+              onActionPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => CreateInvoiceScreen(type: widget.type),
+                  ),
+                );
+              },
             ),
           ),
           Expanded(
@@ -373,10 +469,10 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
                     ? _EmptyState(
                         icon: Icons.search_off,
                         title: t.noResultsFound,
-                        subtitle: t.searchInvoices,
+                        subtitle: searchHint,
                       )
                     : ListView.separated(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                         itemCount: filteredInvoices.length,
                         separatorBuilder: (_, __) => const SizedBox(height: 12),
                         itemBuilder: (context, index) {
@@ -391,9 +487,6 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
                             client: client,
                             dateText: dateText,
                             currency: currency,
-                            documentLabel: widget.type == 'quote'
-                                ? t.quotePreviewTitle
-                                : t.invoicesTitle,
                             statusLabel: localizeInvoiceStatus(t, invoice.status),
                             statusColor: _statusColor(invoice.status),
                             totalLabel: t.total,
@@ -460,9 +553,7 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
           );
         },
         icon: const Icon(Icons.add),
-        label: Text(
-          widget.type == 'quote' ? t.newQuote : t.newInvoice,
-        ),
+        label: Text(createLabel),
       ),
     );
   }
@@ -487,7 +578,6 @@ class _DocumentCard extends StatelessWidget {
     required this.client,
     required this.dateText,
     required this.currency,
-    required this.documentLabel,
     required this.statusLabel,
     required this.statusColor,
     required this.totalLabel,
@@ -517,7 +607,6 @@ class _DocumentCard extends StatelessWidget {
   final ClientModel? client;
   final String dateText;
   final String currency;
-  final String documentLabel;
   final String statusLabel;
   final Color statusColor;
   final String totalLabel;
@@ -695,6 +784,92 @@ class _DocumentCard extends StatelessWidget {
   }
 }
 
+class _ListSummaryCard extends StatelessWidget {
+  const _ListSummaryCard({
+    required this.title,
+    required this.countValue,
+    required this.amountLabel,
+    required this.amountValue,
+    required this.actionLabel,
+    required this.onActionPressed,
+  });
+
+  final String title;
+  final String countValue;
+  final String amountLabel;
+  final String amountValue;
+  final String actionLabel;
+  final VoidCallback onActionPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            Expanded(
+              child: Wrap(
+                spacing: 16,
+                runSpacing: 8,
+                children: [
+                  _SummaryItem(
+                    label: title,
+                    value: countValue,
+                  ),
+                  _SummaryItem(
+                    label: amountLabel,
+                    value: amountValue,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            ElevatedButton.icon(
+              onPressed: onActionPressed,
+              icon: const Icon(Icons.add),
+              label: Text(actionLabel),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SummaryItem extends StatelessWidget {
+  const _SummaryItem({
+    required this.label,
+    required this.value,
+  });
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minWidth: 72),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _AmountTile extends StatelessWidget {
   const _AmountTile({
     required this.label,
@@ -795,6 +970,18 @@ class _StatusBadge extends StatelessWidget {
       ),
     );
   }
+}
+
+class _StatusFilterChipData {
+  const _StatusFilterChipData({
+    required this.status,
+    required this.label,
+    required this.color,
+  });
+
+  final String status;
+  final String label;
+  final Color color;
 }
 
 class _EmptyState extends StatelessWidget {
