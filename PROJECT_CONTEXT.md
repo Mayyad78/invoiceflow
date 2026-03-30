@@ -696,6 +696,34 @@ Final result:
 
 ---
 
+## Step 28 – Invoice Creation Speed Improvements
+
+Completed as one full step.
+
+Implemented:
+- improved invoice and quote list entry flow for faster daily usage
+- added direct templates access from the list summary area
+- added quick reuse action for the latest document from the main list screen
+- improved client details quick actions for faster document creation
+- added duplicate latest invoice action inside client details when available
+- kept new invoice from client details preselected to the current client
+- preserved existing create screen logic while making entry points faster
+
+### Important fixes/decisions inside Step 28:
+- kept `CreateInvoiceScreen` architecture unchanged for safety
+- did not change invoice save logic, numbering logic, template logic, or payment logic
+- focused on faster entry points instead of risky deep form refactoring
+- preserved existing duplication behavior by reusing the stable duplicate flow
+- preserved existing template screen flow by exposing it faster from the list summary area
+- kept all changes aligned with real daily usage patterns
+
+Final result:
+- faster access to create, duplicate, and templates flows
+- reduced friction for repeated invoice creation
+- application workflow is faster without regressions
+
+---
+
 ## Current Features
 
 ### Dashboard
@@ -707,6 +735,7 @@ Final result:
 - CRUD + history + summary
 - client details screen
 - create new invoice from client details with that client preselected
+- duplicate latest invoice from client details
 
 ### Invoices
 - create/edit
@@ -718,6 +747,8 @@ Final result:
 - duplicate support
 - template support
 - save as template from form/list
+- quick reuse of latest document
+- faster access to templates from list summary area
 - partial payment display in preview and PDF
 - improved card readability for total / paid / remaining
 
@@ -730,6 +761,7 @@ Final result:
 - save as template from form/list
 - simplified list/readability layout
 - no invoice-only status chips shown
+- faster access to templates from list summary area
 
 ### Templates
 - save invoice as template
@@ -781,6 +813,7 @@ Final result:
 - PDF logo restored
 - Mobile preview UX improved
 - Application functionality improved
+- Invoice creation flow is faster
 - Ready for the next focused improvement
 
 ---
@@ -792,19 +825,19 @@ Final result:
 
 ---
 
-## Step 28 – Invoice Creation Speed Improvements
+## Step 29 – Invoice Form Workflow Polish
 
 Goal:
-- make invoice creation faster for real usage
-- reduce repeated manual input during invoice creation
-- improve speed of daily document workflow
+- improve the invoice creation form workflow itself
+- reduce taps and repeated actions inside the form
+- make daily invoice entry faster while keeping the current architecture stable
 
 Suggested scope:
-- remember last used client where appropriate
-- remember last used tax percentage where appropriate
-- improve quick add item flow
-- improve template usage speed inside invoice creation
-- keep current architecture and business logic stable
+- improve client selection flow inside the form
+- improve item entry flow inside the form
+- improve tax and discount entry speed
+- improve save flow clarity for invoice vs quote
+- keep numbering, templates, and payment logic stable
 
 ---
 
@@ -817,10 +850,10 @@ Branch:
 main
 
 Last completed:
-Step 27
+Step 28
 
 Next task:
-Step 28
+Step 29
 
 ---
 
@@ -830,4 +863,4 @@ Step 28
 - Stability > perfection
 - Keep current naming and structure
 - Focus on application functionality before Arabic PDF polish
-- Do not break Steps 19–27
+- Do not break Steps 19–28

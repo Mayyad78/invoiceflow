@@ -220,6 +220,22 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
     );
   }
 
+  void _openCreateDocument() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => CreateInvoiceScreen(type: widget.type),
+      ),
+    );
+  }
+
+  void _openTemplates() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => TemplatesScreen(type: widget.type),
+      ),
+    );
+  }
+
   Future<void> _saveAsTemplate(AppLocalizations t, InvoiceModel invoice) async {
     final templateName = await _promptTemplateName(
       t: t,
@@ -334,6 +350,16 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
         return b.invoiceNumber.compareTo(a.invoiceNumber);
       });
 
+    final latestDocument = invoices.isEmpty
+        ? null
+        : (List<InvoiceModel>.from(invoices)
+              ..sort((a, b) {
+                final dateCompare = b.issueDate.compareTo(a.issueDate);
+                if (dateCompare != 0) return dateCompare;
+                return b.invoiceNumber.compareTo(a.invoiceNumber);
+              }))
+            .first;
+
     final visibleTotal = filteredInvoices.fold<double>(
       0,
       (sum, invoice) => sum + invoice.total,
@@ -373,13 +399,7 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
         actions: [
           IconButton(
             tooltip: t.templates,
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => TemplatesScreen(type: widget.type),
-                ),
-              );
-            },
+            onPressed: _openTemplates,
             icon: const Icon(Icons.bookmarks_outlined),
           ),
         ],
@@ -449,15 +469,21 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
               amountLabel: t.total,
               amountValue: _formatAmount(visibleTotal, currency),
               actionLabel: createLabel,
-              onActionPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => CreateInvoiceScreen(type: widget.type),
-                  ),
-                );
-              },
+              onActionPressed: _openCreateDocument,
+              secondaryActionLabel: t.templates,
+              onSecondaryActionPressed: _openTemplates,
             ),
           ),
+          if (latestDocument != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: _QuickReuseCard(
+                title: latestDocument.invoiceNumber,
+                subtitle: findClient(latestDocument.clientId)?.name ?? '',
+                buttonLabel: t.duplicate,
+                onPressed: () => _openDuplicateDocument(latestDocument),
+              ),
+            ),
           Expanded(
             child: invoices.isEmpty
                 ? _EmptyState(
@@ -545,13 +571,7 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => CreateInvoiceScreen(type: widget.type),
-            ),
-          );
-        },
+        onPressed: _openCreateDocument,
         icon: const Icon(Icons.add),
         label: Text(createLabel),
       ),
@@ -792,6 +812,8 @@ class _ListSummaryCard extends StatelessWidget {
     required this.amountValue,
     required this.actionLabel,
     required this.onActionPressed,
+    this.secondaryActionLabel,
+    this.onSecondaryActionPressed,
   });
 
   final String title;
@@ -800,37 +822,101 @@ class _ListSummaryCard extends StatelessWidget {
   final String amountValue;
   final String actionLabel;
   final VoidCallback onActionPressed;
+  final String? secondaryActionLabel;
+  final VoidCallback? onSecondaryActionPressed;
 
   @override
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12),
-        child: Row(
+        child: Column(
           children: [
-            Expanded(
-              child: Wrap(
-                spacing: 16,
-                runSpacing: 8,
-                children: [
-                  _SummaryItem(
-                    label: title,
-                    value: countValue,
+            Row(
+              children: [
+                Expanded(
+                  child: Wrap(
+                    spacing: 16,
+                    runSpacing: 8,
+                    children: [
+                      _SummaryItem(
+                        label: title,
+                        value: countValue,
+                      ),
+                      _SummaryItem(
+                        label: amountLabel,
+                        value: amountValue,
+                      ),
+                    ],
                   ),
-                  _SummaryItem(
-                    label: amountLabel,
-                    value: amountValue,
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-            const SizedBox(width: 12),
-            ElevatedButton.icon(
-              onPressed: onActionPressed,
-              icon: const Icon(Icons.add),
-              label: Text(actionLabel),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              alignment: WrapAlignment.end,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: onActionPressed,
+                  icon: const Icon(Icons.add),
+                  label: Text(actionLabel),
+                ),
+                if (secondaryActionLabel != null &&
+                    onSecondaryActionPressed != null)
+                  OutlinedButton.icon(
+                    onPressed: onSecondaryActionPressed,
+                    icon: const Icon(Icons.bookmarks_outlined),
+                    label: Text(secondaryActionLabel!),
+                  ),
+              ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _QuickReuseCard extends StatelessWidget {
+  const _QuickReuseCard({
+    required this.title,
+    required this.subtitle,
+    required this.buttonLabel,
+    required this.onPressed,
+  });
+
+  final String title;
+  final String subtitle;
+  final String buttonLabel;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 4,
+        ),
+        leading: const Icon(Icons.history),
+        title: Text(
+          title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: subtitle.isEmpty
+            ? null
+            : Text(
+                subtitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+        trailing: OutlinedButton.icon(
+          onPressed: onPressed,
+          icon: const Icon(Icons.copy_outlined),
+          label: Text(buttonLabel),
         ),
       ),
     );

@@ -47,6 +47,30 @@ class ClientDetailsScreen extends ConsumerWidget {
     );
   }
 
+  void _openNewInvoice(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => CreateInvoiceScreen(
+          type: 'invoice',
+          invoice: _buildPrefilledInvoiceDraft(),
+          isDuplicate: true,
+        ),
+      ),
+    );
+  }
+
+  void _openDuplicateLatestInvoice(BuildContext context, InvoiceModel invoice) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => CreateInvoiceScreen(
+          type: invoice.type,
+          invoice: invoice,
+          isDuplicate: true,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final t = AppLocalizations.of(context)!;
@@ -57,6 +81,10 @@ class ClientDetailsScreen extends ConsumerWidget {
         .where((invoice) => invoice.clientId == client.id && !invoice.isTemplate)
         .toList()
       ..sort((a, b) => b.issueDate.compareTo(a.issueDate));
+
+    final latestInvoice = clientInvoices.where((invoice) => invoice.type == 'invoice').isEmpty
+        ? null
+        : clientInvoices.firstWhere((invoice) => invoice.type == 'invoice');
 
     final totalDocuments = clientInvoices.length;
     final totalAmount = clientInvoices.fold<double>(
@@ -148,31 +176,34 @@ class ClientDetailsScreen extends ConsumerWidget {
               ),
             ),
           ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  t.history,
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-              ),
-              ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => CreateInvoiceScreen(
-                        type: 'invoice',
-                        invoice: _buildPrefilledInvoiceDraft(),
-                        isDuplicate: true,
-                      ),
+          const SizedBox(height: 12),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () => _openNewInvoice(context),
+                    icon: const Icon(Icons.add),
+                    label: Text(t.newInvoice),
+                  ),
+                  if (latestInvoice != null)
+                    OutlinedButton.icon(
+                      onPressed: () =>
+                          _openDuplicateLatestInvoice(context, latestInvoice),
+                      icon: const Icon(Icons.copy_outlined),
+                      label: Text(t.duplicate),
                     ),
-                  );
-                },
-                icon: const Icon(Icons.add),
-                label: Text(t.newInvoice),
+                ],
               ),
-            ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            t.history,
+            style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 12),
           if (clientInvoices.isEmpty)
