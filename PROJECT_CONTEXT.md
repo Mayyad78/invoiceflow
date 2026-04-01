@@ -57,6 +57,8 @@ IMPORTANT WORKFLOW RULE:
 - Always include the full project structure with all files so it is clear what files were added or changed
 - If adding a new file, clearly say where it connects
 - Prefer safe full-file replacements over partial edits
+- After each confirmed step, also include upcoming development steps so a new chat can continue immediately
+- If a new step is introduced later, reorder the upcoming steps accordingly
 
 ---
 
@@ -754,6 +756,34 @@ Final result:
 
 ---
 
+## Step 30 – Invoice Form Workflow Polish
+
+Completed as one full step.
+
+Implemented:
+- improved Add Item visibility inside the invoice form
+- improved empty items state so users can add the first item faster
+- made item entry more obvious and faster for daily use
+- fixed Save as Template cancel crash
+- simplified template dialog lifecycle while preserving existing save behavior
+
+### Important fixes/decisions inside Step 30:
+- kept existing `CreateInvoiceScreen` architecture
+- did not change numbering logic
+- did not change template save logic outside the dialog lifecycle fix
+- did not change payment logic
+- did not change PDF generation logic
+- fixed the Flutter assertion crash triggered when pressing Cancel in the template name dialog:
+  - `'package:flutter/src/widgets/framework.dart': Failed assertion: line 6268 pos 12: '_dependents.isEmpty': is not true.`
+- kept the step focused on invoice form workflow and stability only
+
+Final result:
+- invoice form is faster to use
+- Save as Template cancel no longer crashes the app
+- invoice form workflow is smoother and stable
+
+---
+
 ## Current Features
 
 ### Dashboard
@@ -782,6 +812,7 @@ Final result:
 - save as template from form/list
 - quick reuse of latest document
 - faster access to templates from list summary area
+- improved invoice form item entry
 - partial payment display in preview and PDF
 - improved card readability for total / paid / remaining
 
@@ -808,6 +839,7 @@ Final result:
 - favorite / pin templates
 - favorites-only filter
 - improved empty state and labels
+- stable template dialog cancel flow
 
 ### PDF
 - branding + localization
@@ -848,6 +880,7 @@ Final result:
 - Application functionality improved
 - Invoice creation flow is faster
 - Client workflow is faster
+- Invoice form workflow is improved
 - Ready for the next focused improvement
 
 ---
@@ -859,19 +892,30 @@ Final result:
 
 ---
 
-## Step 30 – Invoice Form Workflow Polish
+## Upcoming Development Steps
+- Step 31 – Product Catalog (Quick Invoice Items)
+- Step 32 – Invoice Search Improvements
+- Step 33 – Client Financial Dashboard
+- Step 34 – Invoice Payment History
+- Step 35 – Arabic PDF RTL Fix
+
+Note:
+- upcoming steps may be reordered if a new functionality step is introduced before them
+
+---
+
+## Step 31 – Product Catalog (Quick Invoice Items)
 
 Goal:
-- improve the invoice creation form workflow itself
-- reduce taps and repeated actions inside the form
-- make daily invoice entry faster while keeping the current architecture stable
+- make invoice creation faster by saving reusable items
+- allow one-tap item insertion into invoices and quotes
+- reduce repeated typing for products and services
 
 Suggested scope:
-- improve client selection flow inside the form
-- improve item entry flow inside the form
-- improve tax and discount entry speed
-- improve save flow clarity for invoice vs quote
-- keep numbering, templates, and payment logic stable
+- save product/service presets
+- quick add item to invoice
+- auto-fill description and price
+- keep current architecture and invoice logic stable
 
 ---
 
@@ -884,10 +928,10 @@ Branch:
 main
 
 Last completed:
-Step 29
+Step 30
 
 Next task:
-Step 30
+Step 31
 
 ---
 
@@ -897,4 +941,4 @@ Step 30
 - Stability > perfection
 - Keep current naming and structure
 - Focus on application functionality before Arabic PDF polish
-- Do not break Steps 19–29
+- Do not break Steps 19–30

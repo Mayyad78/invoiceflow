@@ -304,7 +304,6 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       },
     );
 
-    controller.dispose();
     return result;
   }
 
@@ -602,7 +601,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
-                TextButton.icon(
+                ElevatedButton.icon(
                   onPressed: _addItem,
                   icon: const Icon(Icons.add),
                   label: Text(t.addItem),
@@ -610,9 +609,23 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
               ],
             ),
             if (_items.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Text(t.atLeastOneItem),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      const Icon(Icons.inventory_2_outlined, size: 40),
+                      const SizedBox(height: 8),
+                      Text(t.atLeastOneItem),
+                      const SizedBox(height: 12),
+                      ElevatedButton.icon(
+                        onPressed: _addItem,
+                        icon: const Icon(Icons.add),
+                        label: Text(t.addItem),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ..._items.asMap().entries.map((entry) {
               final index = entry.key;
