@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../models/client_model.dart';
+import '../../models/invoice_model.dart';
 import '../../providers/clients_provider.dart';
+import '../invoices/create_invoice_screen.dart';
 import 'add_client_screen.dart';
 import 'client_details_screen.dart';
 
@@ -48,6 +51,32 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
     );
   }
 
+  InvoiceModel _buildPrefilledDocumentDraft({
+    required ClientModel client,
+    required String type,
+  }) {
+    final now = DateTime.now();
+
+    return InvoiceModel(
+      id: const Uuid().v4(),
+      invoiceNumber: '',
+      clientId: client.id,
+      issueDate: now,
+      dueDate: now.add(const Duration(days: 7)),
+      items: const [],
+      taxPercent: 0,
+      discount: 0,
+      notes: '',
+      status: 'draft',
+      type: type,
+      paidAmount: 0,
+      convertedInvoiceId: null,
+      isTemplate: false,
+      templateName: null,
+      isFavoriteTemplate: false,
+    );
+  }
+
   void _openAddClient([ClientModel? client]) {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -60,6 +89,21 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => ClientDetailsScreen(client: client),
+      ),
+    );
+  }
+
+  void _openNewDocumentForClient({
+    required ClientModel client,
+    required String type,
+  }) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => CreateInvoiceScreen(
+          type: type,
+          invoice: _buildPrefilledDocumentDraft(client: client, type: type),
+          isDuplicate: true,
+        ),
       ),
     );
   }
@@ -289,6 +333,22 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
                                         onPressed: () => _openAddClient(client),
                                         icon: const Icon(Icons.edit_outlined),
                                         label: Text(t.edit),
+                                      ),
+                                      OutlinedButton.icon(
+                                        onPressed: () => _openNewDocumentForClient(
+                                          client: client,
+                                          type: 'invoice',
+                                        ),
+                                        icon: const Icon(Icons.receipt_long_outlined),
+                                        label: Text(t.newInvoice),
+                                      ),
+                                      OutlinedButton.icon(
+                                        onPressed: () => _openNewDocumentForClient(
+                                          client: client,
+                                          type: 'quote',
+                                        ),
+                                        icon: const Icon(Icons.request_quote_outlined),
+                                        label: Text(t.newQuote),
                                       ),
                                     ],
                                   ),

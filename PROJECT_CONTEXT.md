@@ -724,6 +724,36 @@ Final result:
 
 ---
 
+## Step 29 – Client Workflow Improvements
+
+Completed as one full step.
+
+Implemented:
+- added New Invoice action directly on each client card
+- added New Quote action directly on each client card
+- each client card now supports faster document creation with that client already preselected
+- added New Quote action inside client details
+- preserved New Invoice action inside client details
+- preserved Duplicate Latest Invoice action inside client details
+- improved speed of client-based invoice and quote creation
+- kept preview and edit flows working from clients screens
+
+### Important fixes/decisions inside Step 29:
+- reused existing `CreateInvoiceScreen`
+- reused the stable prefilled draft approach for client preselection
+- did not refactor invoice form internals
+- preserved numbering logic
+- preserved template logic
+- preserved payment logic
+- focused only on faster client workflow without changing core architecture
+
+Final result:
+- much faster client-based document creation
+- invoices and quotes can now be started directly from client screens
+- no regressions in existing flows
+
+---
+
 ## Current Features
 
 ### Dashboard
@@ -735,6 +765,9 @@ Final result:
 - CRUD + history + summary
 - client details screen
 - create new invoice from client details with that client preselected
+- create new quote from client details with that client preselected
+- create new invoice directly from clients screen with that client preselected
+- create new quote directly from clients screen with that client preselected
 - duplicate latest invoice from client details
 
 ### Invoices
@@ -814,6 +847,7 @@ Final result:
 - Mobile preview UX improved
 - Application functionality improved
 - Invoice creation flow is faster
+- Client workflow is faster
 - Ready for the next focused improvement
 
 ---
@@ -825,7 +859,7 @@ Final result:
 
 ---
 
-## Step 29 – Invoice Form Workflow Polish
+## Step 30 – Invoice Form Workflow Polish
 
 Goal:
 - improve the invoice creation form workflow itself
@@ -850,10 +884,10 @@ Branch:
 main
 
 Last completed:
-Step 28
+Step 29
 
 Next task:
-Step 29
+Step 30
 
 ---
 
@@ -863,4 +897,4 @@ Step 29
 - Stability > perfection
 - Keep current naming and structure
 - Focus on application functionality before Arabic PDF polish
-- Do not break Steps 19–28
+- Do not break Steps 19–29

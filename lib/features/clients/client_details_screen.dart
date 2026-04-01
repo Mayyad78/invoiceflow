@@ -24,7 +24,7 @@ class ClientDetailsScreen extends ConsumerWidget {
     return '${value.toStringAsFixed(2)} $currency';
   }
 
-  InvoiceModel _buildPrefilledInvoiceDraft() {
+  InvoiceModel _buildPrefilledDocumentDraft(String type) {
     final now = DateTime.now();
 
     return InvoiceModel(
@@ -38,7 +38,7 @@ class ClientDetailsScreen extends ConsumerWidget {
       discount: 0,
       notes: '',
       status: 'draft',
-      type: 'invoice',
+      type: type,
       paidAmount: 0,
       convertedInvoiceId: null,
       isTemplate: false,
@@ -47,12 +47,12 @@ class ClientDetailsScreen extends ConsumerWidget {
     );
   }
 
-  void _openNewInvoice(BuildContext context) {
+  void _openNewDocument(BuildContext context, String type) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => CreateInvoiceScreen(
-          type: 'invoice',
-          invoice: _buildPrefilledInvoiceDraft(),
+          type: type,
+          invoice: _buildPrefilledDocumentDraft(type),
           isDuplicate: true,
         ),
       ),
@@ -185,9 +185,14 @@ class ClientDetailsScreen extends ConsumerWidget {
                 runSpacing: 8,
                 children: [
                   ElevatedButton.icon(
-                    onPressed: () => _openNewInvoice(context),
+                    onPressed: () => _openNewDocument(context, 'invoice'),
                     icon: const Icon(Icons.add),
                     label: Text(t.newInvoice),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: () => _openNewDocument(context, 'quote'),
+                    icon: const Icon(Icons.request_quote_outlined),
+                    label: Text(t.newQuote),
                   ),
                   if (latestInvoice != null)
                     OutlinedButton.icon(
