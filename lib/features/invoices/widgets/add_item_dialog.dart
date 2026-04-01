@@ -70,7 +70,7 @@ Future<InvoiceItemModel?> showAddItemDialog(
                 ),
               );
             },
-            child: Text(isEdit ? t.saveChanges : t.save),
+            child: Text(isEdit ? t.saveChanges : t.addItem),
           ),
         ],
       );

@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../models/catalog_item_model.dart';
 import '../../models/client_model.dart';
 import '../../models/invoice_item_model.dart';
 import '../../models/invoice_model.dart';
 import '../../providers/app_settings_provider.dart';
+import '../../providers/catalog_items_provider.dart';
 import '../../providers/clients_provider.dart';
 import '../../providers/invoices_provider.dart';
 import 'invoice_preview_screen.dart';
@@ -41,6 +43,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
   DateTime _dueDate = DateTime.now().add(const Duration(days: 7));
   ClientModel? _selectedClient;
   final List<InvoiceItemModel> _items = [];
+  final List<String?> _itemCatalogIds = [];
   late String _initialGeneratedNumber;
   String _status = 'draft';
 
@@ -66,6 +69,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       _issueDate = invoice.issueDate;
       _dueDate = invoice.dueDate;
       _items.addAll(invoice.items.cast<InvoiceItemModel>());
+      _itemCatalogIds.addAll(List<String?>.filled(invoice.items.length, null));
       _initialGeneratedNumber = invoice.invoiceNumber;
       _status = invoice.status;
     } else if (_isDuplicate) {
@@ -93,6 +97,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
           ),
         ),
       );
+      _itemCatalogIds.addAll(List<String?>.filled(invoice.items.length, null));
       _status = 'draft';
     } else {
       final settingsNotifier = ref.read(appSettingsProvider.notifier);
@@ -147,6 +152,120 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
     return remaining < 0 ? 0 : remaining;
   }
 
+  String _normalizeDescription(String value) {
+    return value.trim().toLowerCase();
+  }
+
+  int? _findExistingInvoiceItemIndex({
+    required InvoiceItemModel item,
+    String? catalogItemId,
+  }) {
+    for (var i = 0; i < _items.length; i++) {
+      final currentItem = _items[i];
+      final sameDescription = _normalizeDescription(currentItem.description) ==
+          _normalizeDescription(item.description);
+      final samePrice = currentItem.unitPrice == item.unitPrice;
+
+      if (!sameDescription || !samePrice) {
+        continue;
+      }
+
+      if (catalogItemId != null) {
+        if (_itemCatalogIds[i] == catalogItemId) {
+          return i;
+        }
+        continue;
+      }
+
+      return i;
+    }
+
+    return null;
+  }
+
+  void _addOrMergeInvoiceItem({
+    required InvoiceItemModel item,
+    String? catalogItemId,
+  }) {
+    final existingIndex = _findExistingInvoiceItemIndex(
+      item: item,
+      catalogItemId: catalogItemId,
+    );
+
+    if (existingIndex != null) {
+      final current = _items[existingIndex];
+      _items[existingIndex] = InvoiceItemModel(
+        description: current.description,
+        quantity: current.quantity + item.quantity,
+        unitPrice: current.unitPrice,
+      );
+
+      if (catalogItemId != null) {
+        _itemCatalogIds[existingIndex] = catalogItemId;
+      }
+      return;
+    }
+
+    _items.add(item);
+    _itemCatalogIds.add(catalogItemId);
+  }
+
+  bool _isInvoiceItemSavedInCatalog(
+    List<CatalogItemModel> catalogItems,
+    int index,
+  ) {
+    if (_itemCatalogIds[index] != null) {
+      return true;
+    }
+
+    final currentItem = _items[index];
+    final normalizedDescription =
+        _normalizeDescription(currentItem.description);
+
+    for (final catalogItem in catalogItems) {
+      if (catalogItem.normalizedDescription == normalizedDescription) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  void _syncLinkedInvoiceItemsFromCatalog(CatalogItemModel catalogItem) {
+    bool changed = false;
+
+    for (var i = 0; i < _items.length; i++) {
+      if (_itemCatalogIds[i] == catalogItem.id) {
+        final currentItem = _items[i];
+        _items[i] = InvoiceItemModel(
+          description: catalogItem.description,
+          quantity: currentItem.quantity,
+          unitPrice: catalogItem.unitPrice,
+        );
+        changed = true;
+      }
+    }
+
+    if (changed && mounted) {
+      setState(() {});
+    }
+  }
+
+  void _unlinkDeletedCatalogItemFromActiveInvoice(String catalogItemId) {
+    bool changed = false;
+
+    for (var i = 0; i < _itemCatalogIds.length; i++) {
+      if (_itemCatalogIds[i] == catalogItemId) {
+        _itemCatalogIds[i] = null;
+        changed = true;
+      }
+    }
+
+    if (changed && mounted) {
+      setState(() {});
+    }
+  }
+
   Future<void> _pickDate({
     required BuildContext context,
     required DateTime initialDate,
@@ -166,11 +285,17 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
 
   Future<void> _addItem() async {
     final item = await showAddItemDialog(context);
-    if (item != null) {
-      setState(() {
-        _items.add(item);
-      });
+    if (item == null) {
+      return;
     }
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _addOrMergeInvoiceItem(item: item);
+    });
   }
 
   Future<void> _editItem(int index) async {
@@ -184,6 +309,30 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
         _items[index] = updatedItem;
       });
     }
+  }
+
+  void _removeItemAt(int index) {
+    setState(() {
+      _items.removeAt(index);
+      _itemCatalogIds.removeAt(index);
+    });
+  }
+
+  void _addCatalogItemToInvoice(CatalogItemModel item) {
+    setState(() {
+      _addOrMergeInvoiceItem(
+        item: InvoiceItemModel(
+          description: item.description,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+        ),
+        catalogItemId: item.id,
+      );
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('${item.description} added')),
+    );
   }
 
   double _resolvePaidAmount() {
@@ -305,6 +454,349 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
     );
 
     return result;
+  }
+
+  Future<void> _showSaveCatalogItemDialog({
+    CatalogItemModel? existingItem,
+    InvoiceItemModel? sourceItem,
+    int? sourceIndex,
+  }) async {
+    final isEditing = existingItem != null;
+    final isFromInvoiceItem = sourceItem != null;
+    final descriptionController = TextEditingController(
+      text: existingItem?.description ?? sourceItem?.description ?? '',
+    );
+    final quantityController = TextEditingController(
+      text: (existingItem?.quantity ?? 1).toString(),
+    );
+    final unitPriceController = TextEditingController(
+      text: (existingItem?.unitPrice ?? sourceItem?.unitPrice ?? 0).toString(),
+    );
+
+    final notifier = ref.read(catalogItemsProvider.notifier);
+
+    final result = await showDialog<CatalogItemModel>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        String? helperText;
+
+        bool canSave() {
+          final description = descriptionController.text.trim();
+
+          if (description.isEmpty) {
+            helperText = 'Description is required';
+            return false;
+          }
+
+          final duplicate = notifier.findItemByDescription(
+            description: description,
+            excludeId: existingItem?.id,
+          );
+
+          if (duplicate != null) {
+            helperText = 'Item already exists in catalog';
+            return false;
+          }
+
+          helperText = null;
+          return true;
+        }
+
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            final saveEnabled = canSave();
+
+            void revalidate() {
+              setDialogState(() {});
+            }
+
+            return AlertDialog(
+              title: Text(
+                isEditing
+                    ? 'Edit Product'
+                    : isFromInvoiceItem
+                        ? 'Save Product'
+                        : 'Add Product',
+              ),
+              content: SingleChildScrollView(
+                child: SizedBox(
+                  width: 360,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextField(
+                        controller: descriptionController,
+                        autofocus: true,
+                        decoration: const InputDecoration(
+                          labelText: 'Description',
+                          border: OutlineInputBorder(),
+                        ),
+                        onChanged: (_) => revalidate(),
+                      ),
+                      const SizedBox(height: 12),
+                      if (isEditing) ...[
+                        TextField(
+                          controller: quantityController,
+                          decoration: const InputDecoration(
+                            labelText: 'Default Quantity',
+                            border: OutlineInputBorder(),
+                          ),
+                          keyboardType: TextInputType.number,
+                          onChanged: (_) => revalidate(),
+                        ),
+                        const SizedBox(height: 12),
+                      ],
+                      TextField(
+                        controller: unitPriceController,
+                        decoration: const InputDecoration(
+                          labelText: 'Unit Price',
+                          border: OutlineInputBorder(),
+                        ),
+                        keyboardType:
+                            const TextInputType.numberWithOptions(decimal: true),
+                        onChanged: (_) => revalidate(),
+                      ),
+                      if (helperText != null) ...[
+                        const SizedBox(height: 10),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            helperText!,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: saveEnabled
+                      ? () {
+                          Navigator.of(dialogContext).pop(
+                            CatalogItemModel(
+                              id: existingItem?.id ?? const Uuid().v4(),
+                              description: descriptionController.text.trim(),
+                              quantity: isEditing
+                                  ? (int.tryParse(quantityController.text.trim()) ??
+                                          1)
+                                      .clamp(1, 999999)
+                                  : 1,
+                              unitPrice:
+                                  double.tryParse(unitPriceController.text.trim()) ??
+                                      0,
+                            ),
+                          );
+                        }
+                      : null,
+                  child: const Text('Save'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (!mounted || result == null) {
+      return;
+    }
+
+    if (isEditing) {
+      await notifier.updateItem(result);
+      _syncLinkedInvoiceItemsFromCatalog(result);
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Product updated')),
+      );
+      return;
+    }
+
+    await notifier.addItem(result);
+
+    if (sourceIndex != null &&
+        sourceIndex >= 0 &&
+        sourceIndex < _items.length &&
+        sourceItem != null) {
+      setState(() {
+        _itemCatalogIds[sourceIndex] = result.id;
+      });
+    }
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Product saved to catalog')),
+    );
+  }
+
+  Future<void> _deleteCatalogItem(CatalogItemModel item) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Delete Product'),
+        content: Text('Delete "${item.description}" from catalog?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) {
+      return;
+    }
+
+    await ref.read(catalogItemsProvider.notifier).deleteItem(item.id);
+    _unlinkDeletedCatalogItemFromActiveInvoice(item.id);
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Product deleted')),
+    );
+  }
+
+  Future<void> _showCatalogBottomSheet() async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (sheetContext) {
+        return DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.82,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          builder: (context, scrollController) {
+            return Consumer(
+              builder: (context, ref, _) {
+                final catalogItems = ref.watch(catalogItemsProvider);
+
+                return Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 8, 8),
+                      child: Row(
+                        children: [
+                          const Expanded(
+                            child: Text(
+                              'Product Catalog',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () => Navigator.of(sheetContext).pop(),
+                            icon: const Icon(Icons.close),
+                            tooltip: 'Close',
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Divider(height: 1),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: ElevatedButton.icon(
+                          onPressed: () => _showSaveCatalogItemDialog(),
+                          icon: const Icon(Icons.add),
+                          label: const Text('Add Product'),
+                        ),
+                      ),
+                    ),
+                    if (catalogItems.isEmpty)
+                      const Expanded(
+                        child: Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(24),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.inventory_2_outlined, size: 48),
+                                SizedBox(height: 12),
+                                Text(
+                                  'No products yet',
+                                  textAlign: TextAlign.center,
+                                ),
+                                SizedBox(height: 6),
+                                Text(
+                                  'Add reusable items here for one-tap invoice entry',
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      )
+                    else
+                      Expanded(
+                        child: ListView.separated(
+                          controller: scrollController,
+                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                          itemCount: catalogItems.length,
+                          separatorBuilder: (_, __) => const SizedBox(height: 8),
+                          itemBuilder: (context, index) {
+                            final item = catalogItems[index];
+
+                            return Card(
+                              child: ListTile(
+                                title: Text(item.description),
+                                subtitle: Text(
+                                  '${item.quantity} × ${item.unitPrice.toStringAsFixed(2)}',
+                                ),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      tooltip: 'Add to invoice',
+                                      onPressed: () =>
+                                          _addCatalogItemToInvoice(item),
+                                      icon: const Icon(Icons.add_circle_outline),
+                                    ),
+                                    IconButton(
+                                      tooltip: 'Edit product',
+                                      onPressed: () => _showSaveCatalogItemDialog(
+                                        existingItem: item,
+                                      ),
+                                      icon: const Icon(Icons.edit_outlined),
+                                    ),
+                                    IconButton(
+                                      tooltip: 'Delete product',
+                                      onPressed: () => _deleteCatalogItem(item),
+                                      icon: const Icon(Icons.delete_outline),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                  ],
+                );
+              },
+            );
+          },
+        );
+      },
+    );
   }
 
   bool _validateTemplateInputs(AppLocalizations t) {
@@ -508,6 +1000,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
     final clients = ref.watch(clientsProvider);
+    final catalogItems = ref.watch(catalogItemsProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -601,6 +1094,12 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
+                OutlinedButton.icon(
+                  onPressed: _showCatalogBottomSheet,
+                  icon: const Icon(Icons.inventory_2_outlined),
+                  label: const Text('Catalog'),
+                ),
+                const SizedBox(width: 8),
                 ElevatedButton.icon(
                   onPressed: _addItem,
                   icon: const Icon(Icons.add),
@@ -618,10 +1117,21 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                       const SizedBox(height: 8),
                       Text(t.atLeastOneItem),
                       const SizedBox(height: 12),
-                      ElevatedButton.icon(
-                        onPressed: _addItem,
-                        icon: const Icon(Icons.add),
-                        label: Text(t.addItem),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          ElevatedButton.icon(
+                            onPressed: _addItem,
+                            icon: const Icon(Icons.add),
+                            label: Text(t.addItem),
+                          ),
+                          OutlinedButton.icon(
+                            onPressed: _showCatalogBottomSheet,
+                            icon: const Icon(Icons.inventory_2_outlined),
+                            label: const Text('Catalog'),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -630,6 +1140,8 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
             ..._items.asMap().entries.map((entry) {
               final index = entry.key;
               final item = entry.value;
+              final itemAlreadyInCatalog =
+                  _isInvoiceItemSavedInCatalog(catalogItems, index);
 
               return Card(
                 child: ListTile(
@@ -641,17 +1153,25 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                     spacing: 4,
                     children: [
                       IconButton(
+                        icon: const Icon(Icons.bookmark_add_outlined),
+                        onPressed: itemAlreadyInCatalog
+                            ? null
+                            : () => _showSaveCatalogItemDialog(
+                                  sourceItem: item,
+                                  sourceIndex: index,
+                                ),
+                        tooltip: itemAlreadyInCatalog
+                            ? 'Already in catalog'
+                            : 'Save to catalog',
+                      ),
+                      IconButton(
                         icon: const Icon(Icons.edit_outlined),
                         onPressed: () => _editItem(index),
                         tooltip: t.edit,
                       ),
                       IconButton(
                         icon: const Icon(Icons.delete_outline),
-                        onPressed: () {
-                          setState(() {
-                            _items.removeAt(index);
-                          });
-                        },
+                        onPressed: () => _removeItemAt(index),
                         tooltip: t.delete,
                       ),
                     ],

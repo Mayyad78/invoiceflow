@@ -50,6 +50,8 @@ IMPORTANT WORKFLOW RULE:
     - important fixes/decisions inside that step
     - current state
     - next step
+  - Must also include upcoming development steps so a new chat can continue immediately
+  - If a new step is introduced later, reorder the upcoming steps accordingly
 - After the step is confirmed working:
   - update PROJECT_CONTEXT.md first
   - then provide git commit commands
@@ -57,8 +59,6 @@ IMPORTANT WORKFLOW RULE:
 - Always include the full project structure with all files so it is clear what files were added or changed
 - If adding a new file, clearly say where it connects
 - Prefer safe full-file replacements over partial edits
-- After each confirmed step, also include upcoming development steps so a new chat can continue immediately
-- If a new step is introduced later, reorder the upcoming steps accordingly
 
 ---
 
@@ -92,6 +92,7 @@ lib/
 ├── models/
 │   ├── app_settings_model.dart
 │   ├── business_profile_model.dart
+│   ├── catalog_item_model.dart
 │   ├── client_model.dart
 │   ├── invoice_item_model.dart
 │   └── invoice_model.dart
@@ -99,6 +100,8 @@ lib/
 │   ├── app_settings_provider.dart
 │   ├── backup_restore_service_provider.dart
 │   ├── business_profile_provider.dart
+│   ├── catalog_items_provider.dart
+│   ├── catalog_item_service_provider.dart
 │   ├── client_service_provider.dart
 │   ├── clients_provider.dart
 │   ├── invoice_service_provider.dart
@@ -108,6 +111,7 @@ lib/
 │   └── settings_service_provider.dart
 ├── services/
 │   ├── backup_restore_service.dart
+│   ├── catalog_item_service.dart
 │   ├── client_service.dart
 │   ├── invoice_service.dart
 │   ├── local_storage_service.dart
@@ -784,6 +788,59 @@ Final result:
 
 ---
 
+## Step 31 – Product Catalog (Quick Invoice Items)
+
+Completed as one full step.
+
+Implemented:
+- added product catalog support for reusable invoice items
+- added new catalog files:
+  - `lib/models/catalog_item_model.dart`
+  - `lib/services/catalog_item_service.dart`
+  - `lib/providers/catalog_item_service_provider.dart`
+  - `lib/providers/catalog_items_provider.dart`
+- added catalog storage box support in local storage service
+- added catalog bottom sheet inside invoice form
+- added Add Product flow inside catalog
+- added Edit Product flow inside catalog
+- added Delete Product flow inside catalog
+- added Add to invoice flow from catalog
+- made catalog bottom sheet mobile-safe with close button and draggable layout
+- prevented duplicate catalog products by product name
+- added invoice item merge behavior when same item is added again
+- adding the same catalog item to the invoice now increases quantity instead of creating duplicate rows
+- restored bookmark icon purpose:
+  - Add Item → invoice only
+  - Bookmark → save invoice item to catalog intentionally
+- disabled bookmark button when invoice item already exists in catalog
+- editing a linked catalog item updates active invoice item price and description
+- linked active invoice item quantity remains unchanged when catalog item is edited
+- deleting a catalog item safely unlinks active invoice items without crashing
+- updated add item dialog button labels:
+  - Add when creating a new item
+  - Save Changes when editing an existing item
+
+### Important fixes/decisions inside Step 31:
+- catalog duplicates are prevented by item name only
+- Add Item no longer auto-saves to catalog
+- bookmark icon remains meaningful and intentionally saves item to catalog
+- linked catalog item sync is limited to active invoice form state only
+- kept existing invoice save logic unchanged
+- kept numbering logic unchanged
+- kept template logic unchanged
+- kept payment logic unchanged
+- kept PDF logic unchanged
+- all catalog files must remain listed in project structure and future context files
+
+Final result:
+- product catalog is now integrated into invoice workflow
+- reusable items are supported safely
+- invoice entry is faster and cleaner
+- catalog workflow is stable and mobile-friendly
+- no regressions in previous steps
+
+---
+
 ## Current Features
 
 ### Dashboard
@@ -813,6 +870,7 @@ Final result:
 - quick reuse of latest document
 - faster access to templates from list summary area
 - improved invoice form item entry
+- item merge behavior for repeated items
 - partial payment display in preview and PDF
 - improved card readability for total / paid / remaining
 
@@ -840,6 +898,15 @@ Final result:
 - favorites-only filter
 - improved empty state and labels
 - stable template dialog cancel flow
+
+### Product Catalog
+- add product
+- edit product
+- delete product
+- reuse product in invoice
+- duplicate prevention by name
+- mobile-safe catalog sheet
+- linked item sync in active invoice form
 
 ### PDF
 - branding + localization
@@ -881,6 +948,7 @@ Final result:
 - Invoice creation flow is faster
 - Client workflow is faster
 - Invoice form workflow is improved
+- Product catalog is working
 - Ready for the next focused improvement
 
 ---
@@ -893,29 +961,29 @@ Final result:
 ---
 
 ## Upcoming Development Steps
-- Step 31 – Product Catalog (Quick Invoice Items)
-- Step 32 – Invoice Search Improvements
-- Step 33 – Client Financial Dashboard
-- Step 34 – Invoice Payment History
-- Step 35 – Arabic PDF RTL Fix
+- Step 32 – Catalog Autocomplete
+- Step 33 – Smart Invoice Item Editor
+- Step 34 – Invoice Search & Filters
+- Step 35 – Data Export Tools
+- Step 36 – Arabic PDF RTL Fix
 
 Note:
 - upcoming steps may be reordered if a new functionality step is introduced before them
 
 ---
 
-## Step 31 – Product Catalog (Quick Invoice Items)
+## Step 32 – Catalog Autocomplete
 
 Goal:
-- make invoice creation faster by saving reusable items
-- allow one-tap item insertion into invoices and quotes
-- reduce repeated typing for products and services
+- improve invoice item entry speed by suggesting catalog items while typing
+- let users type item names and choose from matching catalog products
+- reduce manual entry during invoice creation
 
 Suggested scope:
-- save product/service presets
-- quick add item to invoice
-- auto-fill description and price
-- keep current architecture and invoice logic stable
+- autocomplete inside item entry flow
+- catalog lookup while typing
+- select from suggestions to auto-fill item details
+- keep current invoice logic stable
 
 ---
 
@@ -928,10 +996,10 @@ Branch:
 main
 
 Last completed:
-Step 30
+Step 31
 
 Next task:
-Step 31
+Step 32
 
 ---
 
@@ -941,4 +1009,4 @@ Step 31
 - Stability > perfection
 - Keep current naming and structure
 - Focus on application functionality before Arabic PDF polish
-- Do not break Steps 19–30
+- Do not break Steps 19–31
