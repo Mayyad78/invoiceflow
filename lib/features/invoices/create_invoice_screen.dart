@@ -1156,6 +1156,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
 
               return Card(
                 child: ListTile(
+                  onTap: () => _editItem(index),
                   title: Text(item.description),
                   subtitle: Text(
                     '${item.quantity} × ${item.unitPrice.toStringAsFixed(2)} = ${item.total.toStringAsFixed(2)}',

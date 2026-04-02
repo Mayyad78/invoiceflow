@@ -907,6 +907,38 @@ Final result:
 
 ---
 
+## Step 34 – Invoice Item Editing UX
+
+Completed as one full step.
+
+Implemented:
+- tapping an existing invoice item row now opens the edit dialog directly
+- edit icon remains available
+- delete icon remains available
+- Save as Template action remains available
+- Save Invoice action remains available
+- payment section remains visible and unchanged
+- totals section remains visible and unchanged
+- catalog flow remains available
+- autocomplete flow remains available
+
+### Important fixes/decisions inside Step 34:
+- kept the full Step 33 screen intact
+- avoided replacing the working invoice form UI
+- added only the row-tap editing improvement
+- preserved Step 31 catalog integration
+- preserved Step 32 autocomplete behavior
+- preserved Step 33 stabilized merge logic
+- no changes to PDF, templates, numbering, payments, or Arabic PDF
+
+Final result:
+- invoice item editing is faster on mobile and desktop
+- user can tap the row itself instead of aiming only for the small edit icon
+- existing working flows remain intact
+- no regressions in Step 19–33 flows
+
+---
+
 ## Current Features
 
 ### Dashboard
@@ -917,10 +949,10 @@ Final result:
 ### Clients
 - CRUD + history + summary
 - client details screen
-- create new invoice from client details with that client preselected
-- create new quote from client details with that client preselected
-- create new invoice directly from clients screen with that client preselected
-- create new quote directly from clients screen with that client preselected
+- create new invoice from client details with that client already preselected
+- create new quote from client details with that client already preselected
+- create new invoice directly from clients screen with that client already preselected
+- create new quote directly from clients screen with that client already preselected
 - duplicate latest invoice from client details
 
 ### Invoices
@@ -939,6 +971,7 @@ Final result:
 - item merge behavior for repeated items
 - partial payment display in preview and PDF
 - improved card readability for total / paid / remaining
+- tap row to edit item
 
 ### Quotes
 - create/edit
@@ -1019,6 +1052,7 @@ Final result:
 - Product catalog is working
 - Catalog autocomplete is working
 - Catalog duplicate row logic is stabilized
+- Invoice item editing UX is improved
 - Ready for the next focused improvement
 
 ---
@@ -1031,7 +1065,6 @@ Final result:
 ---
 
 ## Upcoming Development Steps
-- Step 34 – Invoice Item Editing UX
 - Step 35 – Invoice Search & Filters
 - Step 36 – Data Export Tools
 - Step 37 – Arabic PDF RTL Fix
@@ -1041,17 +1074,19 @@ Note:
 
 ---
 
-## Step 34 – Invoice Item Editing UX
+## Step 35 – Invoice Search & Filters
 
 Goal:
-- improve daily editing speed for invoice items after they are added
-- make quantity and price adjustment faster and cleaner on mobile/desktop
-- keep current catalog and add item logic stable
+- improve invoice and quote list navigation once data grows
+- allow faster search by client, document number, and item description
+- improve filters for payment status and document finding speed
+- keep current invoice creation and catalog logic stable
 
 Suggested scope:
-- faster edit access for existing invoice rows
-- cleaner quantity/price editing flow
-- optional quick actions for repeated edits
+- search by invoice/quote number
+- search by client
+- search by item description
+- quick status filters
 - preserve current invoice logic and catalog rules
 
 ---
@@ -1065,10 +1100,10 @@ Branch:
 main
 
 Last completed:
-Step 33
+Step 34
 
 Next task:
-Step 34
+Step 35
 
 ---
 
@@ -1078,4 +1113,4 @@ Step 34
 - Stability > perfection
 - Keep current naming and structure
 - Focus on application functionality before Arabic PDF polish
-- Do not break Steps 19–33
+- Do not break Steps 19–34
