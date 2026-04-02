@@ -5,13 +5,13 @@ import '../../../models/catalog_item_model.dart';
 import '../../../models/invoice_item_model.dart';
 
 class AddItemDialogResult {
-  final InvoiceItemModel item;
-  final String? catalogItemId;
-
   const AddItemDialogResult({
     required this.item,
-    required this.catalogItemId,
+    this.catalogItemId,
   });
+
+  final InvoiceItemModel item;
+  final String? catalogItemId;
 }
 
 Future<AddItemDialogResult?> showAddItemDialog(
@@ -19,6 +19,7 @@ Future<AddItemDialogResult?> showAddItemDialog(
   InvoiceItemModel? item,
   required List<CatalogItemModel> catalogItems,
   String? selectedCatalogItemId,
+  Map<String, InvoiceItemModel>? rememberedCatalogDefaults,
 }) async {
   final t = AppLocalizations.of(context)!;
   final descriptionController =
@@ -29,162 +30,121 @@ Future<AddItemDialogResult?> showAddItemDialog(
     text: (item?.unitPrice ?? 0).toString(),
   );
 
+  String? activeCatalogItemId = selectedCatalogItemId;
   final isEdit = item != null;
 
   return showDialog<AddItemDialogResult>(
     context: context,
     builder: (dialogContext) {
-      String? currentCatalogItemId = selectedCatalogItemId;
-
-      CatalogItemModel? findCatalogItemById(String? id) {
-        if (id == null) {
-          return null;
-        }
-
-        for (final catalogItem in catalogItems) {
-          if (catalogItem.id == id) {
-            return catalogItem;
-          }
-        }
-
-        return null;
-      }
-
-      List<CatalogItemModel> buildSuggestions(String rawQuery) {
-        final query = rawQuery.trim().toLowerCase();
-        if (query.isEmpty) {
-          return [];
-        }
-
-        final startsWithMatches = <CatalogItemModel>[];
-        final containsMatches = <CatalogItemModel>[];
-
-        for (final catalogItem in catalogItems) {
-          final description = catalogItem.description.trim();
-          if (description.isEmpty) {
-            continue;
-          }
-
-          final normalizedDescription = description.toLowerCase();
-          if (normalizedDescription.startsWith(query)) {
-            startsWithMatches.add(catalogItem);
-          } else if (normalizedDescription.contains(query)) {
-            containsMatches.add(catalogItem);
-          }
-        }
-
-        return [...startsWithMatches, ...containsMatches].take(5).toList();
-      }
-
-      void applyCatalogItem(
-        CatalogItemModel catalogItem,
-        void Function(void Function()) setDialogState,
-      ) {
-        currentCatalogItemId = catalogItem.id;
-        descriptionController.text = catalogItem.description;
-        quantityController.text = catalogItem.quantity.toString();
-        unitPriceController.text = catalogItem.unitPrice.toString();
-
-        descriptionController.selection = TextSelection.fromPosition(
-          TextPosition(offset: descriptionController.text.length),
-        );
-
-        setDialogState(() {});
-      }
-
       return StatefulBuilder(
         builder: (context, setDialogState) {
-          final activeCatalogItem = findCatalogItemById(currentCatalogItemId);
-          if (activeCatalogItem != null &&
-              descriptionController.text.trim() !=
-                  activeCatalogItem.description.trim()) {
-            currentCatalogItemId = null;
-          }
+          final query = descriptionController.text.trim().toLowerCase();
+          final suggestions = query.isEmpty
+              ? <CatalogItemModel>[]
+              : catalogItems
+                    .where(
+                      (catalogItem) => catalogItem.description
+                          .trim()
+                          .toLowerCase()
+                          .contains(query),
+                    )
+                    .take(5)
+                    .toList();
 
-          final suggestions = buildSuggestions(descriptionController.text);
-          final showSuggestions = suggestions.isNotEmpty;
+          void applyCatalogItem(CatalogItemModel catalogItem) {
+            final rememberedItem = rememberedCatalogDefaults?[catalogItem.id];
+            final quantity = rememberedItem?.quantity ?? catalogItem.quantity;
+            final unitPrice = rememberedItem?.unitPrice ?? catalogItem.unitPrice;
+
+            descriptionController.text = catalogItem.description;
+            quantityController.text = quantity.toString();
+            unitPriceController.text = unitPrice.toString();
+            activeCatalogItemId = catalogItem.id;
+            setDialogState(() {});
+          }
 
           return AlertDialog(
             title: Text(isEdit ? '${t.edit} ${t.addItem}' : t.addItem),
-            content: SizedBox(
-              width: 420,
-              child: SingleChildScrollView(
+            content: SingleChildScrollView(
+              child: SizedBox(
+                width: 360,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     TextField(
                       controller: descriptionController,
-                      decoration: InputDecoration(labelText: t.description),
-                      autofocus: true,
+                      decoration: InputDecoration(
+                        labelText: t.description,
+                        border: const OutlineInputBorder(),
+                      ),
                       onChanged: (_) {
+                        activeCatalogItemId = null;
                         setDialogState(() {});
                       },
                     ),
-                    if (showSuggestions) ...[
+                    if (suggestions.isNotEmpty) ...[
                       const SizedBox(height: 8),
                       Container(
+                        width: double.infinity,
                         decoration: BoxDecoration(
-                          border: Border.all(color: Colors.black12),
+                          border: Border.all(
+                            color: Theme.of(context).dividerColor,
+                          ),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
-                          children: [
-                            for (var i = 0; i < suggestions.length; i++) ...[
-                              Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(12),
-                                  onTap: () => applyCatalogItem(
-                                    suggestions[i],
-                                    setDialogState,
+                          children: suggestions.asMap().entries.map((entry) {
+                            final index = entry.key;
+                            final suggestion = entry.value;
+                            final rememberedItem =
+                                rememberedCatalogDefaults?[suggestion.id];
+                            final subtitleQuantity =
+                                rememberedItem?.quantity ?? suggestion.quantity;
+                            final subtitlePrice =
+                                rememberedItem?.unitPrice ?? suggestion.unitPrice;
+
+                            return Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                ListTile(
+                                  dense: true,
+                                  title: Text(
+                                    suggestion.description,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 10,
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          suggestions[i].description,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          '${t.quantity}: ${suggestions[i].quantity} • ${t.unitPrice}: ${suggestions[i].unitPrice}',
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodySmall,
-                                        ),
-                                      ],
-                                    ),
+                                  subtitle: Text(
+                                    '${t.quantity}: $subtitleQuantity • ${t.unitPrice}: ${subtitlePrice.toStringAsFixed(2)}',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
+                                  onTap: () => applyCatalogItem(suggestion),
                                 ),
-                              ),
-                              if (i != suggestions.length - 1)
-                                const Divider(height: 1),
-                            ],
-                          ],
+                                if (index != suggestions.length - 1)
+                                  const Divider(height: 1),
+                              ],
+                            );
+                          }).toList(),
                         ),
                       ),
                     ],
                     const SizedBox(height: 12),
                     TextField(
                       controller: quantityController,
-                      decoration: InputDecoration(labelText: t.quantity),
+                      decoration: InputDecoration(
+                        labelText: t.quantity,
+                        border: const OutlineInputBorder(),
+                      ),
                       keyboardType: TextInputType.number,
                     ),
                     const SizedBox(height: 12),
                     TextField(
                       controller: unitPriceController,
-                      decoration: InputDecoration(labelText: t.unitPrice),
+                      decoration: InputDecoration(
+                        labelText: t.unitPrice,
+                        border: const OutlineInputBorder(),
+                      ),
                       keyboardType:
                           const TextInputType.numberWithOptions(decimal: true),
                     ),
@@ -216,7 +176,7 @@ Future<AddItemDialogResult?> showAddItemDialog(
                         quantity: quantity,
                         unitPrice: unitPrice,
                       ),
-                      catalogItemId: currentCatalogItemId,
+                      catalogItemId: activeCatalogItemId,
                     ),
                   );
                 },

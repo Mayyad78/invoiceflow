@@ -162,6 +162,11 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
   }) {
     for (var i = 0; i < _items.length; i++) {
       final currentItem = _items[i];
+
+      if (catalogItemId != null && _itemCatalogIds[i] == catalogItemId) {
+        return i;
+      }
+
       final sameDescription = _normalizeDescription(currentItem.description) ==
           _normalizeDescription(item.description);
       final samePrice = currentItem.unitPrice == item.unitPrice;
@@ -171,9 +176,6 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       }
 
       if (catalogItemId != null) {
-        if (_itemCatalogIds[i] == catalogItemId) {
-          return i;
-        }
         continue;
       }
 
@@ -195,9 +197,9 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
     if (existingIndex != null) {
       final current = _items[existingIndex];
       _items[existingIndex] = InvoiceItemModel(
-        description: current.description,
+        description: item.description,
         quantity: current.quantity + item.quantity,
-        unitPrice: current.unitPrice,
+        unitPrice: item.unitPrice,
       );
 
       if (catalogItemId != null) {
@@ -240,7 +242,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
         _items[i] = InvoiceItemModel(
           description: catalogItem.description,
           quantity: currentItem.quantity,
-          unitPrice: catalogItem.unitPrice,
+          unitPrice: currentItem.unitPrice,
         );
         changed = true;
       }
