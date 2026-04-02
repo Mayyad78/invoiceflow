@@ -284,8 +284,11 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
   }
 
   Future<void> _addItem() async {
-    final item = await showAddItemDialog(context);
-    if (item == null) {
+    final result = await showAddItemDialog(
+      context,
+      catalogItems: ref.read(catalogItemsProvider),
+    );
+    if (result == null) {
       return;
     }
 
@@ -294,19 +297,25 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
     }
 
     setState(() {
-      _addOrMergeInvoiceItem(item: item);
+      _addOrMergeInvoiceItem(
+        item: result.item,
+        catalogItemId: result.catalogItemId,
+      );
     });
   }
 
   Future<void> _editItem(int index) async {
-    final updatedItem = await showAddItemDialog(
+    final result = await showAddItemDialog(
       context,
       item: _items[index],
+      catalogItems: ref.read(catalogItemsProvider),
+      selectedCatalogItemId: _itemCatalogIds[index],
     );
 
-    if (updatedItem != null) {
+    if (result != null) {
       setState(() {
-        _items[index] = updatedItem;
+        _items[index] = result.item;
+        _itemCatalogIds[index] = result.catalogItemId;
       });
     }
   }
