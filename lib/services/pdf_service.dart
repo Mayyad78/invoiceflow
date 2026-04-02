@@ -362,13 +362,15 @@ class PdfService {
           alignEnd: alignEnd,
           isArabic: isArabic,
         ),
-        pw.SizedBox(height: 6),
-        _headerInfoLine(
-          label: _tr(localeCode, 'dueDate'),
-          value: DateFormat('yyyy-MM-dd').format(invoice.dueDate),
-          alignEnd: alignEnd,
-          isArabic: isArabic,
-        ),
+        if (invoice.type == 'invoice') ...[
+          pw.SizedBox(height: 6),
+          _headerInfoLine(
+            label: _tr(localeCode, 'dueDate'),
+            value: DateFormat('yyyy-MM-dd').format(invoice.dueDate),
+            alignEnd: alignEnd,
+            isArabic: isArabic,
+          ),
+        ],
         pw.SizedBox(height: 6),
         _headerInfoLine(
           label: _tr(localeCode, 'status'),
@@ -514,7 +516,8 @@ class PdfService {
   }) {
     final rows = <List<String>>[
       [_tr(localeCode, 'subtotal'), _formatCurrency(invoice.subtotal, currency)],
-      [_tr(localeCode, 'tax'), _formatCurrency(invoice.taxAmount, currency)],
+      if (invoice.useTax)
+        [_tr(localeCode, 'tax'), _formatCurrency(invoice.taxAmount, currency)],
       [_tr(localeCode, 'discount'), _formatCurrency(invoice.discount, currency)],
       [_tr(localeCode, 'total'), _formatCurrency(invoice.total, currency)],
     ];

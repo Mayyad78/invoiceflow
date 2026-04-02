@@ -169,42 +169,17 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
     final confirmed = await _confirmConvertQuote(context, t);
     if (confirmed != true) return;
 
-    final numberingNotifier = ref.read(appSettingsProvider.notifier);
-    final invoiceNumber =
-        await numberingNotifier.consumeNextDocumentNumber('invoice');
-
-    final now = DateTime.now();
-    final newInvoiceId = const Uuid().v4();
-
-    final invoice = InvoiceModel(
-      id: newInvoiceId,
-      invoiceNumber: invoiceNumber,
-      clientId: quote.clientId,
-      issueDate: now,
-      dueDate: now.add(const Duration(days: 7)),
-      items: List.from(quote.items),
-      taxPercent: quote.taxPercent,
-      discount: quote.discount,
-      notes: quote.notes,
-      status: 'draft',
-      type: 'invoice',
-      paidAmount: 0,
-      convertedInvoiceId: null,
-      isTemplate: false,
-      templateName: null,
-      isFavoriteTemplate: false,
-    );
-
-    final updatedQuote = quote.copyWith(
-      convertedInvoiceId: newInvoiceId,
-    );
-
-    await ref.read(invoicesProvider.notifier).addInvoice(invoice);
-    await ref.read(invoicesProvider.notifier).updateInvoice(updatedQuote);
-
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(t.quoteConverted)),
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => CreateInvoiceScreen(
+          type: 'invoice',
+          invoice: quote,
+          isDuplicate: true,
+          sourceQuoteIdForConversion: quote.id,
+        ),
+      ),
     );
   }
 

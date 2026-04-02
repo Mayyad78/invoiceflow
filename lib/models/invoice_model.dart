@@ -17,6 +17,7 @@ class InvoiceModel {
   final bool isTemplate;
   final String? templateName;
   final bool isFavoriteTemplate;
+  final bool useTax;
 
   InvoiceModel({
     required this.id,
@@ -35,6 +36,7 @@ class InvoiceModel {
     this.isTemplate = false,
     this.templateName,
     this.isFavoriteTemplate = false,
+    this.useTax = true,
   });
 
   double get subtotal {
@@ -42,6 +44,7 @@ class InvoiceModel {
   }
 
   double get taxAmount {
+    if (!useTax) return 0;
     return subtotal * (taxPercent / 100);
   }
 
@@ -77,6 +80,7 @@ class InvoiceModel {
     bool? isTemplate,
     String? templateName,
     bool? isFavoriteTemplate,
+    bool? useTax,
     bool clearConvertedInvoiceId = false,
     bool clearTemplateName = false,
   }) {
@@ -101,6 +105,7 @@ class InvoiceModel {
           ? null
           : (templateName ?? this.templateName),
       isFavoriteTemplate: isFavoriteTemplate ?? this.isFavoriteTemplate,
+      useTax: useTax ?? this.useTax,
     );
   }
 
@@ -122,6 +127,7 @@ class InvoiceModel {
       'isTemplate': isTemplate,
       'templateName': templateName,
       'isFavoriteTemplate': isFavoriteTemplate,
+      'useTax': useTax,
     };
   }
 
@@ -145,6 +151,7 @@ class InvoiceModel {
       isTemplate: map['isTemplate'] ?? false,
       templateName: map['templateName']?.toString(),
       isFavoriteTemplate: map['isFavoriteTemplate'] ?? false,
+      useTax: map['useTax'] is bool ? map['useTax'] : true,
     );
   }
 }

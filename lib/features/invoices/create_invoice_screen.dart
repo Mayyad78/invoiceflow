@@ -20,11 +20,13 @@ class CreateInvoiceScreen extends ConsumerStatefulWidget {
     this.type = 'invoice',
     this.invoice,
     this.isDuplicate = false,
+    this.sourceQuoteIdForConversion,
   });
 
   final String type;
   final InvoiceModel? invoice;
   final bool isDuplicate;
+  final String? sourceQuoteIdForConversion;
 
   @override
   ConsumerState<CreateInvoiceScreen> createState() =>
@@ -38,14 +40,17 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
   final _discountController = TextEditingController(text: '0');
   final _notesController = TextEditingController();
   final _paidAmountController = TextEditingController(text: '0');
+  final _dueDaysController = TextEditingController(text: '7');
 
   DateTime _issueDate = DateTime.now();
-  DateTime _dueDate = DateTime.now().add(const Duration(days: 7));
+  DateTime _dueDate = DateTime.now();
   ClientModel? _selectedClient;
   final List<InvoiceItemModel> _items = [];
   final List<String?> _itemCatalogIds = [];
   late String _initialGeneratedNumber;
   String _status = 'draft';
+  bool _useTax = true;
+  String _dueType = 'cash';
 
   bool get _isEdit => widget.invoice != null && !widget.isDuplicate;
   bool get _isDuplicate => widget.invoice != null && widget.isDuplicate;
@@ -54,6 +59,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
   bool get _isTemplateEdit =>
       _isEdit && (widget.invoice?.isTemplate ?? false) == true;
   bool get _showPaymentSection => _isInvoice && !_isTemplateEdit;
+  bool get _showDueDateSection => _isInvoice;
 
   @override
   void initState() {
@@ -72,11 +78,13 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       _itemCatalogIds.addAll(List<String?>.filled(invoice.items.length, null));
       _initialGeneratedNumber = invoice.invoiceNumber;
       _status = invoice.status;
+      _useTax = invoice.useTax;
+      if (_isInvoice) {
+        _setDueTypeFromDates(_issueDate, _dueDate);
+      }
     } else if (_isDuplicate) {
       final invoice = widget.invoice!;
       final settingsNotifier = ref.read(appSettingsProvider.notifier);
-      final dueDuration = invoice.dueDate.difference(invoice.issueDate);
-
       _initialGeneratedNumber =
           settingsNotifier.previewDocumentNumber(widget.type);
       _invoiceNumberController.text = _initialGeneratedNumber;
@@ -85,9 +93,6 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       _notesController.text = invoice.notes;
       _paidAmountController.text = '0';
       _issueDate = DateTime.now();
-      _dueDate = _issueDate.add(
-        dueDuration.isNegative ? Duration.zero : dueDuration,
-      );
       _items.addAll(
         invoice.items.map(
           (item) => InvoiceItemModel(
@@ -99,12 +104,30 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       );
       _itemCatalogIds.addAll(List<String?>.filled(invoice.items.length, null));
       _status = 'draft';
+      _useTax = invoice.useTax;
+
+      if (_isInvoice && invoice.type == 'quote') {
+        _dueType = 'cash';
+        _dueDaysController.text = '7';
+        _syncDueDateFromCurrentSelection();
+      } else if (_isInvoice) {
+        final dueDuration = invoice.dueDate.difference(invoice.issueDate);
+        _dueDate = _issueDate.add(
+          dueDuration.isNegative ? Duration.zero : dueDuration,
+        );
+        _setDueTypeFromDates(_issueDate, _dueDate);
+      } else {
+        _dueDate = _issueDate;
+      }
     } else {
       final settingsNotifier = ref.read(appSettingsProvider.notifier);
       _initialGeneratedNumber =
           settingsNotifier.previewDocumentNumber(widget.type);
       _invoiceNumberController.text = _initialGeneratedNumber;
       _status = 'draft';
+      _useTax = true;
+      _dueType = 'cash';
+      _syncDueDateFromCurrentSelection();
     }
   }
 
@@ -132,13 +155,62 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
     _discountController.dispose();
     _notesController.dispose();
     _paidAmountController.dispose();
+    _dueDaysController.dispose();
     super.dispose();
+  }
+
+  DateTime _dateOnly(DateTime value) {
+    return DateTime(value.year, value.month, value.day);
+  }
+
+  void _setDueTypeFromDates(DateTime issueDate, DateTime dueDate) {
+    final normalizedIssueDate = _dateOnly(issueDate);
+    final normalizedDueDate = _dateOnly(dueDate);
+    final difference = normalizedDueDate.difference(normalizedIssueDate).inDays;
+
+    if (difference <= 0) {
+      _dueType = 'cash';
+      _dueDaysController.text = '0';
+      return;
+    }
+
+    _dueType = 'afterDays';
+    _dueDaysController.text = difference.toString();
+  }
+
+  void _syncDueDateFromCurrentSelection() {
+    if (!_showDueDateSection) {
+      _dueDate = _issueDate;
+      return;
+    }
+
+    final normalizedIssueDate = _dateOnly(_issueDate);
+
+    switch (_dueType) {
+      case 'cash':
+        _dueDate = normalizedIssueDate;
+        break;
+      case 'afterDays':
+        final days = int.tryParse(_dueDaysController.text.trim()) ?? 0;
+        final safeDays = days < 0 ? 0 : days;
+        _dueDate = normalizedIssueDate.add(Duration(days: safeDays));
+        break;
+      case 'specificDate':
+        if (_dateOnly(_dueDate).isBefore(normalizedIssueDate)) {
+          _dueDate = normalizedIssueDate;
+        }
+        break;
+      default:
+        _dueDate = normalizedIssueDate;
+    }
   }
 
   double get _subtotal => _items.fold(0, (sum, item) => sum + item.total);
 
-  double get _taxAmount =>
-      _subtotal * ((double.tryParse(_taxController.text) ?? 0) / 100);
+  double get _taxAmount {
+    if (!_useTax) return 0;
+    return _subtotal * ((double.tryParse(_taxController.text) ?? 0) / 100);
+  }
 
   double get _discount => double.tryParse(_discountController.text) ?? 0;
 
@@ -850,7 +922,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       invoiceNumber: '',
       clientId: _selectedClient!.id,
       issueDate: _issueDate,
-      dueDate: _dueDate,
+      dueDate: _showDueDateSection ? _dueDate : _issueDate,
       items: _items
           .map(
             (item) => InvoiceItemModel(
@@ -860,7 +932,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
             ),
           )
           .toList(),
-      taxPercent: double.tryParse(_taxController.text.trim()) ?? 0,
+      taxPercent: _useTax ? (double.tryParse(_taxController.text.trim()) ?? 0) : 0,
       discount: double.tryParse(_discountController.text.trim()) ?? 0,
       notes: _notesController.text.trim(),
       status: 'draft',
@@ -870,6 +942,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       isTemplate: true,
       templateName: templateName,
       isFavoriteTemplate: false,
+      useTax: _useTax,
     );
 
     await ref.read(invoicesProvider.notifier).addInvoice(template);
@@ -910,7 +983,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
         invoiceNumber: '',
         clientId: _selectedClient!.id,
         issueDate: _issueDate,
-        dueDate: _dueDate,
+        dueDate: _showDueDateSection ? _dueDate : _issueDate,
         items: _items
             .map(
               (item) => InvoiceItemModel(
@@ -920,7 +993,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
               ),
             )
             .toList(),
-        taxPercent: double.tryParse(_taxController.text.trim()) ?? 0,
+        taxPercent: _useTax ? (double.tryParse(_taxController.text.trim()) ?? 0) : 0,
         discount: double.tryParse(_discountController.text.trim()) ?? 0,
         notes: _notesController.text.trim(),
         status: 'draft',
@@ -930,6 +1003,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
         isTemplate: true,
         templateName: widget.invoice!.templateName,
         isFavoriteTemplate: widget.invoice!.isFavoriteTemplate,
+        useTax: _useTax,
       );
 
       await ref.read(invoicesProvider.notifier).updateInvoice(updatedTemplate);
@@ -961,7 +1035,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       invoiceNumber: finalDocumentNumber,
       clientId: _selectedClient!.id,
       issueDate: _issueDate,
-      dueDate: _dueDate,
+      dueDate: _showDueDateSection ? _dueDate : _issueDate,
       items: _items
           .map(
             (item) => InvoiceItemModel(
@@ -971,7 +1045,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
             ),
           )
           .toList(),
-      taxPercent: double.tryParse(_taxController.text.trim()) ?? 0,
+      taxPercent: _useTax ? (double.tryParse(_taxController.text.trim()) ?? 0) : 0,
       discount: double.tryParse(_discountController.text.trim()) ?? 0,
       notes: _notesController.text.trim(),
       status: _resolveStatus(),
@@ -981,12 +1055,28 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       isTemplate: false,
       templateName: null,
       isFavoriteTemplate: false,
+      useTax: _useTax,
     );
 
     if (_isEdit) {
       await ref.read(invoicesProvider.notifier).updateInvoice(invoice);
     } else {
       await ref.read(invoicesProvider.notifier).addInvoice(invoice);
+    }
+
+    if (widget.sourceQuoteIdForConversion != null) {
+      final sourceQuote = ref
+          .read(invoicesProvider)
+          .where((doc) => doc.id == widget.sourceQuoteIdForConversion)
+          .cast<InvoiceModel?>()
+          .firstOrNull;
+
+      if (sourceQuote != null) {
+        final updatedQuote = sourceQuote.copyWith(
+          convertedInvoiceId: invoice.id,
+        );
+        await ref.read(invoicesProvider.notifier).updateInvoice(updatedQuote);
+      }
     }
 
     if (!mounted) return;
@@ -1078,24 +1168,94 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                 onPressed: () => _pickDate(
                   context: context,
                   initialDate: _issueDate,
-                  onPicked: (date) => setState(() => _issueDate = date),
+                  onPicked: (date) {
+                    setState(() {
+                      _issueDate = date;
+                      if (_showDueDateSection && _dueType != 'specificDate') {
+                        _syncDueDateFromCurrentSelection();
+                      }
+                    });
+                  },
                 ),
               ),
             ),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(
-                '${t.dueDate}: ${_dueDate.toLocal().toString().split(' ').first}',
-              ),
-              trailing: IconButton(
-                icon: const Icon(Icons.calendar_today),
-                onPressed: () => _pickDate(
-                  context: context,
-                  initialDate: _dueDate,
-                  onPicked: (date) => setState(() => _dueDate = date),
+            if (_showDueDateSection) ...[
+              const SizedBox(height: 8),
+              DropdownButtonFormField<String>(
+                value: _dueType,
+                decoration: const InputDecoration(
+                  labelText: 'Due Type',
+                  border: OutlineInputBorder(),
                 ),
+                items: const [
+                  DropdownMenuItem(
+                    value: 'cash',
+                    child: Text('Cash Invoice'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'afterDays',
+                    child: Text('After Days'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'specificDate',
+                    child: Text('Specific Date'),
+                  ),
+                ],
+                onChanged: (value) {
+                  if (value == null) return;
+                  setState(() {
+                    _dueType = value;
+                    _syncDueDateFromCurrentSelection();
+                  });
+                },
               ),
-            ),
+              const SizedBox(height: 16),
+              if (_dueType == 'afterDays') ...[
+                TextFormField(
+                  controller: _dueDaysController,
+                  decoration: const InputDecoration(
+                    labelText: 'Number of Days',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  onChanged: (_) {
+                    setState(() {
+                      _syncDueDateFromCurrentSelection();
+                    });
+                  },
+                ),
+                const SizedBox(height: 16),
+              ],
+              if (_dueType == 'specificDate')
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    '${t.dueDate}: ${_dueDate.toLocal().toString().split(' ').first}',
+                  ),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.calendar_today),
+                    onPressed: () => _pickDate(
+                      context: context,
+                      initialDate: _dueDate.isBefore(_issueDate)
+                          ? _issueDate
+                          : _dueDate,
+                      onPicked: (date) {
+                        setState(() {
+                          _dueDate = date;
+                          _syncDueDateFromCurrentSelection();
+                        });
+                      },
+                    ),
+                  ),
+                )
+              else
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    '${t.dueDate}: ${_dueDate.toLocal().toString().split(' ').first}',
+                  ),
+                ),
+            ],
             const SizedBox(height: 16),
             Row(
               children: [
@@ -1192,17 +1352,40 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
               );
             }),
             const SizedBox(height: 16),
-            TextFormField(
-              controller: _taxController,
-              decoration: InputDecoration(
-                labelText: t.taxPercent,
-                border: const OutlineInputBorder(),
-              ),
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              onChanged: (_) => setState(() {}),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Use Tax',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+                Switch(
+                  value: _useTax,
+                  onChanged: (value) {
+                    setState(() {
+                      _useTax = value;
+                      if (!_useTax) {
+                        _taxController.text = '0';
+                      }
+                    });
+                  },
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
+            if (_useTax) ...[
+              TextFormField(
+                controller: _taxController,
+                decoration: InputDecoration(
+                  labelText: t.taxPercent,
+                  border: const OutlineInputBorder(),
+                ),
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                onChanged: (_) => setState(() {}),
+              ),
+              const SizedBox(height: 16),
+            ],
             TextFormField(
               controller: _discountController,
               decoration: InputDecoration(
@@ -1280,8 +1463,10 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                 child: Column(
                   children: [
                     _SummaryRow(label: t.subtotal, value: _subtotal),
-                    const SizedBox(height: 8),
-                    _SummaryRow(label: t.tax, value: _taxAmount),
+                    if (_useTax) ...[
+                      const SizedBox(height: 8),
+                      _SummaryRow(label: t.tax, value: _taxAmount),
+                    ],
                     const SizedBox(height: 8),
                     _SummaryRow(label: t.discount, value: _discount),
                     const Divider(height: 24),

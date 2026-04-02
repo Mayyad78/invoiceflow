@@ -249,10 +249,11 @@ class _InvoicePreviewScreenState extends ConsumerState<InvoicePreviewScreen> {
                   icon: Icons.calendar_today_outlined,
                   label: '${t.date}: $issueDate',
                 ),
-                _PreviewMetaChip(
-                  icon: Icons.event_outlined,
-                  label: '${t.dueDate}: $dueDate',
-                ),
+                if (widget.invoice.type == 'invoice')
+                  _PreviewMetaChip(
+                    icon: Icons.event_outlined,
+                    label: '${t.dueDate}: $dueDate',
+                  ),
                 _PreviewMetaChip(
                   icon: Icons.picture_as_pdf_outlined,
                   label: _buildPdfFileName(),

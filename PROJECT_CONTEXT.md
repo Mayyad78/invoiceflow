@@ -939,6 +939,74 @@ Final result:
 
 ---
 
+## Step 35A – Optional Tax Support Fix
+
+Completed as one full step.
+
+Implemented:
+- added persistent `useTax` state to `InvoiceModel`
+- tax state now saves and reloads correctly when editing invoices and quotes
+- when tax is OFF:
+  - tax input is hidden in create/edit screen
+  - tax row is removed from on-screen totals
+  - tax row is removed from PDF totals
+- saved quote with tax OFF now reopens with tax still OFF
+- saved invoice with tax OFF now reopens with tax still OFF
+
+### Important fixes/decisions inside Step 35A:
+- kept tax optional per document
+- `taxPercent` is forced to `0` when tax is disabled during save
+- old existing documents remain backward-compatible because `useTax` defaults to `true` if missing from storage
+- did not mix due date logic into the tax fix after issues appeared in the combined step
+- preview total remains correct because total calculation now respects `useTax`
+
+Final result:
+- optional tax behavior is stable
+- tax state persists correctly
+- totals and PDF correctly remove tax when disabled
+
+---
+
+## Step 35B – Invoice Due Date Logic
+
+Completed as one full step.
+
+Implemented:
+- quotes now use issue date only
+- quotes no longer show due date in create/edit screen
+- quotes no longer show due date in preview
+- quotes no longer show due date in PDF
+- invoices now support due type:
+  - Cash Invoice
+  - After Days
+  - Specific Date
+- invoice due date auto-calculates based on the selected due type
+- changing invoice issue date updates due date automatically when using Cash Invoice or After Days
+- quote → invoice conversion no longer creates invoice immediately
+- quote → invoice conversion now opens the invoice editor first
+- converted invoice starts with:
+  - issue date = today
+  - due type = Cash Invoice
+- after saving the converted invoice, the original quote is marked converted using the new invoice id
+
+### Important fixes/decisions inside Step 35B:
+- kept `InvoiceModel.dueDate` unchanged for storage compatibility
+- quotes still store a due date field internally, but the app now ignores it everywhere for quote UX, preview, and PDF
+- did not add new model fields for due type to avoid risky storage refactors
+- due type is inferred from invoice dates for edit flows:
+  - same day = Cash Invoice
+  - future day delta = After Days by default
+- conversion flow now respects real accounting workflow by letting the user confirm invoice details before saving
+- tax behavior from Step 35A remains preserved during conversion
+
+Final result:
+- invoice due date behavior is now business-friendly
+- quotes are cleaner and behave like quotes, not invoices
+- quote conversion workflow is much better and safer
+- Step 35 is fully complete as 35A + 35B
+
+---
+
 ## Current Features
 
 ### Dashboard
@@ -972,10 +1040,19 @@ Final result:
 - partial payment display in preview and PDF
 - improved card readability for total / paid / remaining
 - tap row to edit item
+- optional tax
+- due type:
+  - Cash Invoice
+  - After Days
+  - Specific Date
 
 ### Quotes
 - create/edit
+- issue date only
+- no due date in create/edit
+- no due date in preview/PDF
 - convert to invoice (safe)
+- conversion now opens invoice editor first
 - duplicate support
 - template support
 - conversion lock after use
@@ -1015,6 +1092,9 @@ Final result:
 - accurate paid/remaining display for invoices
 - company logo restored
 - English/French header details block corrected
+- optional tax reflected in PDF
+- quote due date removed from PDF
+- invoice due date shown according to invoice rules
 
 ### Preview / Export
 - improved preview header
@@ -1025,6 +1105,8 @@ Final result:
 - larger mobile PDF preview area
 - corrected export filename behavior
 - corrected preview print flow
+- optional tax reflected in preview totals
+- quote due date removed from preview
 
 ### Settings
 - profile
@@ -1053,6 +1135,9 @@ Final result:
 - Catalog autocomplete is working
 - Catalog duplicate row logic is stabilized
 - Invoice item editing UX is improved
+- Optional tax is working
+- Invoice due date system is working
+- Quote-to-invoice editor-first workflow is working
 - Ready for the next focused improvement
 
 ---
@@ -1065,29 +1150,29 @@ Final result:
 ---
 
 ## Upcoming Development Steps
-- Step 35 – Invoice Search & Filters
-- Step 36 – Data Export Tools
-- Step 37 – Arabic PDF RTL Fix
+- Step 36 – Invoice Search & Filters Upgrade
+- Step 37 – Data Export Tools
+- Step 38 – Arabic PDF RTL Fix
 
 Note:
 - upcoming steps may be reordered if a new functionality step is introduced before them
 
 ---
 
-## Step 35 – Invoice Search & Filters
+## Step 36 – Invoice Search & Filters Upgrade
 
 Goal:
 - improve invoice and quote list navigation once data grows
-- allow faster search by client, document number, and item description
+- allow faster search by client, document number, status, and item description
 - improve filters for payment status and document finding speed
-- keep current invoice creation and catalog logic stable
+- keep current invoice creation, tax, and due date logic stable
 
 Suggested scope:
 - search by invoice/quote number
 - search by client
 - search by item description
-- quick status filters
-- preserve current invoice logic and catalog rules
+- better quick status filters
+- preserve current invoice logic, tax logic, and catalog rules
 
 ---
 
@@ -1100,10 +1185,10 @@ Branch:
 main
 
 Last completed:
-Step 34
+Step 35B
 
 Next task:
-Step 35
+Step 36
 
 ---
 
@@ -1113,4 +1198,4 @@ Step 35
 - Stability > perfection
 - Keep current naming and structure
 - Focus on application functionality before Arabic PDF polish
-- Do not break Steps 19–34
+- Do not break Steps 19–35B
